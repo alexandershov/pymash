@@ -8,5 +8,8 @@ setuptools.setup(
         'aiohttp==2.2.5',
         'aiodns==1.1.1',
         'cchardet==2.1.1',
+    ],
+    tests_require=[
+        'pytest==3.2.2'
     ]
 )
