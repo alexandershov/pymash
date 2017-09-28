@@ -6,7 +6,7 @@ from pymash import models
 @pytest.mark.parametrize(
     'white_rating, black_rating, result,'
     'expected_white_rating, expected_black_rating', [
-        (1400, 1400, models.Result.WHITE_WINS, 1412, 1412)
+        (1400, 1400, models.Result.WHITE_WINS, 1412, 1388)
     ]
 )
 def test_change_ratings(
