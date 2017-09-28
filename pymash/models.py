@@ -1,6 +1,6 @@
 import enum
 
-RATING_COEFF = 24
+RATING_CHANGE_COEFF = 24
 
 
 class Result(enum.Enum):
@@ -29,6 +29,6 @@ class Game:
         rating_diff = self._black.rating - self._white.rating
         expected_white_score = 1 / (1 + 10 ** (rating_diff / 400))
 
-        white_rating_change = RATING_COEFF * (white_score - expected_white_score)
+        white_rating_change = RATING_CHANGE_COEFF * (white_score - expected_white_score)
         self._white.rating += white_rating_change
         self._black.rating -= white_rating_change

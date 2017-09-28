@@ -13,8 +13,10 @@ from pymash import models
     ]
 )
 def test_change_ratings(
+        monkeypatch,
         white_rating, black_rating, result,
         expected_white_rating, expected_black_rating):
+    monkeypatch.setattr(models, 'RATING_CHANGE_COEFF', 24)
     white = models.Repo(rating=white_rating)
     black = models.Repo(rating=black_rating)
     game = models.Game(white, black, result)
