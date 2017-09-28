@@ -14,13 +14,10 @@ class Repo:
 
 
 class Game:
-    def __init__(self, white: Repo, black: Repo):
-        self.white = white
-        self.black = black
-        self.result = Result.UNKNOWN
-
-    def set_result(self, result: Result):
-        self.result = result
+    def __init__(self, white: Repo, black: Repo, result: Result):
+        self._white = white
+        self._black = black
+        self._result = result
 
     def change_ratings(self):
-        assert self.result is not Result.UNKNOWN
+        assert self._result is not Result.UNKNOWN

@@ -14,8 +14,7 @@ def test_change_ratings(
         expected_white_rating, expected_black_rating):
     white = models.Repo(rating=white_rating)
     black = models.Repo(rating=black_rating)
-    game = models.Game(white, black)
-    game.set_result(result)
+    game = models.Game(white, black, result)
     game.change_ratings()
     assert white.rating == pytest.approx(expected_white_rating)
     assert black.rating == pytest.approx(expected_black_rating)
