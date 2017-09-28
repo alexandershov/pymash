@@ -26,9 +26,9 @@ class Game:
             white_score = 1
         else:
             white_score = 0
-        black_score = 1 - white_score
         rating_diff = self._black.rating - self._white.rating
         expected_white_score = 1 / (1 + 10 ** (rating_diff / 400))
-        expected_black_score = 1 - expected_white_score
-        self._white.rating += RATING_COEFF * (white_score - expected_white_score)
-        self._black.rating += RATING_COEFF * (black_score - expected_black_score)
+
+        white_rating_change = RATING_COEFF * (white_score - expected_white_score)
+        self._white.rating += white_rating_change
+        self._black.rating -= white_rating_change
