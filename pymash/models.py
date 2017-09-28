@@ -22,14 +22,18 @@ class Game:
 
     def change_ratings(self):
         assert self._result is not Result.UNKNOWN
+        white_delta = RATING_CHANGE_COEFF * (self._get_white_score() - self._get_expected_white_score())
+
+        self._white.rating += white_delta
+        self._black.rating -= white_delta
+
+    def _get_white_score(self):
         if self._result is Result.WHITE_WINS:
-            white_score = 1
+            return 1
         else:
             assert self._result is Result.BLACK_WINS
-            white_score = 0
-        rating_diff = self._black.rating - self._white.rating
-        expected_white_score = 1 / (1 + 10 ** (rating_diff / 400))
-        white_rating_change = RATING_CHANGE_COEFF * (white_score - expected_white_score)
+            return 0
 
-        self._white.rating += white_rating_change
-        self._black.rating -= white_rating_change
+    def _get_expected_white_score(self):
+        rating_diff = self._black.rating - self._white.rating
+        return 1 / (1 + 10 ** (rating_diff / 400))
