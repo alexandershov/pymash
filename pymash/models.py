@@ -25,6 +25,7 @@ class Game:
         if self._result is Result.WHITE_WINS:
             white_score = 1
         else:
+            assert self._result is Result.BLACK_WINS
             white_score = 0
         rating_diff = self._black.rating - self._white.rating
         expected_white_score = 1 / (1 + 10 ** (rating_diff / 400))
