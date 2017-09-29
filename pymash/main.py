@@ -6,10 +6,16 @@ from pymash import routes
 
 
 def main():
+    app = create_app()
     args = _parse_args()
-    app = web.Application()
-    routes.setup_routes(app)
     web.run_app(app, host=args.host, port=args.port)
+
+
+def create_app() -> web.Application:
+    app = web.Application()
+    print('here we are')
+    routes.setup_routes(app)
+    return app
 
 
 def _parse_args():
