@@ -3,10 +3,42 @@ import enum
 RATING_CHANGE_COEFF = 24
 
 
-class Result(enum.Enum):
-    WHITE_WINS = enum.auto()
-    BLACK_WINS = enum.auto()
-    UNKNOWN = enum.auto()
+class BaseError(Exception):
+    pass
+
+
+class UnknownResultError(BaseError):
+    pass
+
+
+class BaseResult:
+    @property
+    def white_score(self):
+        raise NotImplementedError
+
+    @property
+    def black_score(self):
+        return 1 - self.white_score
+
+
+class _UnknownResult(BaseResult):
+    @property
+    def white_score(self):
+        raise UnknownResultError
+
+
+class _Result(BaseResult):
+    def __init__(self, white_score):
+        self._white_score = white_score
+
+    @property
+    def white_score(self):
+        return self._white_score
+
+
+WHITE_WINS_RESULT = _Result(white_score=1)
+BLACK_WINS_RESULT = _Result(white_score=0)
+UNKNOWN_RESULT = _UnknownResult()
 
 
 class Repo:
@@ -15,13 +47,12 @@ class Repo:
 
 
 class Game:
-    def __init__(self, white: Repo, black: Repo, result: Result):
+    def __init__(self, white: Repo, black: Repo, result: BaseResult):
         self._white = white
         self._black = black
         self._result = result
 
     def change_ratings(self):
-        assert self._result is not Result.UNKNOWN
         white_delta = RATING_CHANGE_COEFF * (self._white_score - self._expected_white_score)
 
         self._white.rating += white_delta
@@ -29,11 +60,7 @@ class Game:
 
     @property
     def _white_score(self):
-        if self._result is Result.WHITE_WINS:
-            return 1
-        else:
-            assert self._result is Result.BLACK_WINS
-            return 0
+        return self._result.white_score
 
     @property
     def _expected_white_score(self):
