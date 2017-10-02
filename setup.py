@@ -12,6 +12,7 @@ setuptools.setup(
         'SQLAlchemy==1.1.14',
     ],
     tests_require=[
-        'pytest==3.2.2'
+        'pytest==3.2.2',
+        'pytest-aiohttp==0.1.3',
     ]
 )

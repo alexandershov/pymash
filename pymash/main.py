@@ -13,7 +13,6 @@ def main():
 
 def create_app() -> web.Application:
     app = web.Application()
-    print('here we are')
     routes.setup_routes(app)
     return app
 
