@@ -11,6 +11,10 @@ class UnknownResultError(BaseError):
     pass
 
 
+class GameWithYourselfError(BaseError):
+    pass
+
+
 class BaseResult:
     @property
     def white_score(self):
@@ -58,8 +62,22 @@ class Function:
     def repo_rating(self, new_rating):
         self._repo.rating = new_rating
 
+    @property
+    def repo(self):
+        return self._repo
+
 
 class Game:
+    @classmethod
+    def new(cls, white: Function, black: Function, result: BaseResult):
+        if white.repo == black.repo:
+            raise GameWithYourselfError
+        return cls(
+            white=white,
+            black=black,
+            result=result,
+        )
+
     def __init__(self, white: Function, black: Function, result: BaseResult):
         self._white = white
         self._black = black

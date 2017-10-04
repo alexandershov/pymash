@@ -21,10 +21,19 @@ def test_change_ratings(
     black_repo = models.Repo(rating=black_rating)
     white = models.Function(white_repo)
     black = models.Function(black_repo)
+    # TODO: change to Game.new
     game = models.Game(white, black, result)
     game.change_ratings()
     _assert_ratings_equal(white_repo.rating, expected_white_rating)
     _assert_ratings_equal(black_repo.rating, expected_black_rating)
+
+
+def test_game_new_failure():
+    repo = models.Repo(rating=1400)
+    white = models.Function(repo)
+    black = models.Function(repo)
+    with pytest.raises(models.GameWithYourselfError):
+        models.Game.new(white, black, models.UNKNOWN_RESULT)
 
 
 def _assert_ratings_equal(actual_rating, expected_rating):
