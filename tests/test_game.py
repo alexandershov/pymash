@@ -21,8 +21,7 @@ def test_change_ratings(
     black_repo = models.Repo(rating=black_rating)
     white = models.Function(white_repo)
     black = models.Function(black_repo)
-    # TODO: change to Game.new
-    game = models.Game(white, black, result)
+    game = models.Game.new(white, black, result)
     game.change_ratings()
     _assert_ratings_equal(white_repo.rating, expected_white_rating)
     _assert_ratings_equal(black_repo.rating, expected_black_rating)

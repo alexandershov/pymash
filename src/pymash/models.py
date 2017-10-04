@@ -55,14 +55,6 @@ class Function:
         self._repo = repo
 
     @property
-    def repo_rating(self):
-        return self._repo.rating
-
-    @repo_rating.setter
-    def repo_rating(self, new_rating):
-        self._repo.rating = new_rating
-
-    @property
     def repo(self):
         return self._repo
 
@@ -86,8 +78,8 @@ class Game:
     def change_ratings(self):
         white_delta = RATING_CHANGE_COEFF * (self._white_score - self._expected_white_score)
 
-        self._white.repo_rating += white_delta
-        self._black.repo_rating -= white_delta
+        self._white.repo.rating += white_delta
+        self._black.repo.rating -= white_delta
 
     @property
     def _white_score(self):
@@ -95,5 +87,5 @@ class Game:
 
     @property
     def _expected_white_score(self):
-        rating_diff = self._black.repo_rating - self._white.repo_rating
+        rating_diff = self._black.repo.rating - self._white.repo.rating
         return 1 / (1 + 10 ** (rating_diff / 400))
