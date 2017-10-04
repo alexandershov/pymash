@@ -17,12 +17,14 @@ def test_change_ratings(
         white_rating, black_rating, result,
         expected_white_rating, expected_black_rating):
     monkeypatch.setattr(models, 'RATING_CHANGE_COEFF', 24)
-    white = models.Repo(rating=white_rating)
-    black = models.Repo(rating=black_rating)
+    white_repo = models.Repo(rating=white_rating)
+    black_repo = models.Repo(rating=black_rating)
+    white = models.Function(white_repo)
+    black = models.Function(black_repo)
     game = models.Game(white, black, result)
     game.change_ratings()
-    _assert_ratings_equal(white.rating, expected_white_rating)
-    _assert_ratings_equal(black.rating, expected_black_rating)
+    _assert_ratings_equal(white_repo.rating, expected_white_rating)
+    _assert_ratings_equal(black_repo.rating, expected_black_rating)
 
 
 def _assert_ratings_equal(actual_rating, expected_rating):
