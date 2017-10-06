@@ -76,4 +76,13 @@ def _get_text(source_lines, from_pos: _Position, to_pos: _Position) -> str:
         else:
             line_to_add = line
         result.append(line_to_add)
-    return ''.join(result)
+    clean_result = []
+    skipping = True
+    for line in reversed(result):
+        if line.strip():
+            skipping = False
+        if skipping:
+            continue
+        clean_result.append(line)
+    clean_result[0] = clean_result[0].rstrip('\r\n')
+    return ''.join(reversed(clean_result))

@@ -17,8 +17,7 @@ from pymash import parser
                     text=textwrap.dedent(
                         '''\
                         def add(x, y):
-                            return x + y
-                        '''
+                            return x + y'''
                     )
                 )
             ]
