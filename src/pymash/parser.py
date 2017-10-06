@@ -9,10 +9,11 @@ class _End(object):
 
 class _Position:
     @classmethod
-    def from_ast_statement(cls, node):
+    def from_ast_node(cls, node):
         return cls(node.lineno, node.col_offset)
 
     def __init__(self, line, column):
+        # TODO: rename line to lineno
         self.line = line
         self.column = column
 
@@ -43,10 +44,11 @@ def get_functions(source_code: str):
     for cur_st, next_st in _iter_by_pairs(statements):
         if not isinstance(cur_st, ast.FunctionDef):
             continue
-        text = _get_text(
-            lines,
-            _Position.from_ast_statement(cur_st),
-            _Position.from_ast_statement(next_st))
+        text = _get_function_text(
+            source_lines=lines,
+            function_node=cur_st,
+            from_pos=_Position.from_ast_node(cur_st),
+            to_pos=_Position.from_ast_node(next_st))
         function = Function(
             name=cur_st.name,
             text=text)
@@ -63,19 +65,22 @@ def _iter_by_pairs(iterable):
         prev = cur
 
 
-def _get_text(source_lines, from_pos: _Position, to_pos: _Position) -> str:
+def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos: _Position) -> str:
+    docstring_node = _get_docstring_node(function_node)
+    # TODO: handle when docstring is the only node
+    after_docstring_node = function_node.body[1]
+    docstring_pos = _Position.from_ast_node(docstring_node)
+    after_docstring_pos = _Position.from_ast_node(after_docstring_node)
     result = []
     for i, line in enumerate(source_lines[from_pos.line - 1:to_pos.line]):
-        is_first = (i == 0)
-        is_last = (i == to_pos.line - from_pos.line)
-        if is_first:
-            line_to_add = line[from_pos.column:]
-        elif is_last:
-            # TODO: is it possible to simultaneously have is_first and is_last?
-            line_to_add = line[:to_pos.column]
-        else:
-            line_to_add = line
-        result.append(line_to_add)
+        line_to_add = []
+        lineno = from_pos.line + i
+        for col_offset, char in enumerate(line):
+            char_pos = _Position(lineno, col_offset)
+            if (_is_position_inside(char_pos, from_pos, to_pos)
+                    and not _is_position_inside(char_pos, docstring_pos, after_docstring_pos)):
+                line_to_add.append(char)
+        result.append(''.join(line_to_add))
     clean_result = []
     skipping = True
     for line in reversed(result):
@@ -86,3 +91,30 @@ def _get_text(source_lines, from_pos: _Position, to_pos: _Position) -> str:
         clean_result.append(line)
     clean_result[0] = clean_result[0].rstrip('\r\n')
     return ''.join(reversed(clean_result))
+
+
+def _get_docstring_node(function_node):
+    if not(function_node.body and isinstance(function_node.body[0], ast.Expr)):
+        return
+    node = function_node.body[0]
+    node_value = node.value
+    if isinstance(node_value, ast.Str):
+        return node
+    elif isinstance(node_value, ast.Constant) and isinstance(node_value.value, str):
+        return node
+    else:
+        return None
+
+
+def _is_position_inside(pos: _Position, begin_pos: _Position, end_pos: _Position) -> bool:
+    assert end_pos.line >= begin_pos.line
+    if pos.line > end_pos.line or pos.line < begin_pos.line:
+        return False
+    if pos.line == begin_pos.line:
+        return begin_pos.column <= pos.column < end_pos.column
+    if pos.line == begin_pos.line:
+        return pos.column >= begin_pos.column
+    elif pos.line == end_pos.line:
+        return pos.column < end_pos.column
+    else:
+        return True
