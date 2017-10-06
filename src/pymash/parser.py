@@ -67,10 +67,12 @@ def _iter_by_pairs(iterable):
 
 def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos: _Position) -> str:
     docstring_node = _get_docstring_node(function_node)
+    has_docstring = (docstring_node is not None)
     # TODO: handle when docstring is the only node
-    after_docstring_node = function_node.body[1]
-    docstring_pos = _Position.from_ast_node(docstring_node)
-    after_docstring_pos = _Position.from_ast_node(after_docstring_node)
+    if has_docstring:
+        after_docstring_node = function_node.body[1]
+        docstring_pos = _Position.from_ast_node(docstring_node)
+        after_docstring_pos = _Position.from_ast_node(after_docstring_node)
     result = []
     for i, line in enumerate(source_lines[from_pos.line - 1:to_pos.line]):
         line_to_add = []
@@ -78,7 +80,7 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
             if (_is_position_inside(char_pos, from_pos, to_pos)
-                    and not _is_position_inside(char_pos, docstring_pos, after_docstring_pos)):
+                    and (not has_docstring or not _is_position_inside(char_pos, docstring_pos, after_docstring_pos))):
                 line_to_add.append(char)
         result.append(''.join(line_to_add))
     clean_result = []
@@ -110,7 +112,7 @@ def _is_position_inside(pos: _Position, begin_pos: _Position, end_pos: _Position
     assert end_pos.line >= begin_pos.line
     if pos.line > end_pos.line or pos.line < begin_pos.line:
         return False
-    if pos.line == begin_pos.line:
+    if end_pos.line == begin_pos.line:
         return begin_pos.column <= pos.column < end_pos.column
     if pos.line == begin_pos.line:
         return pos.column >= begin_pos.column

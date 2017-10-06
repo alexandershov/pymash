@@ -27,7 +27,26 @@ from pymash import parser
     (
             '''\
             def add(x, y):
-                """some
+                """some docstring."""
+                return x + y
+            ''',
+            [
+                parser.Function(
+                    name='add',
+                    text=textwrap.dedent(
+                        '''\
+                        def add(x, y):
+                            return x + y'''
+                    )
+                )
+            ]
+    ),
+    # multiline docstring is skipped
+    (
+            '''\
+            def add(x, y):
+                """some 
+                multiline
                 docstring."""
                 return x + y
             ''',
