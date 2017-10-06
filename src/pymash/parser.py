@@ -3,7 +3,7 @@ import ast
 
 class _End(object):
     def __init__(self, source_lines):
-        self.lineno = len(source_lines)
+        self.lineno = len(source_lines) + 1
         self.col_offset = 0
 
 
@@ -66,8 +66,8 @@ def _iter_by_pairs(iterable):
 def _get_text(source_lines, from_pos: _Position, to_pos: _Position) -> str:
     result = []
     for i, line in enumerate(source_lines[from_pos.line - 1:to_pos.line]):
-        is_first = i == 0
-        is_last = i == to_pos.line - from_pos.line
+        is_first = (i == 0)
+        is_last = (i == to_pos.line - from_pos.line)
         if is_first:
             line_to_add = line[from_pos.column:]
         elif is_last:
@@ -75,5 +75,5 @@ def _get_text(source_lines, from_pos: _Position, to_pos: _Position) -> str:
             line_to_add = line[:to_pos.column]
         else:
             line_to_add = line
-        result.append(line)
+        result.append(line_to_add)
     return ''.join(result)
