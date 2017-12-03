@@ -63,17 +63,9 @@ class Matchup:
 
 
 class Game:
-    @classmethod
-    def new(cls, white: Repo, black: Repo, result: BaseResult):
+    def __init__(self, white: Repo, black: Repo, result: BaseResult):
         if white == black:
             raise GameWithYourselfError
-        return cls(
-            white=white,
-            black=black,
-            result=result,
-        )
-
-    def __init__(self, white: Repo, black: Repo, result: BaseResult):
         self._white = white
         self._black = black
         self._result = result
