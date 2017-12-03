@@ -2,7 +2,7 @@ from pymash import main
 
 
 async def test_get_game(test_client):
-    text = await _get(test_client, '/')
+    text = await _get(test_client, '/game')
     assert text == 'hello!'
 
 
