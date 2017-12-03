@@ -46,8 +46,15 @@ UNKNOWN_RESULT = _UnknownResult()
 
 
 class Repo:
-    def __init__(self, rating: float):
+    def __init__(self, repo_id: str, rating: float):
+        self.repo_id = repo_id
         self.rating = rating
+
+    def add_rating(self, delta):
+        self.rating += delta
+
+    def sub_rating(self, delta):
+        self.rating -= delta
 
 
 class Function:
@@ -73,8 +80,8 @@ class Game:
     def change_ratings(self):
         white_delta = RATING_CHANGE_COEFF * (self._white_score - self._expected_white_score)
 
-        self._white.rating += white_delta
-        self._black.rating -= white_delta
+        self._white.add_rating(white_delta)
+        self._black.sub_rating(white_delta)
 
     @property
     def _white_score(self):
