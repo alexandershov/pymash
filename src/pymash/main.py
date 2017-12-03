@@ -19,8 +19,8 @@ def create_app() -> web.Application:
 
 def _parse_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--host', required=True)
-    parser.add_argument('--port', type=int, required=True)
+    parser.add_argument('--host', default='localhost')
+    parser.add_argument('--port', type=int, default='8000')
     return parser.parse_args()
 
 
