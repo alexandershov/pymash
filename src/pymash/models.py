@@ -51,12 +51,15 @@ class Repo:
 
 
 class Function:
-    def __init__(self, repo: Repo):
-        self._repo = repo
+    def __init__(self, function_id: str, text: str) -> None:
+        self.function_id = function_id
+        self.text = text
 
-    @property
-    def repo(self):
-        return self._repo
+
+class Matchup:
+    def __init__(self, white_function: Function, black_function: Function) -> None:
+        self.white_function = white_function
+        self.black_function = black_function
 
 
 class Game:
