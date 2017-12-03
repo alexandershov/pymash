@@ -61,8 +61,8 @@ class Function:
 
 class Game:
     @classmethod
-    def new(cls, white: Function, black: Function, result: BaseResult):
-        if white.repo == black.repo:
+    def new(cls, white: Repo, black: Repo, result: BaseResult):
+        if white == black:
             raise GameWithYourselfError
         return cls(
             white=white,
@@ -70,7 +70,7 @@ class Game:
             result=result,
         )
 
-    def __init__(self, white: Function, black: Function, result: BaseResult):
+    def __init__(self, white: Repo, black: Repo, result: BaseResult):
         self._white = white
         self._black = black
         self._result = result
@@ -78,8 +78,8 @@ class Game:
     def change_ratings(self):
         white_delta = RATING_CHANGE_COEFF * (self._white_score - self._expected_white_score)
 
-        self._white.repo.rating += white_delta
-        self._black.repo.rating -= white_delta
+        self._white.rating += white_delta
+        self._black.rating -= white_delta
 
     @property
     def _white_score(self):
@@ -87,5 +87,5 @@ class Game:
 
     @property
     def _expected_white_score(self):
-        rating_diff = self._black.repo.rating - self._white.repo.rating
+        rating_diff = self._black.rating - self._white.rating
         return 1 / (1 + 10 ** (rating_diff / 400))
