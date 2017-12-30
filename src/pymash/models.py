@@ -17,11 +17,11 @@ class GameWithYourselfError(BaseError):
 
 class BaseResult:
     @property
-    def white_score(self):
+    def white_score(self) -> float:
         raise NotImplementedError
 
     @property
-    def black_score(self):
+    def black_score(self) -> float:
         return 1 - self.white_score
 
 
