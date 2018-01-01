@@ -25,12 +25,14 @@ _EXPECTED_RESULT = [
             ''',
             _EXPECTED_RESULT
     ),
-    # method
+    # # method
     (
             '''\
             class Number:
                 def add(self, other):
                     return self.x + other.x
+                
+            import this
             ''',
             [
                 parser.Function(
@@ -43,6 +45,8 @@ _EXPECTED_RESULT = [
                 ),
             ]
     ),
+    # TODO(aershov182): test when one function of two raises an exception
+    # TODO(aershov182): test async def
     # single statement function
     (
             '''def add(x, y): return x + y''',

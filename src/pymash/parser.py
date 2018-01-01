@@ -6,6 +6,8 @@ import typing as tp
 # TODO(aershov182): better logging a whole project
 import math
 
+import itertools
+
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
 
@@ -61,28 +63,36 @@ class Function:
 
 def get_functions(source_code: str):
     lines = source_code.splitlines(keepends=True)
-    statements = _get_statements(source_code, lines)
+    nodes = _get_ast_nodes(source_code, lines)
     result = []
-    for cur_st, next_st in _iter_by_pairs(statements):
-        if not isinstance(cur_st, ast.FunctionDef):
-            continue
+    for cur_node, next_node in _iter_function_nodes_with_next(nodes):
         text = _get_function_text(
             source_lines=lines,
-            function_node=cur_st,
-            from_pos=_Position.from_ast_node(cur_st),
-            to_pos=_Position.from_ast_node(next_st))
+            function_node=cur_node,
+            from_pos=_Position.from_ast_node(cur_node),
+            to_pos=_Position.from_ast_node(next_node))
         function = Function(
-            name=cur_st.name,
+            name=cur_node.name,
             text=text)
         result.append(function)
     return result
 
 
-def _get_statements(source_code: str, lines=tp.List[str]):
+def _get_ast_nodes(source_code: str, lines: tp.List[str]):
     parsed = ast.parse(source_code)
     statements = list(parsed.body)
     statements.append(_End(lines))
     return statements
+
+
+def _iter_function_nodes_with_next(nodes):
+    result = []
+    for cur_node, next_node in _iter_by_pairs(nodes):
+        if isinstance(cur_node, ast.FunctionDef):
+            yield cur_node, next_node
+        if isinstance(cur_node, ast.ClassDef):
+            yield from _iter_function_nodes_with_next(itertools.chain(cur_node.body, [next_node]))
+    return result
 
 
 def _iter_by_pairs(iterable):
