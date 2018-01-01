@@ -1,6 +1,7 @@
 import ast
 import numbers
 import re
+import textwrap
 import typing as tp
 
 # TODO(aershov182): better logging a whole project
@@ -117,15 +118,14 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
             has_multiline_docstring = True
         after_docstring_pos = _Position.from_ast_node(after_docstring_node)
     result = []
-    for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno]):
+    for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno - 1]):
         line_to_add = []
         lineno = from_pos.lineno + i
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
-            if (_is_position_inside(char_pos, from_pos, to_pos)
-                    and (not has_docstring or has_multiline_docstring or not _is_position_inside(
-                        char_pos, docstring_pos,
-                        after_docstring_pos))):
+            if ((not has_docstring or has_multiline_docstring or not _is_position_inside(
+                    char_pos, docstring_pos,
+                    after_docstring_pos))):
                 line_to_add.append(char)
         result.append(''.join(line_to_add))
     clean_result = []
@@ -139,9 +139,8 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
     clean_result[0] = clean_result[0].rstrip('\r\n')
     result = ''.join(reversed(clean_result))
     if has_multiline_docstring:
-        return _hacky_cut_multiline_docstring(result)
-    else:
-        return result
+        result = _hacky_cut_multiline_docstring(result)
+    return textwrap.dedent(result)
 
 
 def _get_docstring_node(function_node):
