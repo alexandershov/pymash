@@ -4,6 +4,15 @@ import pytest
 
 from pymash import parser
 
+_EXPECTED_RESULT = [
+    parser.Function(
+        name='add',
+        text=textwrap.dedent('''\
+            def add(x, y):
+                return x + y''')
+    ),
+]
+
 
 @pytest.mark.parametrize('source_code, expected_functions', [
     # normal case
@@ -12,16 +21,7 @@ from pymash import parser
             def add(x, y):
                 return x + y
             ''',
-            [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        def add(x, y):
-                            return x + y'''
-                    )
-                )
-            ]
+            _EXPECTED_RESULT
     ),
     # single statement function
     (
@@ -40,16 +40,7 @@ from pymash import parser
                 """some docstring."""
                 return x + y
             ''',
-            [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        def add(x, y):
-                            return x + y'''
-                    )
-                )
-            ]
+            _EXPECTED_RESULT
     ),
     # multiline double quotes docstring is cut
     (
@@ -60,16 +51,7 @@ from pymash import parser
                 docstring."""
                 return x + y
             ''',
-            [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        def add(x, y):
-                            return x + y'''
-                    )
-                )
-            ]
+            _EXPECTED_RESULT
     ),
     # multiline single quotes docstring is cut
     (
@@ -80,16 +62,7 @@ from pymash import parser
                 docstring.'''
                 return x + y
             """,
-            [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        def add(x, y):
-                            return x + y'''
-                    )
-                )
-            ]
+            _EXPECTED_RESULT
     ),
     # we don't touch literals in body (single quotes docstring)
     (
