@@ -25,13 +25,13 @@ from pymash import parser
     ),
     # single statement function
     (
-        '''def add(x, y): return x + y''',
-        [
-            parser.Function(
-                name='add',
-                text='''def add(x, y): return x + y'''
-            )
-        ]
+            '''def add(x, y): return x + y''',
+            [
+                parser.Function(
+                    name='add',
+                    text='''def add(x, y): return x + y'''
+                )
+            ]
     ),
     # docstring is cut
     (
@@ -51,7 +51,7 @@ from pymash import parser
                 )
             ]
     ),
-    # multiline docstring is cut
+    # multiline double quotes docstring is cut
     (
             '''\
             def add(x, y):
@@ -60,6 +60,26 @@ from pymash import parser
                 docstring."""
                 return x + y
             ''',
+            [
+                parser.Function(
+                    name='add',
+                    text=textwrap.dedent(
+                        '''\
+                        def add(x, y):
+                            return x + y'''
+                    )
+                )
+            ]
+    ),
+    # multiline single quotes docstring is cut
+    (
+            """\
+            def add(x, y):
+                '''some
+                multiline
+                docstring.'''
+                return x + y
+            """,
             [
                 parser.Function(
                     name='add',
@@ -80,11 +100,11 @@ def test_get_functions(source_code, expected_functions):
 @pytest.mark.parametrize('source_code, expected_exception', [
     # we refuse to parse functions with only docstrings
     (
-        '''\
-        def add(x, y):
-            "Add two numbers"
-        ''',
-        parser.EmptyFunctionError,
+            '''\
+            def add(x, y):
+                "Add two numbers"
+            ''',
+            parser.EmptyFunctionError,
     ),
     # we refuse to parse multiline docstrings with inner triple quotes:
     # it's hard to do with regexes and it's very rare case anyway

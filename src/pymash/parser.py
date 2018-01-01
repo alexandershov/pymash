@@ -4,8 +4,8 @@ import re
 # TODO(aershov182): better logging a whole project
 
 
-# TODO(aershov182): also single quotes
-_MULTILINE_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
+_MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
+_MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
 
 
 class BaseError(Exception):
@@ -147,7 +147,14 @@ def _hacky_is_multiline_docstring(pos: _Position) -> bool:
 
 
 def _hacky_cut_multiline_docstring(text: str) -> str:
-    return _MULTILINE_DOCSTRING_RE.subn(_check_and_cut_multiline_docstring, text, 1)[0]
+    regexes = [
+        _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE,
+        _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE,
+    ]
+    for a_regex in regexes:
+        if a_regex.search(text) is not None:
+            return a_regex.subn(_check_and_cut_multiline_docstring, text, 1)[0]
+    return text
 
 
 def _check_and_cut_multiline_docstring(match) -> str:
