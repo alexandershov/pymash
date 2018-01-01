@@ -64,13 +64,13 @@ class Function:
 
 
 def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
-    lines = source_code.splitlines(keepends=True)
-    nodes = _get_ast_nodes(source_code, lines)
-    result = []
+    source_lines = source_code.splitlines(keepends=True)
+    nodes = _get_ast_nodes(source_code, source_lines)
+    functions = []
     for fn_node, next_node in _iter_function_nodes_with_next(nodes):
         try:
             text = _get_function_text(
-                source_lines=lines,
+                source_lines=source_lines,
                 function_node=fn_node,
                 from_pos=_Position.from_ast_node(fn_node),
                 to_pos=_Position.from_ast_node(next_node))
@@ -78,14 +78,14 @@ def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.Lis
             if not catch_exceptions:
                 raise
         else:
-            result.append(Function(fn_node.name, text))
-    return result
+            functions.append(Function(fn_node.name, text))
+    return functions
 
 
-def _get_ast_nodes(source_code: str, lines: tp.List[str]):
+def _get_ast_nodes(source_code: str, source_lines: tp.List[str]):
     parsed = ast.parse(source_code)
     statements = copy.copy(parsed.body)
-    statements.append(_SentinelNode(lines))
+    statements.append(_SentinelNode(source_lines))
     return statements
 
 
