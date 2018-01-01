@@ -30,7 +30,7 @@ class EmptyFunctionError(UnknownFunctionText):
     pass
 
 
-class _End:
+class _SentinelNode:
     def __init__(self, source_lines):
         self.lineno = len(source_lines) + 1
         self.col_offset = 0
@@ -85,7 +85,7 @@ def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.Lis
 def _get_ast_nodes(source_code: str, lines: tp.List[str]):
     parsed = ast.parse(source_code)
     statements = copy.copy(parsed.body)
-    statements.append(_End(lines))
+    statements.append(_SentinelNode(lines))
     return statements
 
 
