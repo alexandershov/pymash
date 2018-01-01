@@ -154,8 +154,7 @@ def test_get_functions(source_code, expected_functions):
             ''',
             parser.EmptyFunctionError,
     ),
-    # TODO(aershov182): test same case for single quotes
-    # we refuse to parse multiline docstrings with inner triple quotes:
+    # we refuse to parse multiline docstrings with inner triple double quotes:
     # it's hard to do with regexes and it's very rare case anyway
     (
             '''\
@@ -167,8 +166,7 @@ def test_get_functions(source_code, expected_functions):
             ''',
             parser.TripleQuotesDocstringError,
     ),
-    # TODO(aershov182): test same case for single quotes
-    # we refuse to parse multiline docstrings with quoted inner quotes: rare case
+    # we refuse to parse multiline docstrings with quoted inner double quotes: rare case
     (
             '''\
             def add(x, y):
@@ -178,6 +176,30 @@ def test_get_functions(source_code, expected_functions):
                 docstring with inner triple quotes ending on newline."""
                 return x + y
             ''',
+            parser.TripleQuotesDocstringError,
+    ),
+    # we refuse to parse multiline docstrings with inner triple single quotes:
+    # it's hard to do with regexes and it's very rare case anyway
+    (
+            """\
+            def add(x, y):
+                '''some
+                \\'''multiline
+                docstring with inner triple quotes.'''
+                return x + y
+            """,
+            parser.TripleQuotesDocstringError,
+    ),
+    # we refuse to parse multiline docstrings with quoted inner single quotes: rare case
+    (
+            """\
+            def add(x, y):
+                '''some
+                \\'''
+                multiline
+                docstring with inner triple quotes ending on newline.'''
+                return x + y
+            """,
             parser.TripleQuotesDocstringError,
     ),
 ])
