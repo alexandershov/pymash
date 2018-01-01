@@ -4,7 +4,7 @@ import re
 # TODO(aershov182): better logging a whole project
 
 
-_MULTILINE_DOCSTRING_RE = re.compile('""".*?"""\n', re.DOTALL)
+_MULTILINE_DOCSTRING_RE = re.compile(r'[ \t]*""".*?"""\n', re.DOTALL)
 
 
 class _End:
