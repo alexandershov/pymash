@@ -68,8 +68,16 @@ def test_get_functions(source_code, expected_functions):
 
 
 @pytest.mark.parametrize('source_code, expected_exception', [
-    # we refuse to parse multiline docstring with inner triple quotes: it's hard to do with regexes
-    # and it's very rare case anyway
+    # we refuse to parse functions with only docstrings
+    (
+        '''\
+        def add(x, y):
+            "Add two numbers"
+        ''',
+        parser.EmptyFunctionError,
+    ),
+    # we refuse to parse multiline docstrings with inner triple quotes:
+    # it's hard to do with regexes and it's very rare case anyway
     (
             '''\
             def add(x, y):
@@ -80,6 +88,7 @@ def test_get_functions(source_code, expected_functions):
             ''',
             parser.TripleQuotesDocstringError,
     ),
+    # we refuse to parse multiline docstrings with quoted inner quotes: rare case
     (
             '''\
             def add(x, y):

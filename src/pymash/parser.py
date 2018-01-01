@@ -20,6 +20,10 @@ class TripleQuotesDocstringError(UnknownFunctionText):
     pass
 
 
+class EmptyFunctionError(UnknownFunctionText):
+    pass
+
+
 class _End:
     def __init__(self, source_lines):
         self.lineno = len(source_lines) + 1
@@ -88,7 +92,8 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
     docstring_node = _get_docstring_node(function_node)
     has_docstring = (docstring_node is not None)
     has_multiline_docstring = False
-    # TODO: handle when docstring is the only node
+    if has_docstring and len(function_node.body) == 1:
+        raise EmptyFunctionError
     if has_docstring:
         after_docstring_node = function_node.body[1]
         docstring_pos = _Position.from_ast_node(docstring_node)
