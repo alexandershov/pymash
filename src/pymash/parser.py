@@ -1,4 +1,10 @@
 import ast
+import re
+
+# TODO(aershov182): better logging a whole project
+
+
+_MULTILINE_DOCSTRING_RE = re.compile('""".*?"""\n')
 
 
 class _End:
@@ -68,10 +74,13 @@ def _iter_by_pairs(iterable):
 def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos: _Position) -> str:
     docstring_node = _get_docstring_node(function_node)
     has_docstring = (docstring_node is not None)
+    has_multiline_docstring = False
     # TODO: handle when docstring is the only node
     if has_docstring:
         after_docstring_node = function_node.body[1]
         docstring_pos = _Position.from_ast_node(docstring_node)
+        if _hacky_is_multiline_docstring(docstring_pos):
+            has_multiline_docstring = True
         after_docstring_pos = _Position.from_ast_node(after_docstring_node)
     result = []
     # TODO: shouldn't it be `[...:to_pos.line - 1]`?
@@ -81,8 +90,9 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
             if (_is_position_inside(char_pos, from_pos, to_pos)
-                    and (not has_docstring or not _is_position_inside(char_pos, docstring_pos,
-                                                                      after_docstring_pos))):
+                    and (not has_docstring or has_multiline_docstring or not _is_position_inside(
+                        char_pos, docstring_pos,
+                        after_docstring_pos))):
                 line_to_add.append(char)
         result.append(''.join(line_to_add))
     clean_result = []
@@ -94,7 +104,11 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
             continue
         clean_result.append(line)
     clean_result[0] = clean_result[0].rstrip('\r\n')
-    return ''.join(reversed(clean_result))
+    result = ''.join(reversed(clean_result))
+    if has_multiline_docstring:
+        return _hacky_cut_multiline_docstring(result)
+    else:
+        return result
 
 
 def _get_docstring_node(function_node):
@@ -109,6 +123,16 @@ def _get_docstring_node(function_node):
         return node
     else:
         return None
+
+
+def _hacky_is_multiline_docstring(pos: _Position) -> bool:
+    # ast has a bug: multiline strings have wrong start (column == -1, line number is just wrong)
+    return pos.column == -1
+
+
+def _hacky_cut_multiline_docstring(text: str) -> str:
+    # TODO(aershov182): check if match has `"""` and if it's True then raise an parse exception
+    return _MULTILINE_DOCSTRING_RE.subn('', text, 1)[0]
 
 
 def _is_position_inside(pos: _Position, begin_pos: _Position, end_pos: _Position) -> bool:
