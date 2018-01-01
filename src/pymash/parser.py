@@ -1,7 +1,7 @@
 import ast
 
 
-class _End(object):
+class _End:
     def __init__(self, source_lines):
         self.lineno = len(source_lines) + 1
         self.col_offset = 0
@@ -80,7 +80,8 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
             if (_is_position_inside(char_pos, from_pos, to_pos)
-                    and (not has_docstring or not _is_position_inside(char_pos, docstring_pos, after_docstring_pos))):
+                    and (not has_docstring or not _is_position_inside(char_pos, docstring_pos,
+                                                                      after_docstring_pos))):
                 line_to_add.append(char)
         result.append(''.join(line_to_add))
     clean_result = []
@@ -96,7 +97,8 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
 
 
 def _get_docstring_node(function_node):
-    if not(function_node.body and isinstance(function_node.body[0], ast.Expr)):
+    has_first_expression = function_node.body and isinstance(function_node.body[0], ast.Expr)
+    if not has_first_expression:
         return
     node = function_node.body[0]
     node_value = node.value
