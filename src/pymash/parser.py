@@ -4,7 +4,7 @@ import re
 # TODO(aershov182): better logging a whole project
 
 
-# TODO(aershov182): single quotes
+# TODO(aershov182): also single quotes
 _MULTILINE_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 
 
@@ -37,7 +37,7 @@ class _Position:
 
     def __init__(self, line, column):
         # TODO: rename line to lineno
-        self.line = line
+        self.lineno = line
         self.column = column
 
 
@@ -102,9 +102,9 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
         after_docstring_pos = _Position.from_ast_node(after_docstring_node)
     result = []
     # TODO: shouldn't it be `[...:to_pos.line - 1]`?
-    for i, line in enumerate(source_lines[from_pos.line - 1:to_pos.line]):
+    for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno]):
         line_to_add = []
-        lineno = from_pos.line + i
+        lineno = from_pos.lineno + i
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
             if (_is_position_inside(char_pos, from_pos, to_pos)
@@ -162,14 +162,14 @@ def _check_and_cut_multiline_docstring(match) -> str:
 
 
 def _is_position_inside(pos: _Position, begin_pos: _Position, end_pos: _Position) -> bool:
-    assert end_pos.line >= begin_pos.line
-    if pos.line > end_pos.line or pos.line < begin_pos.line:
+    assert end_pos.lineno >= begin_pos.lineno
+    if pos.lineno > end_pos.lineno or pos.lineno < begin_pos.lineno:
         return False
-    if end_pos.line == begin_pos.line:
+    if end_pos.lineno == begin_pos.lineno:
         return begin_pos.column <= pos.column < end_pos.column
-    if pos.line == begin_pos.line:
+    if pos.lineno == begin_pos.lineno:
         return pos.column >= begin_pos.column
-    elif pos.line == end_pos.line:
+    elif pos.lineno == end_pos.lineno:
         return pos.column < end_pos.column
     else:
         return True
