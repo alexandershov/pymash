@@ -1,6 +1,7 @@
 import ast
 import numbers
 import re
+import typing as tp
 
 # TODO(aershov182): better logging a whole project
 import math
@@ -60,9 +61,7 @@ class Function:
 
 def get_functions(source_code: str):
     lines = source_code.splitlines(keepends=True)
-    parsed = ast.parse(source_code)
-    statements = list(parsed.body)
-    statements.append(_End(lines))
+    statements = _get_statements(source_code, lines)
     result = []
     for cur_st, next_st in _iter_by_pairs(statements):
         if not isinstance(cur_st, ast.FunctionDef):
@@ -77,6 +76,13 @@ def get_functions(source_code: str):
             text=text)
         result.append(function)
     return result
+
+
+def _get_statements(source_code: str, lines=tp.List[str]):
+    parsed = ast.parse(source_code)
+    statements = list(parsed.body)
+    statements.append(_End(lines))
+    return statements
 
 
 def _iter_by_pairs(iterable):

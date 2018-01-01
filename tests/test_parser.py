@@ -7,9 +7,11 @@ from pymash import parser
 _EXPECTED_RESULT = [
     parser.Function(
         name='add',
-        text=textwrap.dedent('''\
+        text=textwrap.dedent(
+            '''\
             def add(x, y):
-                return x + y''')
+                return x + y'''
+        )
     ),
 ]
 
@@ -22,6 +24,24 @@ _EXPECTED_RESULT = [
                 return x + y
             ''',
             _EXPECTED_RESULT
+    ),
+    # method
+    (
+            '''\
+            class Number:
+                def add(self, other):
+                    return self.x + other.x
+            ''',
+            [
+                parser.Function(
+                    name='add',
+                    text=textwrap.dedent(
+                        '''\
+                        def add(self, other):
+                            return self.x + other.x'''
+                    )
+                ),
+            ]
     ),
     # single statement function
     (
@@ -116,7 +136,8 @@ _EXPECTED_RESULT = [
     (
             '',
             [],
-    )
+    ),
+
 ])
 def test_get_functions(source_code, expected_functions):
     actual_functions = parser.get_functions(textwrap.dedent(source_code))
