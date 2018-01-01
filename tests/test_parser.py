@@ -23,7 +23,7 @@ from pymash import parser
                 )
             ]
     ),
-    # docstring is skipped
+    # docstring is cut
     (
             '''\
             def add(x, y):
@@ -41,7 +41,7 @@ from pymash import parser
                 )
             ]
     ),
-    # multiline docstring is skipped
+    # multiline docstring is cut
     (
             '''\
             def add(x, y):
@@ -60,8 +60,27 @@ from pymash import parser
                     )
                 )
             ]
-    )
+    ),
 ])
 def test_get_functions(source_code, expected_functions):
     actual_functions = parser.get_functions(textwrap.dedent(source_code))
     assert actual_functions == expected_functions
+
+
+@pytest.mark.parametrize('source_code, expected_exception', [
+    # we refuse to parse multiline docstring with inner triple quotes: it's hard to do with regexes
+    # and it's very rare case anyway
+    (
+            '''\
+            def add(x, y):
+                """some
+                \"""multiline
+                docstring with inner triple quotes."""
+                return x + y
+            ''',
+            parser.TripleQuotesDocstringError,
+    ),
+])
+def test_get_functions_failure(source_code, expected_exception):
+    with pytest.fail(expected_exception):
+        parser.get_functions(textwrap.dedent(source_code))
