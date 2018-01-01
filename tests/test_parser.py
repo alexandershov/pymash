@@ -91,8 +91,7 @@ from pymash import parser
                 )
             ]
     ),
-    # we don't touch function's body
-    # TODO(aershov182): test reverse case
+    # we don't touch literals in body (single quotes docstring)
     (
             """\
             def add(x, y):
@@ -111,6 +110,30 @@ from pymash import parser
                         def add(x, y):
                             s = \"""
                                 some string\"""
+                            return x + y'''
+                    )
+                )
+            ]
+    ),
+    # we don't touch literals in body (double quotes docstring)
+    (
+            '''\
+            def add(x, y):
+                """some
+                multiline
+                docstring."""
+                s = \'''
+                    some string\'''
+                return x + y
+            ''',
+            [
+                parser.Function(
+                    name='add',
+                    text=textwrap.dedent(
+                        '''\
+                        def add(x, y):
+                            s = \'''
+                                some string\'''
                             return x + y'''
                     )
                 )
