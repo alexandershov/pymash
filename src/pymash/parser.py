@@ -89,9 +89,9 @@ def _get_ast_nodes(source_code: str, lines: tp.List[str]):
 def _iter_function_nodes_with_next(nodes):
     result = []
     for cur_node, next_node in _iter_by_pairs(nodes):
-        if isinstance(cur_node, ast.FunctionDef):
+        if isinstance(cur_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             yield cur_node, next_node
-        if isinstance(cur_node, ast.ClassDef):
+        elif isinstance(cur_node, ast.ClassDef):
             yield from _iter_function_nodes_with_next(itertools.chain(cur_node.body, [next_node]))
     return result
 

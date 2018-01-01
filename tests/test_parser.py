@@ -46,7 +46,23 @@ _EXPECTED_RESULT = [
             ]
     ),
     # TODO(aershov182): test when one function of two raises an exception
-    # TODO(aershov182): test async def
+    # async function
+    (
+            '''\
+                async def add(self, other):
+                    return self.x + (await other.x)
+            ''',
+            [
+                parser.Function(
+                    name='add',
+                    text=textwrap.dedent(
+                        '''\
+                        async def add(self, other):
+                            return self.x + (await other.x)'''
+                    )
+                ),
+            ]
+    ),
     # single statement function
     (
             '''def add(x, y): return x + y''',
