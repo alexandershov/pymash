@@ -152,6 +152,8 @@ def _check_and_cut_multiline_docstring(match) -> str:
     text = match.group('docstring')
     if '"""' in text:
         raise TripleQuotesDocstringError(text)
+    if text[-1:] == '\\':
+        raise TripleQuotesDocstringError(text)
     return ''
 
 
