@@ -1,8 +1,9 @@
 import ast
+import numbers
 import re
 
 # TODO(aershov182): better logging a whole project
-
+import math
 
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
@@ -151,10 +152,21 @@ def _hacky_cut_multiline_docstring(text: str) -> str:
         _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE,
         _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE,
     ]
-    for a_regex in regexes:
+    for a_regex in sorted(regexes, key=_EarliestMatch(text)):
         if a_regex.search(text) is not None:
             return a_regex.subn(_check_and_cut_multiline_docstring, text, 1)[0]
     return text
+
+
+class _EarliestMatch:
+    def __init__(self, text: str) -> None:
+        self._text = text
+
+    def __call__(self, regex) -> numbers.Number:
+        match = regex.search(self._text)
+        if match is None:
+            return math.inf
+        return match.span()[0]
 
 
 def _check_and_cut_multiline_docstring(match) -> str:

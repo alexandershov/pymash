@@ -91,6 +91,31 @@ from pymash import parser
                 )
             ]
     ),
+    # we don't touch function's body
+    # TODO(aershov182): test reverse case
+    (
+            """\
+            def add(x, y):
+                '''some
+                multiline
+                docstring.'''
+                s = \"""
+                    some string\"""
+                return x + y
+            """,
+            [
+                parser.Function(
+                    name='add',
+                    text=textwrap.dedent(
+                        '''\
+                        def add(x, y):
+                            s = \"""
+                                some string\"""
+                            return x + y'''
+                    )
+                )
+            ]
+    ),
 ])
 def test_get_functions(source_code, expected_functions):
     actual_functions = parser.get_functions(textwrap.dedent(source_code))
@@ -106,6 +131,7 @@ def test_get_functions(source_code, expected_functions):
             ''',
             parser.EmptyFunctionError,
     ),
+    # TODO(aershov182): test same case for single quotes
     # we refuse to parse multiline docstrings with inner triple quotes:
     # it's hard to do with regexes and it's very rare case anyway
     (
@@ -118,6 +144,7 @@ def test_get_functions(source_code, expected_functions):
             ''',
             parser.TripleQuotesDocstringError,
     ),
+    # TODO(aershov182): test same case for single quotes
     # we refuse to parse multiline docstrings with quoted inner quotes: rare case
     (
             '''\
