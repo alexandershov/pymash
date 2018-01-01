@@ -31,7 +31,7 @@ _EXPECTED_RESULT = [
             class Number:
                 def add(self, other):
                     return self.x + other.x
-                
+        
             import this
             ''',
             [
