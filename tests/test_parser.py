@@ -45,7 +45,19 @@ _EXPECTED_RESULT = [
                 ),
             ]
     ),
-    # TODO(aershov182): test when one function of two raises an exception
+    # we refuse to parse one function
+    (
+            '''\
+            def sub(x, y):
+                """multiline docstring with 
+                \''' single quotes"""
+                return x - y
+                
+            def add(x, y):
+                return x + y
+            ''',
+            _EXPECTED_RESULT
+    ),
     # async function
     (
             '''\
@@ -160,7 +172,7 @@ _EXPECTED_RESULT = [
 
 ])
 def test_get_functions(source_code, expected_functions):
-    actual_functions = parser.get_functions(textwrap.dedent(source_code))
+    actual_functions = parser.get_functions(textwrap.dedent(source_code), catch_exceptions=True)
     assert actual_functions == expected_functions
 
 

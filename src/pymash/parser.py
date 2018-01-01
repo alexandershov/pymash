@@ -62,20 +62,25 @@ class Function:
         return f'{self.__class__.__name__}(name={self.name!r}, text={self.text!r})'
 
 
-def get_functions(source_code: str):
+def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
     lines = source_code.splitlines(keepends=True)
     nodes = _get_ast_nodes(source_code, lines)
     result = []
     for cur_node, next_node in _iter_function_nodes_with_next(nodes):
-        text = _get_function_text(
-            source_lines=lines,
-            function_node=cur_node,
-            from_pos=_Position.from_ast_node(cur_node),
-            to_pos=_Position.from_ast_node(next_node))
-        function = Function(
-            name=cur_node.name,
-            text=text)
-        result.append(function)
+        try:
+            text = _get_function_text(
+                source_lines=lines,
+                function_node=cur_node,
+                from_pos=_Position.from_ast_node(cur_node),
+                to_pos=_Position.from_ast_node(next_node))
+        except UnknownFunctionText:
+            if not catch_exceptions:
+                raise
+        else:
+            function = Function(
+                name=cur_node.name,
+                text=text)
+            result.append(function)
     return result
 
 
