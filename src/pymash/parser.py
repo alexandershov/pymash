@@ -1,13 +1,14 @@
 import ast
+import copy
+import itertools
+import math
 import numbers
 import re
 import textwrap
 import typing as tp
 
 # TODO(aershov182): better logging a whole project
-import math
 
-import itertools
 
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
@@ -83,7 +84,7 @@ def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.Lis
 
 def _get_ast_nodes(source_code: str, lines: tp.List[str]):
     parsed = ast.parse(source_code)
-    statements = list(parsed.body)
+    statements = copy.copy(parsed.body)
     statements.append(_End(lines))
     return statements
 
