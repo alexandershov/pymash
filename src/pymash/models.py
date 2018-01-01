@@ -1,5 +1,3 @@
-import enum
-
 RATING_CHANGE_COEFF = 24
 
 
