@@ -80,6 +80,17 @@ def test_get_functions(source_code, expected_functions):
             ''',
             parser.TripleQuotesDocstringError,
     ),
+    (
+            '''\
+            def add(x, y):
+                """some
+                \\"""
+                multiline
+                docstring with inner triple quotes ending on newline."""
+                return x + y
+            ''',
+            parser.TripleQuotesDocstringError,
+    ),
 ])
 def test_get_functions_failure(source_code, expected_exception):
     with pytest.raises(expected_exception):

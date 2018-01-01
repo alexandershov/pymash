@@ -4,7 +4,8 @@ import re
 # TODO(aershov182): better logging a whole project
 
 
-_MULTILINE_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*)?"""\n', re.DOTALL)
+# TODO(aershov182): single quotes
+_MULTILINE_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 
 
 class BaseError(Exception):
