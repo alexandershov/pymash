@@ -4,7 +4,19 @@ import re
 # TODO(aershov182): better logging a whole project
 
 
-_MULTILINE_DOCSTRING_RE = re.compile(r'[ \t]*""".*?"""\n', re.DOTALL)
+_MULTILINE_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*)?"""\n', re.DOTALL)
+
+
+class BaseError(Exception):
+    pass
+
+
+class UnknownFunctionText(BaseError):
+    pass
+
+
+class TripleQuotesDocstringError(UnknownFunctionText):
+    pass
 
 
 class _End:
@@ -132,7 +144,14 @@ def _hacky_is_multiline_docstring(pos: _Position) -> bool:
 
 def _hacky_cut_multiline_docstring(text: str) -> str:
     # TODO(aershov182): check if match has `"""` and if it's True then raise an parse exception
-    return _MULTILINE_DOCSTRING_RE.subn('', text, 1)[0]
+    return _MULTILINE_DOCSTRING_RE.subn(_check_and_cut_multiline_docstring, text, 1)[0]
+
+
+def _check_and_cut_multiline_docstring(match) -> str:
+    text = match.group('docstring')
+    if '"""' in text:
+        raise TripleQuotesDocstringError(text)
+    return ''
 
 
 def _is_position_inside(pos: _Position, begin_pos: _Position, end_pos: _Position) -> bool:

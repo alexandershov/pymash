@@ -74,7 +74,7 @@ def test_get_functions(source_code, expected_functions):
             '''\
             def add(x, y):
                 """some
-                \"""multiline
+                \\"""multiline
                 docstring with inner triple quotes."""
                 return x + y
             ''',
@@ -82,5 +82,5 @@ def test_get_functions(source_code, expected_functions):
     ),
 ])
 def test_get_functions_failure(source_code, expected_exception):
-    with pytest.fail(expected_exception):
+    with pytest.raises(expected_exception):
         parser.get_functions(textwrap.dedent(source_code))
