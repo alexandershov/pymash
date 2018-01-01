@@ -35,9 +35,8 @@ class _Position:
     def from_ast_node(cls, node):
         return cls(node.lineno, node.col_offset)
 
-    def __init__(self, line, column):
-        # TODO: rename line to lineno
-        self.lineno = line
+    def __init__(self, lineno, column):
+        self.lineno = lineno
         self.column = column
 
 
