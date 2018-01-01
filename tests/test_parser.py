@@ -23,6 +23,16 @@ from pymash import parser
                 )
             ]
     ),
+    # single statement function
+    (
+        '''def add(x, y): return x + y''',
+        [
+            parser.Function(
+                name='add',
+                text='''def add(x, y): return x + y'''
+            )
+        ]
+    ),
     # docstring is cut
     (
             '''\

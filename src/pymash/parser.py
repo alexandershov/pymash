@@ -100,7 +100,6 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
             has_multiline_docstring = True
         after_docstring_pos = _Position.from_ast_node(after_docstring_node)
     result = []
-    # TODO: shouldn't it be `[...:to_pos.line - 1]`?
     for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno]):
         line_to_add = []
         lineno = from_pos.lineno + i
