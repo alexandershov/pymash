@@ -44,9 +44,14 @@ def _drop_database():
     connection.execute(f'DROP DATABASE {test_database}')
 
 
-async def test_get_game(test_client):
+async def test_show_game(test_client):
     text = await _get(test_client, '/game')
     assert text == 'hello!'
+
+
+async def test_show_leaders(test_client):
+    text = await _get(test_client, '/leaders')
+    assert text == '0'
 
 
 async def _get(test_client, path):
