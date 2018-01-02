@@ -141,10 +141,10 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
             continue
         clean_result.appendleft(line)
     clean_result[-1] = clean_result[-1].rstrip('\r\n')
-    result = ''.join(clean_result)
+    text = ''.join(clean_result)
     if has_multiline_docstring:
-        result = _hacky_cut_multiline_docstring(result)
-    return textwrap.dedent(result)
+        text = _hacky_cut_multiline_docstring(text)
+    return textwrap.dedent(text)
 
 
 def _get_docstring_node(function_node):
