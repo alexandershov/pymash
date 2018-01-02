@@ -9,40 +9,57 @@ from pymash import main
 from pymash import tables
 
 
+@pytest.fixture(scope='session')
+def _postgres_engine(request):
+    return _get_engine(request, 'postgres')
+
+
+@pytest.fixture(scope='session')
+def _pymash_engine(request):
+    return _get_engine(request)
+
+
+def _get_engine(request, database=None):
+    config = cfg.get_config()
+    if database is not None:
+        dsn = _replace_dsn_database(config.dsn, database)
+    else:
+        dsn = config.dsn
+    engine = sa.create_engine(dsn)
+    request.addfinalizer(engine.dispose)
+    return engine
+
+
+def _replace_dsn_database(dsn, new_database):
+    parsed = urlparse.urlparse(dsn)
+    replaced = parsed._replace(path=new_database)
+    return replaced.geturl()
+
+
 @pytest.fixture(scope='session', autouse=True)
-def _create_database(request):
-    cursor = _get_sync_main_cursor()
-    test_database = _get_db_name()
+def _create_database(request, _postgres_engine):
+    test_db_name = _get_test_db_name()
     # TODO(aershov182): use sqlalchemy for query generation
-    cursor.execute(f'DROP DATABASE IF EXISTS {test_database}')
-    cursor.execute(f'CREATE DATABASE {test_database}')
+    with _postgres_engine.connect().execution_options(
+            isolation_level="AUTOCOMMIT") as conn:
+        conn.execute(f'DROP DATABASE IF EXISTS {test_db_name}')
+        conn.execute(f'CREATE DATABASE {test_db_name}')
     create_tables()
     request.addfinalizer(_drop_database)
 
 
-# TODO(aershov182): is it possible to do async connection here?
-def _get_sync_main_cursor():
-    config = cfg.get_config()
-    parsed = urlparse.urlparse(config.dsn)
-    postgres_parsed = parsed._replace(path='postgres')
-    # TODO(aershov182): close connection
-    connection = psycopg2.connect(postgres_parsed.geturl())
-    cursor = connection.cursor()
-    cursor.execute('end;')
-    return cursor
-
-
-def _get_db_name():
-    config = cfg.get_config()
-    return urlparse.urlparse(config.dsn).path.lstrip('/')
-
-
 def _drop_database():
     # TODO(aershov182): remove duplication with _create_database
-    test_database = _get_db_name()
-    connection = _get_sync_main_cursor()
+    test_db_name = _get_test_db_name()
     # TODO(aershov182): use sqlalchemy for query generation
-    connection.execute(f'DROP DATABASE {test_database}')
+    with _postgres_engine.connect().execution_options(
+            isolation_level="AUTOCOMMIT") as conn:
+        conn.execute(f'DROP DATABASE {test_db_name}')
+
+
+def _get_test_db_name():
+    config = cfg.get_config()
+    return urlparse.urlparse(config.dsn).path.lstrip('/')
 
 
 async def test_show_game(test_client):
