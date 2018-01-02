@@ -1,4 +1,5 @@
 from aiohttp import web
+import aiopg
 
 from pymash import db
 from pymash import models

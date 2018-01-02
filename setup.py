@@ -8,6 +8,7 @@ setuptools.setup(
     install_requires=[
         'aiohttp==2.2.5',
         'aiodns==1.1.1',
+        'aiopg==0.13.1',
         'astroid==1.5.3',
         'cchardet==2.1.1',
         'psycopg2==2.7.3.1',
