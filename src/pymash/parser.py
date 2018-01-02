@@ -203,15 +203,15 @@ def _check_and_cut_multiline_docstring(match) -> str:
     return ''
 
 
-def _is_position_inside(pos: _Position, begin_pos: _Position, end_pos: _Position) -> bool:
-    assert end_pos.lineno >= begin_pos.lineno
-    if pos.lineno > end_pos.lineno or pos.lineno < begin_pos.lineno:
+def _is_position_inside(pos: _Position, begin: _Position, end: _Position) -> bool:
+    assert end.lineno >= begin.lineno
+    if pos.lineno > end.lineno or pos.lineno < begin.lineno:
         return False
-    if end_pos.lineno == begin_pos.lineno:
-        return begin_pos.column <= pos.column < end_pos.column
-    if pos.lineno == begin_pos.lineno:
-        return pos.column >= begin_pos.column
-    elif pos.lineno == end_pos.lineno:
-        return pos.column < end_pos.column
+    if end.lineno == begin.lineno:
+        return begin.column <= pos.column < end.column
+    if pos.lineno == begin.lineno:
+        return pos.column >= begin.column
+    elif pos.lineno == end.lineno:
+        return pos.column < end.column
     else:
         return True
