@@ -69,6 +69,7 @@ def create_tables():
     config = cfg.get_config()
     engine = sa.create_engine(config.dsn)
     tables.Base.metadata.create_all(engine)
+    # TODO(aershov182): maybe use context manager to dispose
     engine.dispose()
 
 
