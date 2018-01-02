@@ -52,7 +52,7 @@ async def test_get_game(test_client):
 async def _get(test_client, path):
     app = main.create_app()
     # TODO(aershov182): adding to on_startup should be more visible
-    # app.on_startup.append(_clean_tables)
+    app.on_startup.append(_clean_tables)
     client = await test_client(app)
     resp = await client.get(path)
     text = await resp.text()
@@ -67,7 +67,7 @@ def create_tables():
 
 
 async def _clean_tables(app):
-    with app['db_engine'].acquire() as conn:
-        for sa_model in tables.Base.__subclasses__:
+    async with app['db_engine'].acquire() as conn:
+        for sa_model in tables.Base.__subclasses__():
             table = sa_model.__table__
-            # conn.execute(table)
+            conn.execute(table.delete())
