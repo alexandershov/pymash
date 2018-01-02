@@ -129,9 +129,9 @@ def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Posi
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
             has_singleline_docstring = has_docstring and not has_multiline_docstring
-            if ((not has_singleline_docstring or not _is_position_inside(
+            if not (has_singleline_docstring and _is_position_inside(
                     char_pos, docstring_pos,
-                    after_docstring_pos))):
+                    after_docstring_pos)):
                 line_to_add.append(char)
         fn_lines.append(''.join(line_to_add))
     final_fn_lines = _exclude_meaningless_lines(fn_lines)
