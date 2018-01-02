@@ -2,6 +2,7 @@ import argparse
 import os
 
 from aiohttp import web
+from aiopg import sa
 
 from pymash import routes
 
@@ -11,10 +12,10 @@ class ConfigError(Exception):
 
 
 class DbConfig:
-    def __init__(self, user, password, name, host, port):
+    def __init__(self, user, password, database, host, port):
         self.user = user
         self.password = password
-        self.name = name
+        self.database = database
         self.host = host
         self.port = port
 
@@ -33,6 +34,8 @@ def main():
 def create_app() -> web.Application:
     app = web.Application()
     set_config(app)
+    app.on_startup.append(_create_engine)
+    app.on_cleanup.append(_close_engine)
     routes.setup_routes(app)
     return app
 
@@ -44,10 +47,12 @@ def set_config(app):
 
 
 def _read_db_config():
+    # TODO(aershov182): read just 1 value from environment: DSN:
+    # postgres://aershov182:password@localhost:5432/test_pymash
     return DbConfig(
         user=_get_env('PYMASH_DB_USER', str),
         password=_get_env('PYMASH_DB_PASSWORD', str),
-        name=_get_env('PYMASH_DB_NAME', str),
+        database=_get_env('PYMASH_DB_DATABASE', str),
         host=_get_env('PYMASH_DB_HOST', str),
         port=_get_env('PYMASH_DB_PORT', int),
     )
@@ -61,6 +66,23 @@ def _get_env(name, parser):
         return parser(str_value)
     except ValueError:
         raise ConfigError(f'{name} is not a valid {parser.__name__}')
+
+
+async def _create_engine(app):
+    db_config: DbConfig = app['config'].db
+    db_engine = await sa.create_engine(
+        user=db_config.user,
+        password=db_config.password,
+        database=db_config.database,
+        host=db_config.host,
+        port=db_config.port,
+    )
+    app['db_engine'] = db_engine
+
+
+async def _close_engine(app):
+    app['db_engine'].close()
+    await app['db_engine'].wait_closed()
 
 
 def _parse_args():
