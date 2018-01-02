@@ -1,4 +1,5 @@
 import ast
+import collections
 import copy
 import itertools
 import math
@@ -120,7 +121,7 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
         if _hacky_is_multiline_docstring(docstring_pos):
             has_multiline_docstring = True
         after_docstring_pos = _Position.from_ast_node(after_docstring_node)
-    result = []
+    result = collections.deque()
     for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno - 1]):
         line_to_add = []
         lineno = from_pos.lineno + i
@@ -130,17 +131,17 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
                     char_pos, docstring_pos,
                     after_docstring_pos))):
                 line_to_add.append(char)
-        result.append(''.join(line_to_add))
-    clean_result = []
+        result.appendleft(''.join(line_to_add))
+    clean_result = collections.deque()
     skipping = True
-    for line in reversed(result):
+    for line in result:
         if line.strip():
             skipping = False
         if skipping:
             continue
-        clean_result.append(line)
-    clean_result[0] = clean_result[0].rstrip('\r\n')
-    result = ''.join(reversed(clean_result))
+        clean_result.appendleft(line)
+    clean_result[-1] = clean_result[-1].rstrip('\r\n')
+    result = ''.join(clean_result)
     if has_multiline_docstring:
         result = _hacky_cut_multiline_docstring(result)
     return textwrap.dedent(result)
