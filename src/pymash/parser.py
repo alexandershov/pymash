@@ -84,9 +84,9 @@ def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.Lis
 
 def _get_ast_nodes(source_code: str, source_lines: tp.List[str]):
     parsed = ast.parse(source_code)
-    statements = copy.copy(parsed.body)
-    statements.append(_SentinelNode(source_lines))
-    return statements
+    nodes = copy.copy(parsed.body)
+    nodes.append(_SentinelNode(source_lines))
+    return nodes
 
 
 def _iter_function_nodes_with_next(nodes):
