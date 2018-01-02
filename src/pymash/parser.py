@@ -121,7 +121,7 @@ def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Posi
         after_docstring_pos = _Position.from_ast_node(after_docstring_node)
         if _hacky_is_multiline_docstring(docstring_pos):
             has_multiline_docstring = True
-    fn_lines = collections.deque()
+    fn_lines = []
     for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno - 1]):
         line_to_add = []
         lineno = from_pos.lineno + i
@@ -131,7 +131,7 @@ def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Posi
                     char_pos, docstring_pos,
                     after_docstring_pos))):
                 line_to_add.append(char)
-        fn_lines.appendleft(''.join(line_to_add))
+        fn_lines.append(''.join(line_to_add))
     final_fn_lines = _exclude_meaningless_lines(fn_lines)
     text = ''.join(final_fn_lines)
     if has_multiline_docstring:
@@ -154,21 +154,17 @@ def _get_docstring_node_or_none(fn_node):
 
 
 def _exclude_meaningless_lines(lines):
-    result = collections.deque()
-    skipping = True
-    for a_line in lines:
-        if a_line.strip():
-            skipping = False
-        if skipping:
-            continue
-        result.appendleft(a_line)
+    result = list(itertools.dropwhile(_is_empty_line, lines))
+    result = list(reversed(list(itertools.dropwhile(_is_empty_line, reversed(result)))))
     if result:
         result[-1] = result[-1].rstrip('\r\n')
     return result
 
 
 def _is_empty_line(s: str) -> bool:
-    return bool(s.strip())
+    if s.strip():
+        return False
+    return True
 
 
 def _hacky_is_multiline_docstring(pos: _Position) -> bool:
