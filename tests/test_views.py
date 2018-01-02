@@ -4,6 +4,7 @@ import pytest
 
 import urllib.parse as urlparse
 
+from pymash import cfg
 from pymash import main
 from pymash import tables
 
@@ -21,7 +22,7 @@ def _create_database(request):
 
 # TODO(aershov182): is it possible to do async connection here?
 def _get_sync_main_cursor():
-    config = main.get_config()
+    config = cfg.get_config()
     parsed = urlparse.urlparse(config.dsn)
     postgres_parsed = parsed._replace(path='postgres')
     # TODO(aershov182): close connection
@@ -32,7 +33,7 @@ def _get_sync_main_cursor():
 
 
 def _get_db_name():
-    config = main.get_config()
+    config = cfg.get_config()
     return urlparse.urlparse(config.dsn).path.lstrip('/')
 
 
@@ -65,8 +66,8 @@ async def _get(test_client, path):
 
 
 def create_tables():
-    dsn = main.get_config().dsn
-    engine = sa.create_engine(dsn)
+    config = cfg.get_config()
+    engine = sa.create_engine(config.dsn)
     tables.Base.metadata.create_all(engine)
     engine.dispose()
 

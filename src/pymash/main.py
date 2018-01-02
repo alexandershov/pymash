@@ -1,19 +1,10 @@
 import argparse
-import os
 
 from aiohttp import web
 from aiopg import sa
 
+from pymash import cfg
 from pymash import routes
-
-
-class ConfigError(Exception):
-    pass
-
-
-class Config:
-    def __init__(self, dsn: str):
-        self.dsn = dsn
 
 
 def main():
@@ -24,32 +15,11 @@ def main():
 
 def create_app() -> web.Application:
     app = web.Application()
-    set_config(app)
+    app['config'] = cfg.get_config()
     app.on_startup.append(_create_engine)
     app.on_cleanup.append(_close_engine)
     routes.setup_routes(app)
     return app
-
-
-# TODO(aershov182): move to different module
-def set_config(app):
-    app['config'] = get_config()
-
-
-def get_config():
-    return Config(
-        dsn=_get_env('PYMASH_DSN', str),
-    )
-
-
-def _get_env(name, parser):
-    if name not in os.environ:
-        raise ConfigError(f'environment variable {name} is not defined!')
-    str_value = os.environ[name]
-    try:
-        return parser(str_value)
-    except ValueError:
-        raise ConfigError(f'{name} is not a valid {parser.__name__}')
 
 
 async def _create_engine(app):
