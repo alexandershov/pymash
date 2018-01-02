@@ -111,9 +111,50 @@ def _iter_by_pairs(iterable: tp.Iterable) -> tp.Iterable:
 
 
 def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Position) -> str:
+    docstring_info = _get_docstring_info(fn_node)
+    fn_lines = []
+    for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno - 1]):
+        line_to_add = []
+        lineno = from_pos.lineno + i
+        for col_offset, char in enumerate(line):
+            char_pos = _Position(lineno, col_offset)
+            if not docstring_info.contains(char_pos):
+                line_to_add.append(char)
+        fn_lines.append(''.join(line_to_add))
+    final_fn_lines = _exclude_meaningless_lines(fn_lines)
+    text = docstring_info.cut_from(''.join(final_fn_lines))
+    return textwrap.dedent(text)
+
+
+class _DocstringInfo:
+    def __init__(self, exists, is_multi_line, begin: _Position, end: _Position) -> None:
+        if exists:
+            assert begin is not None
+            assert end is not None
+        self._exists = exists
+        self._is_multi_line = is_multi_line
+        self._begin = begin
+        self._end = end
+
+    def contains(self, pos: _Position) -> bool:
+        # multi line docstrings are handled separately via _hacky_cut_multiline_docstring
+        # because of the python bug
+        if self._exists and not self._is_multi_line:
+            return _is_position_inside(pos, self._begin, self._end)
+        return False
+
+    def cut_from(self, text: str) -> str:
+        if self._is_multi_line:
+            return _hacky_cut_multiline_docstring(text)
+        return text
+
+
+def _get_docstring_info(fn_node) -> _DocstringInfo:
     docstring_node = _get_docstring_node_or_none(fn_node)
+    docstring_pos = None
+    after_docstring_pos = None
     has_docstring = (docstring_node is not None)
-    has_multiline_docstring = False
+    has_multi_line_docstring = False
     if has_docstring and len(fn_node.body) == 1:
         raise EmptyFunctionError
     if has_docstring:
@@ -121,24 +162,13 @@ def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Posi
         docstring_pos = _Position.from_ast_node(docstring_node)
         after_docstring_pos = _Position.from_ast_node(after_docstring_node)
         if _hacky_is_multiline_docstring(docstring_pos):
-            has_multiline_docstring = True
-    fn_lines = []
-    for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno - 1]):
-        line_to_add = []
-        lineno = from_pos.lineno + i
-        for col_offset, char in enumerate(line):
-            char_pos = _Position(lineno, col_offset)
-            has_singleline_docstring = has_docstring and not has_multiline_docstring
-            if not (has_singleline_docstring and _is_position_inside(
-                    char_pos, docstring_pos,
-                    after_docstring_pos)):
-                line_to_add.append(char)
-        fn_lines.append(''.join(line_to_add))
-    final_fn_lines = _exclude_meaningless_lines(fn_lines)
-    text = ''.join(final_fn_lines)
-    if has_multiline_docstring:
-        text = _hacky_cut_multiline_docstring(text)
-    return textwrap.dedent(text)
+            has_multi_line_docstring = True
+    return _DocstringInfo(
+        exists=has_docstring,
+        is_multi_line=has_multi_line_docstring,
+        begin=docstring_pos,
+        end=after_docstring_pos,
+    )
 
 
 def _get_docstring_node_or_none(fn_node):
