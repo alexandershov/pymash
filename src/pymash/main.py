@@ -55,7 +55,7 @@ def _read_db_config():
 
 def _get_env(name, parser):
     if name not in os.environ:
-        raise ConfigError(f'{name} is not found in the environment!')
+        raise ConfigError(f'environment variable {name} is not defined!')
     str_value = os.environ[name]
     try:
         return parser(str_value)
