@@ -89,7 +89,7 @@ def _get_ast_nodes(source_code: str, source_lines: tp.List[str]):
     return nodes
 
 
-def _iter_function_nodes_with_next(nodes):
+def _iter_function_nodes_with_next(nodes: tp.Iterable) -> tp.Iterable[tp.Tuple]:
     result = []
     for cur_node, next_node in _iter_by_pairs(nodes):
         if isinstance(cur_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
@@ -99,7 +99,7 @@ def _iter_function_nodes_with_next(nodes):
     return result
 
 
-def _iter_by_pairs(iterable):
+def _iter_by_pairs(iterable: tp.Iterable) -> tp.Iterable:
     missing = object()
     prev = missing
     for cur in iterable:
