@@ -96,7 +96,8 @@ def _iter_function_nodes_with_next(nodes: tp.Iterable) -> tp.Iterable[tp.Tuple]:
         if isinstance(cur_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             yield cur_node, next_node
         elif isinstance(cur_node, ast.ClassDef):
-            yield from _iter_function_nodes_with_next(itertools.chain(cur_node.body, [next_node]))
+            class_nodes = itertools.chain(cur_node.body, [next_node])
+            yield from _iter_function_nodes_with_next(class_nodes)
     return result
 
 
