@@ -126,12 +126,11 @@ def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Posi
 
 
 class _DocstringInfo:
-    def __init__(self, exists, is_multi_line, begin: _Position, end: _Position) -> None:
+    def __init__(self, exists, begin: _Position, end: _Position) -> None:
         if exists:
             assert begin is not None
             assert end is not None
         self._exists = exists
-        self._is_multi_line = is_multi_line
         self._begin = begin
         self._end = end
 
@@ -147,26 +146,29 @@ class _DocstringInfo:
             return _hacky_cut_multiline_docstring(text)
         return text
 
+    @property
+    def _is_multi_line(self):
+        # ast has a bug: multiline strings have wrong start:
+        # (column == -1, line number is just wrong)
+        return self._exists and self._begin.column == -1
+
 
 def _get_docstring_info(fn_node) -> _DocstringInfo:
-    docstring_node = _get_docstring_node_or_none(fn_node)
-    docstring_pos = None
-    after_docstring_pos = None
-    has_docstring = (docstring_node is not None)
-    has_multi_line_docstring = False
-    if has_docstring and len(fn_node.body) == 1:
+    node = _get_docstring_node_or_none(fn_node)
+    begin = None
+    end = None
+    exists = (node is not None)
+    is_multi_line = False
+    if exists and len(fn_node.body) == 1:
         raise EmptyFunctionError
-    if has_docstring:
-        after_docstring_node = fn_node.body[1]
-        docstring_pos = _Position.from_ast_node(docstring_node)
-        after_docstring_pos = _Position.from_ast_node(after_docstring_node)
-        if _hacky_is_multiline_docstring(docstring_pos):
-            has_multi_line_docstring = True
+    if exists:
+        after_node = fn_node.body[1]
+        begin = _Position.from_ast_node(node)
+        end = _Position.from_ast_node(after_node)
     return _DocstringInfo(
-        exists=has_docstring,
-        is_multi_line=has_multi_line_docstring,
-        begin=docstring_pos,
-        end=after_docstring_pos,
+        exists=exists,
+        begin=begin,
+        end=end,
     )
 
 
@@ -196,11 +198,6 @@ def _is_empty_line(s: str) -> bool:
     if s.strip():
         return False
     return True
-
-
-def _hacky_is_multiline_docstring(pos: _Position) -> bool:
-    # ast has a bug: multiline strings have wrong start (column == -1, line number is just wrong)
-    return pos.column == -1
 
 
 def _hacky_cut_multiline_docstring(text: str) -> str:
