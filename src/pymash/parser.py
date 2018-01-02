@@ -128,7 +128,8 @@ def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Posi
         lineno = from_pos.lineno + i
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
-            if ((not has_docstring or has_multiline_docstring or not _is_position_inside(
+            has_singleline_docstring = has_docstring and not has_multiline_docstring
+            if ((not has_singleline_docstring or not _is_position_inside(
                     char_pos, docstring_pos,
                     after_docstring_pos))):
                 line_to_add.append(char)
