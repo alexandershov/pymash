@@ -158,12 +158,11 @@ def _get_docstring_info(fn_node) -> _DocstringInfo:
     begin = None
     end = None
     exists = (node is not None)
-    is_multi_line = False
     if exists and len(fn_node.body) == 1:
         raise EmptyFunctionError
     if exists:
-        after_node = fn_node.body[1]
         begin = _Position.from_ast_node(node)
+        after_node = fn_node.body[1]
         end = _Position.from_ast_node(after_node)
     return _DocstringInfo(
         exists=exists,
