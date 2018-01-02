@@ -113,9 +113,9 @@ def _iter_by_pairs(iterable: tp.Iterable) -> tp.Iterable:
 def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Position) -> str:
     docstring_info = _get_docstring_info(fn_node)
     fn_lines = []
-    for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno - 1]):
+    relevant_lines = source_lines[from_pos.lineno - 1:to_pos.lineno - 1]
+    for lineno, line in enumerate(relevant_lines, start=from_pos.lineno):
         line_to_add = []
-        lineno = from_pos.lineno + i
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
             if not docstring_info.contains(char_pos):
