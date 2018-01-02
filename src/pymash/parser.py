@@ -72,7 +72,7 @@ def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.Lis
         try:
             text = _get_function_text(
                 source_lines=source_lines,
-                function_node=fn_node,
+                fn_node=fn_node,
                 from_pos=_Position.from_ast_node(fn_node),
                 to_pos=_Position.from_ast_node(next_node))
         except UnknownFunctionText:
@@ -109,19 +109,19 @@ def _iter_by_pairs(iterable: tp.Iterable) -> tp.Iterable:
         prev = cur
 
 
-def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos: _Position) -> str:
-    docstring_node = _get_docstring_node(function_node)
+def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Position) -> str:
+    docstring_node = _get_docstring_node_or_none(fn_node)
     has_docstring = (docstring_node is not None)
     has_multiline_docstring = False
-    if has_docstring and len(function_node.body) == 1:
+    if has_docstring and len(fn_node.body) == 1:
         raise EmptyFunctionError
     if has_docstring:
-        after_docstring_node = function_node.body[1]
+        after_docstring_node = fn_node.body[1]
         docstring_pos = _Position.from_ast_node(docstring_node)
+        after_docstring_pos = _Position.from_ast_node(after_docstring_node)
         if _hacky_is_multiline_docstring(docstring_pos):
             has_multiline_docstring = True
-        after_docstring_pos = _Position.from_ast_node(after_docstring_node)
-    result = collections.deque()
+    fn_lines = collections.deque()
     for i, line in enumerate(source_lines[from_pos.lineno - 1:to_pos.lineno - 1]):
         line_to_add = []
         lineno = from_pos.lineno + i
@@ -131,27 +131,19 @@ def _get_function_text(source_lines, function_node, from_pos: _Position, to_pos:
                     char_pos, docstring_pos,
                     after_docstring_pos))):
                 line_to_add.append(char)
-        result.appendleft(''.join(line_to_add))
-    clean_result = collections.deque()
-    skipping = True
-    for line in result:
-        if line.strip():
-            skipping = False
-        if skipping:
-            continue
-        clean_result.appendleft(line)
-    clean_result[-1] = clean_result[-1].rstrip('\r\n')
-    text = ''.join(clean_result)
+        fn_lines.appendleft(''.join(line_to_add))
+    final_fn_lines = _exclude_meaningless_lines(fn_lines)
+    text = ''.join(final_fn_lines)
     if has_multiline_docstring:
         text = _hacky_cut_multiline_docstring(text)
     return textwrap.dedent(text)
 
 
-def _get_docstring_node(function_node):
-    has_first_expression = function_node.body and isinstance(function_node.body[0], ast.Expr)
+def _get_docstring_node_or_none(fn_node):
+    has_first_expression = fn_node.body and isinstance(fn_node.body[0], ast.Expr)
     if not has_first_expression:
-        return
-    node = function_node.body[0]
+        return None
+    node = fn_node.body[0]
     node_value = node.value
     if isinstance(node_value, ast.Str):
         return node
@@ -159,6 +151,24 @@ def _get_docstring_node(function_node):
         return node
     else:
         return None
+
+
+def _exclude_meaningless_lines(lines):
+    result = collections.deque()
+    skipping = True
+    for a_line in lines:
+        if a_line.strip():
+            skipping = False
+        if skipping:
+            continue
+        result.appendleft(a_line)
+    if result:
+        result[-1] = result[-1].rstrip('\r\n')
+    return result
+
+
+def _is_empty_line(s: str) -> bool:
+    return bool(s.strip())
 
 
 def _hacky_is_multiline_docstring(pos: _Position) -> bool:
