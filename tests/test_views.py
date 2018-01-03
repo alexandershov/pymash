@@ -1,3 +1,4 @@
+import json
 import random
 import string
 import urllib.parse as urlparse
@@ -25,6 +26,23 @@ async def test_show_leaders(test_client):
     flask_index = text.index('1901')
     django_index = text.index('1801')
     assert flask_index < django_index
+
+
+async def test_post_game(test_client):
+    app = _create_app()
+    headers = {
+        'X-Game-Hash': 'some_game_hash'
+    }
+    data = {
+        'white_id': 'some_white_id',
+        'black_id': 'some_black_id',
+        'white_score': 1,
+        'black_score': 0,
+    }
+    text = await _post(app, test_client, '/game/some_game_id',
+                       headers=headers, data=data)
+    # TODO(aershov182): change to redirect
+    assert json.loads(text) == {}
 
 
 async def _add_repos_for_test_show_leaders(app):
@@ -113,6 +131,16 @@ def _get_test_db_name():
 async def _get(app, test_client, path) -> str:
     client = await test_client(app)
     resp = await client.get(path)
+    return await _get_checked_response_text(resp)
+
+
+async def _post(app, test_client, path, headers=None, data=None) -> str:
+    client = await test_client(app)
+    resp = await client.post(path, headers=headers, data=data)
+    return await _get_checked_response_text(resp)
+
+
+async def _get_checked_response_text(resp):
     resp.raise_for_status()
     text = await resp.text()
     return text
