@@ -7,6 +7,7 @@ import pytest
 import sqlalchemy as sa
 
 from pymash import cfg
+from pymash import events
 from pymash import main
 from pymash import tables
 from pymash.tables import Repos
@@ -28,7 +29,14 @@ async def test_show_leaders(test_client):
     assert flask_index < django_index
 
 
-async def test_post_game(test_client):
+async def test_post_game(test_client, monkeypatch):
+    num_calls = 0
+
+    async def post_game_finished_event(game_id, white_id, black_id, white_score, black_score):
+        nonlocal num_calls
+        num_calls += 1
+
+    monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event)
     app = _create_app()
     headers = {
         'X-Game-Hash': 'some_game_hash'
@@ -43,6 +51,7 @@ async def test_post_game(test_client):
                        headers=headers, data=data)
     # TODO(aershov182): change to redirect
     assert json.loads(text) == {}
+    assert num_calls == 1
 
 
 async def _add_repos_for_test_show_leaders(app):
