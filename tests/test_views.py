@@ -120,13 +120,13 @@ def create_tables():
     config = cfg.get_config()
     engine = sa.create_engine(config.dsn)
     # TODO(aershov182): use pymash_engine fixture
-    tables.Base.metadata.create_all(engine)
+    tables._Base.metadata.create_all(engine)
     engine.dispose()
 
 
 async def _clean_tables(app):
     async with app['db_engine'].acquire() as conn:
-        for sa_model in tables.Base.__subclasses__():
+        for sa_model in tables._Base.__subclasses__():
             table = sa_model.__table__
             await conn.execute(table.delete())
 
@@ -134,7 +134,7 @@ async def _clean_tables(app):
 async def _add_some_repo_with_rating(app, rating):
     name = 'some_repo_name_' + str(random.randint(1, 1000))
     url = f'https://github.com/org/{name}'
-    sa_repos = tables.sa_repos
+    sa_repos = tables.Repos
     async with app['db_engine'].acquire() as conn:
         await conn.execute(sa_repos.insert().values(
             name=name,

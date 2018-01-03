@@ -1,10 +1,10 @@
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
 
-Base = declarative.declarative_base()
+_Base = declarative.declarative_base()
 
 
-class Repo(Base):
+class _RepoAlchemyModel(_Base):
     __tablename__ = 'repos'
     id = sa.Column(sa.Integer, sa.Sequence('repos_id_seq'), primary_key=True, nullable=False)
     url = sa.Column(sa.Text, nullable=False)
@@ -12,5 +12,4 @@ class Repo(Base):
     rating = sa.Column(sa.Float, nullable=False)
 
 
-# TODO(aershov182): get rid of sa_ prefix?
-sa_repos = Repo.__table__
+Repos = _RepoAlchemyModel.__table__
