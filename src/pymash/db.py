@@ -13,9 +13,8 @@ async def find_repos_order_by_rating(engine) -> tp.List[models.Repo]:
     return repos
 
 
-async def find_matchup(connection) -> models.Matchup:
-    async with connection.cursor() as cursor:
-        pass
+async def find_matchup():
+    return None
 
 
 def _make_repo_from_db_row(row: dict) -> models.Repo:
