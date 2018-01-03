@@ -10,12 +10,14 @@ from pymash import tables
 
 
 async def test_show_game(test_client):
-    text = await _get(test_client, '/game')
+    app = _create_app()
+    text = await _get(app, test_client, '/game')
     assert text == 'hello!'
 
 
 async def test_show_leaders(test_client):
-    text = await _get(test_client, '/leaders')
+    app = _create_app()
+    text = await _get(app, test_client, '/leaders')
     assert 'table' in text
 
 
@@ -89,8 +91,7 @@ def _get_test_db_name():
     return urlparse.urlparse(config.dsn).path.lstrip('/')
 
 
-async def _get(test_client, path):
-    app = _create_app()
+async def _get(app, test_client, path):
     client = await test_client(app)
     resp = await client.get(path)
     text = await resp.text()
