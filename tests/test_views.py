@@ -9,7 +9,7 @@ from pymash import tables
 
 
 @pytest.fixture(scope='session')
-def _postgres_engine(request):
+def _system_engine(request):
     return _get_engine(request, 'postgres')
 
 
@@ -36,22 +36,22 @@ def _replace_dsn_database(dsn, new_database):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def _create_database(request, _postgres_engine):
+def _create_database(request, _system_engine):
     test_db_name = _get_test_db_name()
     # TODO(aershov182): use sqlalchemy for query generation
-    with _postgres_engine.connect().execution_options(
+    with _system_engine.connect().execution_options(
             isolation_level="AUTOCOMMIT") as conn:
         conn.execute(f'DROP DATABASE IF EXISTS {test_db_name}')
         conn.execute(f'CREATE DATABASE {test_db_name}')
     create_tables()
-    request.addfinalizer(lambda: _drop_database(_postgres_engine))
+    request.addfinalizer(lambda: _drop_database(_system_engine))
 
 
-def _drop_database(postgres_engine):
+def _drop_database(system_engine):
     # TODO(aershov182): remove duplication with _create_database
     test_db_name = _get_test_db_name()
     # TODO(aershov182): use sqlalchemy for query generation
-    with postgres_engine.connect().execution_options(
+    with system_engine.connect().execution_options(
             isolation_level="AUTOCOMMIT") as conn:
         conn.execute(f'DROP DATABASE {test_db_name}')
 
