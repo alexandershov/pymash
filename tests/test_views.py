@@ -77,7 +77,31 @@ async def test_show_leaders(test_client):
             },
             400,
             0,
-    )
+    ),
+    # bad white_id
+    (
+            {
+                'white_id': 'bad_white_id',
+                'black_id': 1005,
+                'white_score': 1,
+                'black_score': 0,
+                'hash': 'some_game_hash',
+            },
+            400,
+            0,
+    ),
+    # bad black_id
+    (
+            {
+                'white_id': 905,
+                'black_id': 'bad_black_id',
+                'white_score': 1,
+                'black_score': 0,
+                'hash': 'some_game_hash',
+            },
+            400,
+            0,
+    ),
 ])
 async def test_post_game(data, expected_status, expected_num_calls, test_client, monkeypatch):
     num_calls = 0
