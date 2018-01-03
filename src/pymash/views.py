@@ -13,6 +13,7 @@ async def show_leaders(request: web.Request) -> dict:
     }
 
 
+# TODO(aershov182): use some library for dictionary validation & parsing
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
     if set(data) != {'white_id', 'black_id', 'white_score', 'black_score', 'hash'}:
@@ -36,6 +37,7 @@ async def post_game(request: web.Request) -> web.Response:
         black_id=black_id,
         white_score=white_score,
         black_score=black_score)
+    # TODO(aershov182): return redirect
     return web.Response(text='{}')
 
 
