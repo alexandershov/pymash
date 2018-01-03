@@ -136,24 +136,24 @@ async def _add_repos_for_test_show_leaders(app):
 
 
 @pytest.fixture(scope='session')
-def system_engine(request):
-    return _get_engine(request, 'postgres')
+def system_engine():
+    yield from _get_engine('postgres')
 
 
 @pytest.fixture(scope='session')
-def pymash_engine(request):
-    return _get_engine(request)
+def pymash_engine():
+    yield from _get_engine()
 
 
-def _get_engine(request, database=None):
+def _get_engine(database=None):
     config = cfg.get_config()
     if database is not None:
         dsn = _replace_database_in_dsn(config.dsn, database)
     else:
         dsn = config.dsn
     engine = sa.create_engine(dsn)
-    request.addfinalizer(engine.dispose)
-    return engine
+    yield engine
+    engine.dispose()
 
 
 def _replace_database_in_dsn(dsn, new_database):
