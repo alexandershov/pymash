@@ -5,6 +5,7 @@ import urllib.parse as urlparse
 
 import pytest
 import sqlalchemy as sa
+from aiohttp import web
 
 from pymash import cfg
 from pymash import events
@@ -15,7 +16,7 @@ from pymash.tables import Repos
 
 async def test_show_game(test_client):
     app = _create_app()
-    text = await _get(app, test_client, '/game')
+    text = await _get_text(app, test_client, '/game')
     assert text == 'hello!'
 
 
@@ -23,13 +24,26 @@ async def test_show_leaders(test_client):
     app = _create_app()
     app.on_startup.append(_add_repos_for_test_show_leaders)
     # TODO(aershov182): change assertions when we'll have a real markup
-    text = await _get(app, test_client, '/leaders')
+    text = await _get_text(app, test_client, '/leaders')
     flask_index = text.index('1901')
     django_index = text.index('1801')
     assert flask_index < django_index
 
 
-async def test_post_game(test_client, monkeypatch):
+@pytest.mark.parametrize('data, expected_status, expected_num_calls', [
+    (
+            {
+                'white_id': 905,
+                'black_id': 1005,
+                'white_score': 1,
+                'black_score': 0,
+                'hash': 'some_game_hash',
+            },
+            200,
+            1,
+    )
+])
+async def test_post_game(data, expected_status, expected_num_calls, test_client, monkeypatch):
     num_calls = 0
 
     async def post_game_finished_event(game_id, white_id, black_id, white_score, black_score):
@@ -38,17 +52,10 @@ async def test_post_game(test_client, monkeypatch):
 
     monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event)
     app = _create_app()
-    data = {
-        'white_id': 905,
-        'black_id': 1005,
-        'white_score': 1,
-        'black_score': 0,
-        'hash': 'some_game_hash',
-    }
-    text = await _post(app, test_client, '/game/some_game_id', data=data)
-    # TODO(aershov182): change to redirect
-    assert json.loads(text) == {}
-    assert num_calls == 1
+    response = await _post(app, test_client, '/game/some_game_id', data=data)
+    assert response.status == expected_status
+    # TODO(aershov182): check response text
+    assert num_calls == expected_num_calls
 
 
 async def _add_repos_for_test_show_leaders(app):
@@ -134,16 +141,20 @@ def _get_test_db_name():
     return urlparse.urlparse(config.dsn).path.lstrip('/')
 
 
-async def _get(app, test_client, path) -> str:
+async def _get_text(app, test_client, path) -> str:
     client = await test_client(app)
     resp = await client.get(path)
     return await _get_checked_response_text(resp)
 
 
-async def _post(app, test_client, path, data=None) -> str:
-    client = await test_client(app)
-    resp = await client.post(path, data=data)
+async def _post_text(app, test_client, path, data=None) -> str:
+    resp = await _post(app, test_client, path, data=data)
     return await _get_checked_response_text(resp)
+
+
+async def _post(app, test_client, path, data=None) -> web.Response:
+    client = await test_client(app)
+    return await client.post(path, data=data)
 
 
 async def _get_checked_response_text(resp):
