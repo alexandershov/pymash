@@ -65,8 +65,16 @@ def _create_database(request, system_engine):
     _run_system_commands(
         system_engine,
         _drop_db_stmt(test_db_name), _create_db_stmt(test_db_name))
-    create_tables()
+    _create_tables()
     request.addfinalizer(lambda: _drop_database(test_db_name, system_engine))
+
+
+def _create_tables():
+    config = cfg.get_config()
+    engine = sa.create_engine(config.dsn)
+    # TODO(aershov182): use pymash_engine fixture
+    tables.Base.metadata.create_all(engine)
+    engine.dispose()
 
 
 def _drop_database(db_name, system_engine):
@@ -114,14 +122,6 @@ def _create_app():
     app = main.create_app()
     app.on_startup.append(_clean_tables)
     return app
-
-
-def create_tables():
-    config = cfg.get_config()
-    engine = sa.create_engine(config.dsn)
-    # TODO(aershov182): use pymash_engine fixture
-    tables.Base.metadata.create_all(engine)
-    engine.dispose()
 
 
 async def _clean_tables(app):
