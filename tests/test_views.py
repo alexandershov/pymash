@@ -169,7 +169,10 @@ def _create_database(request, system_engine):
         system_engine,
         _drop_db_stmt(test_db_name), _create_db_stmt(test_db_name))
     _create_tables()
-    request.addfinalizer(lambda: _drop_database(test_db_name, system_engine))
+    yield
+    _run_system_commands(
+        system_engine,
+        _drop_db_stmt(test_db_name))
 
 
 def _create_tables():
@@ -178,12 +181,6 @@ def _create_tables():
     # TODO(aershov182): use pymash_engine fixture
     tables.Base.metadata.create_all(engine)
     engine.dispose()
-
-
-def _drop_database(db_name, system_engine):
-    _run_system_commands(
-        system_engine,
-        _drop_db_stmt(db_name))
 
 
 def _run_system_commands(system_engine, *commands):
