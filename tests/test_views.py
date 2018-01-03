@@ -141,8 +141,8 @@ async def _post(app, test_client, path, headers=None, data=None) -> str:
 
 
 async def _get_checked_response_text(resp):
-    resp.raise_for_status()
     text = await resp.text()
+    resp.raise_for_status()
     return text
 
 

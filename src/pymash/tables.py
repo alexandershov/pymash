@@ -4,6 +4,7 @@ from sqlalchemy.ext import declarative
 Base = declarative.declarative_base()
 
 
+# TODO(aershov182): maybe use strings instead of integers for primary keys?
 class _RepoAlchemyModel(Base):
     __tablename__ = 'repos'
     id = sa.Column(sa.Integer, sa.Sequence('repos_id_seq'), primary_key=True, nullable=False)
