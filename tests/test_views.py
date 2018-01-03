@@ -1,3 +1,4 @@
+import random
 import string
 import urllib.parse as urlparse
 
@@ -27,18 +28,8 @@ async def test_show_leaders(test_client):
 
 
 async def _add_repos_for_test_show_leaders(app):
-    await _add_repo(
-        app=app,
-        repo_id=1,
-        name='django',
-        url='https://github.com/django/django',
-        rating=1801)
-    await _add_repo(
-        app=app,
-        repo_id=2,
-        name='flask',
-        url='https://github.com/pallete/flask',
-        rating=1901)
+    await _add_some_repo_with_rating(app, 1801)
+    await _add_some_repo_with_rating(app, 1901)
 
 
 @pytest.fixture(scope='session')
@@ -139,11 +130,12 @@ async def _clean_tables(app):
             await conn.execute(table.delete())
 
 
-async def _add_repo(app, repo_id, name, url, rating):
+async def _add_some_repo_with_rating(app, rating):
+    name = 'some_repo_name_' + str(random.randint(1, 1000))
+    url = f'https://github.com/org/{name}'
     sa_repos = tables.sa_repos
     async with app['db_engine'].acquire() as conn:
         await conn.execute(sa_repos.insert().values(
-            id=repo_id,
             name=name,
             url=url,
             rating=rating))
