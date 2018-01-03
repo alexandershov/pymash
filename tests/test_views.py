@@ -6,6 +6,7 @@ import sqlalchemy as sa
 
 from pymash import cfg
 from pymash import main
+# TODO(aershov182): maybe import separate tables? it'll read better
 from pymash import tables
 
 
@@ -17,8 +18,27 @@ async def test_show_game(test_client):
 
 async def test_show_leaders(test_client):
     app = _create_app()
+    app.on_startup.append(_add_repos_for_test_show_leaders)
+    # TODO(aershov182): change assertions when we'll have a real markup
     text = await _get(app, test_client, '/leaders')
-    assert 'table' in text
+    flask_index = text.index('1901')
+    django_index = text.index('1801')
+    assert flask_index < django_index
+
+
+async def _add_repos_for_test_show_leaders(app):
+    await _add_repo(
+        app=app,
+        repo_id=1,
+        name='django',
+        url='https://github.com/django/django',
+        rating=1801)
+    await _add_repo(
+        app=app,
+        repo_id=2,
+        name='flask',
+        url='https://github.com/pallete/flask',
+        rating=1901)
 
 
 @pytest.fixture(scope='session')
@@ -91,7 +111,7 @@ def _get_test_db_name():
     return urlparse.urlparse(config.dsn).path.lstrip('/')
 
 
-async def _get(app, test_client, path):
+async def _get(app, test_client, path) -> str:
     client = await test_client(app)
     resp = await client.get(path)
     text = await resp.text()
@@ -116,4 +136,14 @@ async def _clean_tables(app):
     async with app['db_engine'].acquire() as conn:
         for sa_model in tables.Base.__subclasses__():
             table = sa_model.__table__
-            conn.execute(table.delete())
+            await conn.execute(table.delete())
+
+
+async def _add_repo(app, repo_id, name, url, rating):
+    sa_repos = tables.sa_repos
+    async with app['db_engine'].acquire() as conn:
+        await conn.execute(sa_repos.insert().values(
+            id=repo_id,
+            name=name,
+            url=url,
+            rating=rating))
