@@ -2,6 +2,8 @@ import argparse
 
 from aiohttp import web
 from aiopg import sa
+import aiohttp_jinja2
+import jinja2
 
 from pymash import cfg
 from pymash import routes
@@ -19,6 +21,9 @@ def create_app() -> web.Application:
     app.on_startup.append(_create_engine)
     app.on_cleanup.append(_close_engine)
     routes.setup_routes(app)
+    aiohttp_jinja2.setup(
+        app, loader=jinja2.PackageLoader('pymash', 'templates')
+    )
     return app
 
 

@@ -16,7 +16,7 @@ async def test_show_game(test_client):
 
 async def test_show_leaders(test_client):
     text = await _get(test_client, '/leaders')
-    assert text == '0'
+    assert 'table' in text
 
 
 @pytest.fixture(scope='session')

@@ -1,0 +1,14 @@
+{% extends 'base.html' %}
+
+{% block body %}
+    <table>
+        {% for a_repo in repos %}
+            <tr>
+                <td><a href="{{ a_repo.url }}">{{ a_repo.name }}</a></td>
+                <td>{{ a_repo.score }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
+
+
