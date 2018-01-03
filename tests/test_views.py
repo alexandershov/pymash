@@ -163,24 +163,21 @@ def _replace_database_in_dsn(dsn, new_database):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def _create_database(request, system_engine):
+def _create_database(system_engine, pymash_engine):
     test_db_name = _get_test_db_name()
     _run_system_commands(
         system_engine,
         _drop_db_stmt(test_db_name), _create_db_stmt(test_db_name))
-    _create_tables()
+    _create_tables(pymash_engine)
     yield
+    pymash_engine.dispose()
     _run_system_commands(
         system_engine,
         _drop_db_stmt(test_db_name))
 
 
-def _create_tables():
-    config = cfg.get_config()
-    engine = sa.create_engine(config.dsn)
-    # TODO(aershov182): use pymash_engine fixture
-    tables.Base.metadata.create_all(engine)
-    engine.dispose()
+def _create_tables(pymash_engine):
+    tables.Base.metadata.create_all(pymash_engine)
 
 
 def _run_system_commands(system_engine, *commands):
