@@ -122,6 +122,7 @@ async def test_post_game(data, expected_status, expected_num_calls, test_client,
         num_calls += 1
 
     monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event)
+    # TODO(aershov182): don't clean tables for this test
     app = _create_app()
     response = await _post(app, test_client, '/game/some_game_id', data=data)
     assert response.status == expected_status
