@@ -43,16 +43,13 @@ def _create_database(request, _system_engine):
         _system_engine,
         _drop_db_stmt(test_db_name), _create_db_stmt(test_db_name))
     create_tables()
-    request.addfinalizer(lambda: _drop_database(_system_engine))
+    request.addfinalizer(lambda: _drop_database(test_db_name, _system_engine))
 
 
-def _drop_database(system_engine):
-    # TODO(aershov182): remove duplication with _create_database
-    test_db_name = _get_test_db_name()
-    # TODO(aershov182): use sqlalchemy for query generation
-    with system_engine.connect().execution_options(
-            isolation_level="AUTOCOMMIT") as conn:
-        conn.execute(f'DROP DATABASE {test_db_name}')
+def _drop_database(db_name, system_engine):
+    _run_system_commands(
+        system_engine,
+        _drop_db_stmt(db_name))
 
 
 def _run_system_commands(system_engine, *commands):
