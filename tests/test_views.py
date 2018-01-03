@@ -1,4 +1,3 @@
-import json
 import random
 import string
 import urllib.parse as urlparse
