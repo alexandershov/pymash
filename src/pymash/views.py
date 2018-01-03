@@ -1,5 +1,3 @@
-import decimal
-
 import aiohttp_jinja2
 from aiohttp import web
 
@@ -17,6 +15,8 @@ async def show_leaders(request: web.Request) -> dict:
 
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
+    if set(data) != {'white_id', 'black_id', 'white_score', 'black_score', 'hash'}:
+        return web.HTTPBadRequest()
     game_id = request.match_info['game_id']
     try:
         white_score = int(data['white_score'])
