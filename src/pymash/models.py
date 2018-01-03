@@ -44,8 +44,10 @@ UNKNOWN_RESULT = _UnknownResult()
 
 
 class Repo:
-    def __init__(self, repo_id: str, rating: float):
+    def __init__(self, repo_id: str, name: str, url: str, rating: float):
         self.repo_id = repo_id
+        self.name = name
+        self.url = url
         self.rating = rating
 
     def add_rating(self, delta):
