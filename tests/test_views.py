@@ -1,8 +1,7 @@
-import psycopg2
-import sqlalchemy as sa
-import pytest
-
 import urllib.parse as urlparse
+
+import pytest
+import sqlalchemy as sa
 
 from pymash import cfg
 from pymash import main
@@ -45,14 +44,14 @@ def _create_database(request, _postgres_engine):
         conn.execute(f'DROP DATABASE IF EXISTS {test_db_name}')
         conn.execute(f'CREATE DATABASE {test_db_name}')
     create_tables()
-    request.addfinalizer(_drop_database)
+    request.addfinalizer(lambda: _drop_database(_postgres_engine))
 
 
-def _drop_database():
+def _drop_database(postgres_engine):
     # TODO(aershov182): remove duplication with _create_database
     test_db_name = _get_test_db_name()
     # TODO(aershov182): use sqlalchemy for query generation
-    with _postgres_engine.connect().execution_options(
+    with postgres_engine.connect().execution_options(
             isolation_level="AUTOCOMMIT") as conn:
         conn.execute(f'DROP DATABASE {test_db_name}')
 
