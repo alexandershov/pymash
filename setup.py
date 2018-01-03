@@ -7,6 +7,7 @@ setuptools.setup(
     package_dir={'': 'src'},
     install_requires=[
         'aiohttp==2.2.5',
+        'aiohttp-jinja2==0.14.0',
         'aiodns==1.1.1',
         'aiopg==0.13.1',
         'astroid==1.5.3',
