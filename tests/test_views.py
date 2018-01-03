@@ -9,6 +9,16 @@ from pymash import main
 from pymash import tables
 
 
+async def test_show_game(test_client):
+    text = await _get(test_client, '/game')
+    assert text == 'hello!'
+
+
+async def test_show_leaders(test_client):
+    text = await _get(test_client, '/leaders')
+    assert text == '0'
+
+
 @pytest.fixture(scope='session')
 def system_engine(request):
     return _get_engine(request, 'postgres')
@@ -77,16 +87,6 @@ def _is_valid_db_name(db_name):
 def _get_test_db_name():
     config = cfg.get_config()
     return urlparse.urlparse(config.dsn).path.lstrip('/')
-
-
-async def test_show_game(test_client):
-    text = await _get(test_client, '/game')
-    assert text == 'hello!'
-
-
-async def test_show_leaders(test_client):
-    text = await _get(test_client, '/leaders')
-    assert text == '0'
 
 
 async def _get(test_client, path):
