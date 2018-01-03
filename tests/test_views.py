@@ -10,12 +10,12 @@ from pymash import tables
 
 
 @pytest.fixture(scope='session')
-def _system_engine(request):
+def system_engine(request):
     return _get_engine(request, 'postgres')
 
 
 @pytest.fixture(scope='session')
-def _pymash_engine(request):
+def pymash_engine(request):
     return _get_engine(request)
 
 
@@ -37,13 +37,13 @@ def _replace_database_in_dsn(dsn, new_database):
 
 
 @pytest.fixture(scope='session', autouse=True)
-def _create_database(request, _system_engine):
+def _create_database(request, system_engine):
     test_db_name = _get_test_db_name()
     _run_system_commands(
-        _system_engine,
+        system_engine,
         _drop_db_stmt(test_db_name), _create_db_stmt(test_db_name))
     create_tables()
-    request.addfinalizer(lambda: _drop_database(test_db_name, _system_engine))
+    request.addfinalizer(lambda: _drop_database(test_db_name, system_engine))
 
 
 def _drop_database(db_name, system_engine):
@@ -102,8 +102,8 @@ async def _get(test_client, path):
 def create_tables():
     config = cfg.get_config()
     engine = sa.create_engine(config.dsn)
+    # TODO(aershov182): use pymash_engine fixture
     tables.Base.metadata.create_all(engine)
-    # TODO(aershov182): maybe use context manager to dispose
     engine.dispose()
 
 
