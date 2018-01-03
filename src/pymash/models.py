@@ -69,6 +69,7 @@ class Matchup:
         self.black_function = black_function
 
 
+# TODO(aershov182): is it okay that we store the whole repo here?
 class Game:
     def __init__(self, white: Repo, black: Repo, result: BaseResult):
         if white == black:
