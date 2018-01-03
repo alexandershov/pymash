@@ -1,3 +1,5 @@
+import decimal
+
 import aiohttp_jinja2
 from aiohttp import web
 
@@ -14,7 +16,12 @@ async def show_leaders(request: web.Request) -> dict:
 
 
 async def post_game(request: web.Request) -> web.Response:
-    await events.post_game_finished_event(0, 0, 0, 1, 0)
+    await events.post_game_finished_event(
+        game_id=0,
+        white_id=0,
+        black_id=0,
+        white_score=decimal.Decimal(1),
+        black_score=decimal.Decimal(0))
     return web.Response(text='{}')
 
 
