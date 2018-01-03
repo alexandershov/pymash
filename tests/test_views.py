@@ -30,6 +30,7 @@ async def test_show_leaders(test_client):
 
 
 @pytest.mark.parametrize('data, expected_status, expected_num_calls', [
+    # normal case
     (
             {
                 'white_id': 905,
@@ -40,6 +41,18 @@ async def test_show_leaders(test_client):
             },
             200,
             1,
+    ),
+    # bad white score
+    (
+            {
+                'white_id': 905,
+                'black_id': 1005,
+                'white_score': 2,
+                'black_score': 0,
+                'hash': 'some_game_hash',
+            },
+            400,
+            0,
     )
 ])
 async def test_post_game(data, expected_status, expected_num_calls, test_client, monkeypatch):
