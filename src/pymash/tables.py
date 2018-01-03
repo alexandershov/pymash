@@ -1,10 +1,10 @@
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
 
-_Base = declarative.declarative_base()
+Base = declarative.declarative_base()
 
 
-class _RepoAlchemyModel(_Base):
+class _RepoAlchemyModel(Base):
     __tablename__ = 'repos'
     id = sa.Column(sa.Integer, sa.Sequence('repos_id_seq'), primary_key=True, nullable=False)
     url = sa.Column(sa.Text, nullable=False)
