@@ -104,6 +104,7 @@ def _get_test_db_name():
 
 async def _get(app, test_client, path) -> str:
     client = await test_client(app)
+    # TODO(aershov182): assert that status code is 200
     resp = await client.get(path)
     text = await resp.text()
     return text

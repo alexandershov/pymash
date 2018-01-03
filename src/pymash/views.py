@@ -12,12 +12,7 @@ async def show_game(request: web.Request) -> web.Response:
 
 @aiohttp_jinja2.template('leaders.html')
 async def show_leaders(request: web.Request) -> dict:
-    db_engine = request.app['db_engine']
-    rows = []
-    async with db_engine.acquire() as conn:
-        query = tables.sa_repos.select().order_by(tables.sa_repos.c.score.desc())
-        async for a_row in conn.execute(query):
-            rows.append(a_row)
+    repos = await db.find_repos_order_by_rating(request.app['db_engine'])
     return {
-        'repos': rows,
+        'repos': repos,
     }
