@@ -16,12 +16,14 @@ async def show_leaders(request: web.Request) -> dict:
 
 
 async def post_game(request: web.Request) -> web.Response:
+    data = await request.post()
+    game_id = request.match_info['game_id']
     await events.post_game_finished_event(
-        game_id=0,
-        white_id=0,
-        black_id=0,
-        white_score=decimal.Decimal(1),
-        black_score=decimal.Decimal(0))
+        game_id=game_id,
+        white_id=int(data['white_id']),
+        black_id=int(data['black_id']),
+        white_score=decimal.Decimal(data['white_score']),
+        black_score=decimal.Decimal(data['black_score']))
     return web.Response(text='{}')
 
 

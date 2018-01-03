@@ -38,17 +38,14 @@ async def test_post_game(test_client, monkeypatch):
 
     monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event)
     app = _create_app()
-    headers = {
-        'X-Game-Hash': 'some_game_hash'
-    }
     data = {
-        'white_id': 'some_white_id',
-        'black_id': 'some_black_id',
+        'white_id': 905,
+        'black_id': 1005,
         'white_score': 1,
         'black_score': 0,
+        'hash': 'some_game_hash',
     }
-    text = await _post(app, test_client, '/game/some_game_id',
-                       headers=headers, data=data)
+    text = await _post(app, test_client, '/game/some_game_id', data=data)
     # TODO(aershov182): change to redirect
     assert json.loads(text) == {}
     assert num_calls == 1
@@ -143,9 +140,9 @@ async def _get(app, test_client, path) -> str:
     return await _get_checked_response_text(resp)
 
 
-async def _post(app, test_client, path, headers=None, data=None) -> str:
+async def _post(app, test_client, path, data=None) -> str:
     client = await test_client(app)
-    resp = await client.post(path, headers=headers, data=data)
+    resp = await client.post(path, data=data)
     return await _get_checked_response_text(resp)
 
 
