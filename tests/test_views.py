@@ -90,13 +90,17 @@ def _get_test_db_name():
 
 
 async def _get(test_client, path):
-    app = main.create_app()
-    # TODO(aershov182): adding to on_startup should be more visible
-    app.on_startup.append(_clean_tables)
+    app = _create_app()
     client = await test_client(app)
     resp = await client.get(path)
     text = await resp.text()
     return text
+
+
+def _create_app():
+    app = main.create_app()
+    app.on_startup.append(_clean_tables)
+    return app
 
 
 def create_tables():
