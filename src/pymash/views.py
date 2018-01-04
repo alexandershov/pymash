@@ -56,18 +56,17 @@ async def post_game(request: web.Request) -> web.Response:
         print(exc)
         return web.HTTPBadRequest()
     game = Game(
-        # TODO(aershov182): extract keys to constants
         game_id=request.match_info['game_id'],
-        white_id=parsed_input['white_id'],
-        white_score=parsed_input['white_score'],
-        black_id=parsed_input['black_id'],
-        black_score=parsed_input['black_score'],
+        white_id=parsed_input[_PostGameInput.white_id_key],
+        white_score=parsed_input[_PostGameInput.white_score_key],
+        black_id=parsed_input[_PostGameInput.black_id_key],
+        black_score=parsed_input[_PostGameInput.black_score_key],
     )
     # TODO(aershov182): shouldn't this validation live in a model?
     if game.white_score + game.black_score != 1:
         return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
-    if expected_hash != data['hash']:
+    if expected_hash != data[_PostGameInput.hash_key]:
         return web.HTTPBadRequest()
     await events.post_game_finished_event(game)
     redirect_url = request.app.router['new_game'].url_for()
