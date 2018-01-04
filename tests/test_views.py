@@ -29,81 +29,56 @@ async def test_show_leaders(test_client):
     assert flask_index < django_index
 
 
+def _make_post_game_test_case(white_id=905, black_id=1005, white_score=1, black_score=0,
+                              game_hash=None):
+    return {
+        'white_id': white_id,
+        'black_id': black_id,
+        'white_score': white_score,
+        'black_score': black_score,
+        'hash': game_hash,
+    }
+
+
 @pytest.mark.parametrize('data, expected_status, expected_headers, expected_num_calls', [
     # normal case
     (
-            {
-                'white_id': 905,
-                'black_id': 1005,
-                'white_score': 1,
-                'black_score': 0,
-                'hash': 'some_game_hash',
-            },
+            _make_post_game_test_case(),
             302,
             {'Location': '/game'},
             1,
     ),
     # bad white score
     (
-            {
-                'white_id': 905,
-                'black_id': 1005,
-                'white_score': 2,
-                'black_score': 0,
-                'hash': 'some_game_hash',
-            },
+            _make_post_game_test_case(white_score=2),
             400,
             {},
             0,
     ),
     # bad black score
     (
-            {
-                'white_id': 905,
-                'black_id': 1005,
-                'white_score': 0,
-                'black_score': 2,
-                'hash': 'some_game_hash',
-            },
+            _make_post_game_test_case(white_score=0, black_score=2),
             400,
             {},
             0,
     ),
-    # bad black&white score score
+    # bad black & white score sum
     (
-            {
-                'white_id': 905,
-                'black_id': 1005,
-                'white_score': 1,
-                'black_score': 1,
-                'hash': 'some_game_hash',
-            },
+            _make_post_game_test_case(white_score=1, black_score=1),
             400,
             {},
             0,
     ),
     # bad white_id
     (
-            {
-                'white_id': 'bad_white_id',
-                'black_id': 1005,
-                'white_score': 1,
-                'black_score': 0,
-                'hash': 'some_game_hash',
-            },
+            _make_post_game_test_case(white_id='bad_white_id'),
             400,
             {},
             0,
     ),
     # bad black_id
     (
-            {
-                'white_id': 905,
-                'black_id': 'bad_black_id',
-                'white_score': 1,
-                'black_score': 0,
-                'hash': 'some_game_hash',
-            },
+            _make_post_game_test_case(black_id='bad_black_id'),
             400,
             {},
             0,
