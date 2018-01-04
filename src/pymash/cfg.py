@@ -25,6 +25,7 @@ def get_config():
     except vol.Invalid as exc:
         raise ConfigError from exc
     return Config(
+        # TODO(aershov182): extract keys to constants
         dsn=parsed_config['PYMASH_DSN'],
         game_hash_salt=parsed_config['PYMASH_GAME_HASH_SALT'])
 

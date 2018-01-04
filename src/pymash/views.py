@@ -50,6 +50,7 @@ async def post_game(request: web.Request) -> web.Response:
         print(exc)
         return web.HTTPBadRequest()
     game = Game(
+        # TODO(aershov182): extract keys to constants
         game_id=request.match_info['game_id'],
         white_id=parsed_input['white_id'],
         white_score=parsed_input['white_score'],
