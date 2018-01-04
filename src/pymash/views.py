@@ -26,25 +26,31 @@ async def show_leaders(request: web.Request) -> dict:
     }
 
 
-_VALID_ID = vol.And(str, vol.Coerce(int))
+class _PostGameInput:
+    valid_id = vol.And(str, vol.Coerce(int))
+    valid_score = vol.And(str, vol.Coerce(int), vol.In([0, 1]))
 
-_VALID_SCORE = vol.And(str, vol.Coerce(int), vol.In([0, 1]))
+    white_id_key = 'white_id'
+    black_id_key = 'black_id'
+    white_score_key = 'white_score'
+    black_score_key = 'black_score'
+    hash_key = 'hash'
 
-_POST_GAME_INPUT_SCHEMA = vol.Schema(
-    {
-        'white_id': _VALID_ID,
-        'black_id': _VALID_ID,
-        'white_score': _VALID_SCORE,
-        'black_score': _VALID_SCORE,
-        'hash': str,
-    },
-    required=True, extra=vol.ALLOW_EXTRA)
+    schema = vol.Schema(
+        {
+            white_id_key: valid_id,
+            black_id_key: valid_id,
+            white_score_key: valid_score,
+            black_score_key: valid_score,
+            hash_key: str,
+        },
+        required=True, extra=vol.ALLOW_EXTRA)
 
 
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
     try:
-        parsed_input = _POST_GAME_INPUT_SCHEMA(dict(data))
+        parsed_input = _PostGameInput.schema(dict(data))
     except vol.Invalid as exc:
         # TODO(aershov182): logging
         print(exc)
