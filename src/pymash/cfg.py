@@ -2,6 +2,10 @@ import os
 
 import voluptuous as vol
 
+_PYMASH_GAME_HASH_SALT_ENV_KEY = 'PYMASH_GAME_HASH_SALT'
+
+_PYMASH_DSN_ENV_KEY = 'PYMASH_DSN'
+
 
 class BaseError(Exception):
     pass
@@ -13,8 +17,8 @@ class ConfigError(Exception):
 
 _ENV_CONFIG_SCHEMA = vol.Schema(
     {
-        'PYMASH_DSN': str,
-        'PYMASH_GAME_HASH_SALT': str
+        _PYMASH_DSN_ENV_KEY: str,
+        _PYMASH_GAME_HASH_SALT_ENV_KEY: str
     },
     required=True, extra=vol.ALLOW_EXTRA)
 
@@ -25,9 +29,8 @@ def get_config():
     except vol.Invalid as exc:
         raise ConfigError from exc
     return Config(
-        # TODO(aershov182): extract keys to constants
-        dsn=parsed_config['PYMASH_DSN'],
-        game_hash_salt=parsed_config['PYMASH_GAME_HASH_SALT'])
+        dsn=parsed_config[_PYMASH_DSN_ENV_KEY],
+        game_hash_salt=parsed_config[_PYMASH_GAME_HASH_SALT_ENV_KEY])
 
 
 class Config:
