@@ -18,7 +18,8 @@ from pymash.tables import Repos
 async def test_show_game(test_client):
     app = _create_app()
     text = await _get_text(app, test_client, '/game')
-    assert text == 'hello!'
+    assert '666' in text
+    assert '777' in text
 
 
 async def test_show_leaders(test_client):
