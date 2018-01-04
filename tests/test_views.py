@@ -29,7 +29,7 @@ async def test_show_leaders(test_client):
     assert flask_index < django_index
 
 
-@pytest.mark.parametrize('data, expected_status, expected_num_calls', [
+@pytest.mark.parametrize('data, expected_status, expected_headers, expected_num_calls', [
     # normal case
     (
             {
@@ -39,7 +39,8 @@ async def test_show_leaders(test_client):
                 'black_score': 0,
                 'hash': 'some_game_hash',
             },
-            200,
+            302,
+            {'Location': '/game'},
             1,
     ),
     # bad white score
@@ -52,6 +53,7 @@ async def test_show_leaders(test_client):
                 'hash': 'some_game_hash',
             },
             400,
+            {},
             0,
     ),
     # bad black score
@@ -64,6 +66,7 @@ async def test_show_leaders(test_client):
                 'hash': 'some_game_hash',
             },
             400,
+            {},
             0,
     ),
     # bad black&white score score
@@ -76,6 +79,7 @@ async def test_show_leaders(test_client):
                 'hash': 'some_game_hash',
             },
             400,
+            {},
             0,
     ),
     # bad white_id
@@ -88,6 +92,7 @@ async def test_show_leaders(test_client):
                 'hash': 'some_game_hash',
             },
             400,
+            {},
             0,
     ),
     # bad black_id
@@ -100,6 +105,7 @@ async def test_show_leaders(test_client):
                 'hash': 'some_game_hash',
             },
             400,
+            {},
             0,
     ),
     # missing white_id key
@@ -111,10 +117,12 @@ async def test_show_leaders(test_client):
                 'hash': 'some_game_hash',
             },
             400,
+            {},
             0,
     ),
 ])
-async def test_post_game(data, expected_status, expected_num_calls, test_client, monkeypatch):
+async def test_post_game(data, expected_status, expected_headers, expected_num_calls, test_client,
+                         monkeypatch):
     num_calls = 0
 
     async def post_game_finished_event(game_id, white_id, black_id, white_score, black_score):
@@ -124,9 +132,11 @@ async def test_post_game(data, expected_status, expected_num_calls, test_client,
     monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event)
     # TODO(aershov182): don't clean tables for this test
     app = _create_app()
-    response = await _post(app, test_client, '/game/some_game_id', data=data)
+    response = await _post(app, test_client, '/game/some_game_id',
+                           allow_redirects=False,
+                           data=data)
     assert response.status == expected_status
-    # TODO(aershov182): check response text
+    assert expected_headers.items() < response.headers.items()
     assert num_calls == expected_num_calls
 
 
@@ -218,9 +228,11 @@ async def _post_text(app, test_client, path, data=None) -> str:
     return await _get_checked_response_text(resp)
 
 
-async def _post(app, test_client, path, data=None) -> web.Response:
+async def _post(app, test_client, path, allow_redirects=True, data=None) -> web.Response:
     client = await test_client(app)
-    return await client.post(path, data=data)
+    return await client.post(path,
+                             allow_redirects=allow_redirects,
+                             data=data)
 
 
 async def _get_checked_response_text(resp):

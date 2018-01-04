@@ -37,8 +37,8 @@ async def post_game(request: web.Request) -> web.Response:
         black_id=black_id,
         white_score=white_score,
         black_score=black_score)
-    # TODO(aershov182): return redirect
-    return web.Response(text='{}')
+    redirect_url = request.app.router['new_game'].url_for()
+    return web.HTTPFound(redirect_url)
 
 
 async def show_game(request: web.Request) -> web.Response:
