@@ -52,40 +52,30 @@ def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score
     }
 
 
-def _expect_bad_request(post_game_data):
-    return (post_game_data, 400, {}, 0)
-
-
-@pytest.mark.parametrize('data, expected_status, expected_headers, expected_num_calls', [
+@pytest.mark.parametrize('data, is_success', [
     # normal case
-    (
-            _make_post_game_data(),
-            302,
-            {'Location': '/game'},
-            1,
-    ),
+    (_make_post_game_data(), True),
     # bad white score
-    _expect_bad_request(_make_post_game_data(white_score=2)),
+    (_make_post_game_data(white_score=2), False),
     # bad black score
-    _expect_bad_request(_make_post_game_data(white_score=0, black_score=2)),
+    (_make_post_game_data(white_score=0, black_score=2), False),
     # bad black & white score sum
-    _expect_bad_request(_make_post_game_data(white_score=1, black_score=1)),
+    (_make_post_game_data(white_score=1, black_score=1), False),
     # bad white_id
-    _expect_bad_request(_make_post_game_data(white_id='some_bad_white_id')),
+    (_make_post_game_data(white_id='some_bad_white_id'), False),
     # bad black_id
-    _expect_bad_request(_make_post_game_data(black_id='some_bad_black_id')),
+    (_make_post_game_data(black_id='some_bad_black_id'), False),
     # bad hash
-    _expect_bad_request(_make_post_game_data(game_hash='some_bad_hash')),
+    (_make_post_game_data(game_hash='some_bad_hash'), False),
     # missing white_id key
-    _expect_bad_request({
-        'black_id': 1005,
-        'white_score': 1,
-        'black_score': 0,
-        'hash': 'some_game_hash',
-    }),
+    ({
+         'black_id': 1005,
+         'white_score': 1,
+         'black_score': 0,
+         'hash': 'some_game_hash',
+     }, False),
 ])
-async def test_post_game(data, expected_status, expected_headers, expected_num_calls, test_client,
-                         monkeypatch):
+async def test_post_game(data, is_success, test_client, monkeypatch):
     num_calls = 0
 
     async def post_game_finished_event(game):
@@ -98,9 +88,13 @@ async def test_post_game(data, expected_status, expected_headers, expected_num_c
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
                            data=data)
-    assert response.status == expected_status
-    assert expected_headers.items() < response.headers.items()
-    assert num_calls == expected_num_calls
+    if is_success:
+        assert response.status == 302
+        assert response.headers['Location'] == '/game'
+        assert num_calls == 1
+    else:
+        assert response.status == 400
+        assert num_calls == 0
 
 
 async def _add_repos_for_test_show_leaders(app):
