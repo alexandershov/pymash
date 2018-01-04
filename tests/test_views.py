@@ -11,7 +11,6 @@ from pymash import events
 from pymash import main
 from pymash import models
 from pymash import tables
-from pymash import views
 from pymash.tables import *
 
 
@@ -74,7 +73,7 @@ def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score
     game = _FakeGame('some_game_id')
     if game_hash is None:
         salt = cfg.get_config().game_hash_salt
-        game_hash = views.calc_game_hash(game, salt)
+        game_hash = game.get_hash(salt)
     return {
         'white_id': white_id,
         'black_id': black_id,

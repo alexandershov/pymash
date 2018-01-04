@@ -1,4 +1,3 @@
-import hashlib
 import uuid
 
 import aiohttp_jinja2
@@ -60,7 +59,7 @@ async def post_game(request: web.Request) -> web.Response:
     except (models.ResultError, models.GameError) as exc:
         print(exc)
         return web.HTTPBadRequest()
-    expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
+    expected_hash = game.get_hash(request.app['config'].game_hash_salt)
     if expected_hash != data[keys.hash_]:
         return web.HTTPBadRequest()
     await events.post_game_finished_event(game)
@@ -85,10 +84,5 @@ async def show_game(request: web.Request) -> dict:
         'game': game,
         'white': white,
         'black': black,
+        'config': request.app['config'],
     }
-
-
-def calc_game_hash(game: models.Game, salt: str) -> str:
-    # TODO: should also depend on white_id & black_id
-    s = ':'.join([game.game_id, salt])
-    return hashlib.sha1(s.encode('utf-8')).hexdigest()

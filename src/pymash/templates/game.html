@@ -6,8 +6,8 @@
         <span>{{ white.text }}</span>
         <form action="/game/{{ game.game_id }}" method="POST">
             <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
-            <input type="hidden" name="black_id" value="{{ black.white_id }}"/>
-            <input type="hidden" name="hash" value="{{ game.hash(config.game_hash_salt) }}"/>
+            <input type="hidden" name="black_id" value="{{ game.black_id }}"/>
+            <input type="hidden" name="hash" value="{{ game.get_hash(config.game_hash_salt) }}"/>
             <input type="hidden" name="white_score" value="1"/>
             <input type="hidden" name="black_score" value="0"/>
             <button type="submit">Choose</button>
@@ -17,8 +17,8 @@
         <span>{{ black.text }}</span>
         <form action="/game/{{ game.game_id }}" method="POST">
             <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
-            <input type="hidden" name="black_id" value="{{ black.white_id }}"/>
-            <input type="hidden" name="hash" value="{{ game.hash(config.game_hash_salt) }}"/>
+            <input type="hidden" name="black_id" value="{{ game.black_id }}"/>
+            <input type="hidden" name="hash" value="{{ game.get_hash(config.game_hash_salt) }}"/>
             <input type="hidden" name="white_score" value="0"/>
             <input type="hidden" name="black_score" value="1"/>
             <button type="submit">Choose</button>

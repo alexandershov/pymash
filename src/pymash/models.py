@@ -1,3 +1,5 @@
+import hashlib
+
 RATING_CHANGE_COEFF = 24
 
 
@@ -139,3 +141,8 @@ class Game:
         self.white_id = white_id
         self.black_id = black_id
         self.result = result
+
+    def get_hash(self, salt):
+        # TODO: should also depend on white_id & black_id
+        s = ':'.join([self.game_id, salt])
+        return hashlib.sha1(s.encode('utf-8')).hexdigest()
