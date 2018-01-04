@@ -26,18 +26,21 @@ async def show_leaders(request: web.Request) -> dict:
     }
 
 
+_VALID_ID = vol.And(str, vol.Coerce(int))
+
+_VALID_SCORE = vol.And(str, vol.Coerce(int), vol.In([0, 1]))
+
 _POST_GAME_INPUT_SCHEMA = vol.Schema(
     {
-        'white_id': vol.And(str, vol.Coerce(int)),
-        'black_id': vol.And(str, vol.Coerce(int)),
-        'white_score': vol.And(str, vol.Coerce(int)),
-        'black_score': vol.And(str, vol.Coerce(int)),
+        'white_id': _VALID_ID,
+        'black_id': _VALID_ID,
+        'white_score': _VALID_SCORE,
+        'black_score': _VALID_SCORE,
         'hash': str,
     },
     required=True, extra=vol.ALLOW_EXTRA)
 
 
-# TODO(aershov182): use some library for dictionary validation & parsing
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
     game_id = request.match_info['game_id']
@@ -54,8 +57,7 @@ async def post_game(request: web.Request) -> web.Response:
         black_id=parsed_input['black_id'],
         black_score=parsed_input['black_score'],
     )
-    if game.white_score not in [0, 1] or game.black_score not in [0,
-                                                                  1] or game.white_score + game.black_score != 1:
+    if game.white_score + game.black_score != 1:
         return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
     if expected_hash != data['hash']:
