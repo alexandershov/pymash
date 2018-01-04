@@ -83,7 +83,6 @@ async def test_post_game(data, is_success, test_client, monkeypatch):
         num_calls += 1
 
     monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event)
-    # TODO(aershov182): don't clean tables for this test
     app = _create_app()
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
