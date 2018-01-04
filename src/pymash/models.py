@@ -143,6 +143,5 @@ class Game:
         self.result = result
 
     def get_hash(self, salt):
-        # TODO: should also depend on white_id & black_id
-        s = ':'.join([self.game_id, salt])
+        s = ':'.join([self.game_id, str(self.white_id), str(self.black_id), salt])
         return hashlib.sha1(s.encode('utf-8')).hexdigest()

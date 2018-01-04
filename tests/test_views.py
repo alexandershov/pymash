@@ -62,15 +62,14 @@ async def _add_data_for_test_show_game(app):
             random=0.6))
 
 
-class _FakeGame(models.Game):
-    def __init__(self, game_id):
-        self.game_id = game_id
-
-
 def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score=0,
                          game_hash=None):
-    # TODO: use mock instead
-    game = _FakeGame('some_game_id')
+    game = models.Game(
+        game_id='some_game_id',
+        white_id=white_id,
+        black_id=black_id,
+        # unknown result because we're only interested in .get_hash() result
+        result=models.UNKNOWN_RESULT)
     if game_hash is None:
         salt = cfg.get_config().game_hash_salt
         game_hash = game.get_hash(salt)
