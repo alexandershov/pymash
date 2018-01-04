@@ -11,7 +11,7 @@ class BaseError(Exception):
     pass
 
 
-class ConfigError(Exception):
+class ConfigError(BaseError):
     pass
 
 
