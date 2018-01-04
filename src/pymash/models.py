@@ -9,8 +9,12 @@ class RepoGameError(BaseError):
     pass
 
 
-# TODO: inherit from RepoGameError
-class UnknownResultError(BaseError):
+class ResultError(BaseError):
+    pass
+
+
+# TODO: inherit from RepoGameError or not?
+class UnknownResultError(ResultError):
     pass
 
 
@@ -34,27 +38,51 @@ class BaseResult:
 
     @property
     def black_score(self) -> float:
-        return 1 - self.white_score
+        raise NotImplementedError
 
 
-class _UnknownResult(BaseResult):
+class UnknownResult(BaseResult):
     @property
     def white_score(self):
         raise UnknownResultError
 
+    @property
+    def black_score(self):
+        raise UnknownResultError
 
-class _Result(BaseResult):
-    def __init__(self, white_score):
+
+class GameResult(BaseResult):
+    ALLOWED_SCORES = [0, 1]
+
+    def __init__(self, white_score, black_score):
+        type(self)._check_scores(white_score, black_score)
         self._white_score = white_score
+        self._black_score = black_score
 
     @property
     def white_score(self):
         return self._white_score
 
+    @property
+    def black_score(self):
+        return self._black_score
 
-WHITE_WINS_RESULT = _Result(white_score=1)
-BLACK_WINS_RESULT = _Result(white_score=0)
-UNKNOWN_RESULT = _UnknownResult()
+    @classmethod
+    def _check_one_score(cls, score):
+        if score not in cls.ALLOWED_SCORES:
+            raise InvalidScore(f'{score} should be in {cls.ALLOWED_SCORES}')
+
+    @classmethod
+    def _check_scores(cls, white_score, black_score):
+        cls._check_one_score(white_score)
+        cls._check_one_score(black_score)
+        if white_score + black_score != 1:
+            raise InvalidScore(f'sum of scores should be 1, got {white_score} + {black_score}')
+
+
+WHITE_WINS_RESULT = GameResult(white_score=1, black_score=0)
+BLACK_WINS_RESULT = GameResult(white_score=0, black_score=1)
+UNKNOWN_RESULT = UnknownResult()
 
 
 class Repo:
@@ -106,22 +134,8 @@ class RepoGame:
 class Game:
     ALLOWED_SCORES = [0, 1]
 
-    def __init__(self, game_id, white_id, white_score, black_id, black_score):
-        type(self)._check_scores(white_score, black_score)
+    def __init__(self, game_id, white_id, black_id, result):
         self.game_id = game_id
         self.white_id = white_id
-        self.white_score = white_score
         self.black_id = black_id
-        self.black_score = black_score
-
-    @classmethod
-    def _check_one_score(cls, score):
-        if score not in cls.ALLOWED_SCORES:
-            raise InvalidScore(f'{score} should be in {cls.ALLOWED_SCORES}')
-
-    @classmethod
-    def _check_scores(cls, white_score, black_score):
-        cls._check_one_score(white_score)
-        cls._check_one_score(black_score)
-        if white_score + black_score != 1:
-            raise InvalidScore(f'sum of scores should be 1, got {white_score} + {black_score}')
+        self.result = result

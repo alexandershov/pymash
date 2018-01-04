@@ -49,14 +49,15 @@ async def post_game(request: web.Request) -> web.Response:
         return web.HTTPBadRequest()
     keys = _PostGameInput.Keys
     try:
+        result = models.GameResult(
+            white_score=parsed_input[keys.white_score],
+            black_score=parsed_input[keys.black_score])
         game = models.Game(
             game_id=request.match_info['game_id'],
             white_id=parsed_input[keys.white_id],
-            white_score=parsed_input[keys.white_score],
             black_id=parsed_input[keys.black_id],
-            black_score=parsed_input[keys.black_score],
-        )
-    except models.GameError as exc:
+            result=result)
+    except (models.ResultError, models.GameError) as exc:
         print(exc)
         return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
@@ -75,6 +76,7 @@ async def show_game(request: web.Request) -> dict:
         game_id=uuid.uuid4().hex,
         white_id=black.function_id,
         black_id=white.function_id,
+        result=models.UNKNOWN_RESULT,
     )
     return
 
