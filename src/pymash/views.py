@@ -58,9 +58,6 @@ async def post_game(request: web.Request) -> web.Response:
     except models.GameError as exc:
         print(exc)
         return web.HTTPBadRequest()
-        # TODO(aershov182): shouldn't this validation live in a model?
-    if game.white_score + game.black_score != 1:
-        return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
     if expected_hash != data[keys.hash_]:
         return web.HTTPBadRequest()

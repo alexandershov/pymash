@@ -112,8 +112,7 @@ class Game:
     ALLOWED_SCORES = [0, 1]
 
     def __init__(self, game_id, white_id, white_score, black_id, black_score):
-        type(self)._check_score(white_score)
-        type(self)._check_score(black_score)
+        type(self)._check_scores(white_score, black_score)
         self.game_id = game_id
         self.white_id = white_id
         self.white_score = white_score
@@ -121,6 +120,13 @@ class Game:
         self.black_score = black_score
 
     @classmethod
-    def _check_score(cls, score):
+    def _check_one_score(cls, score):
         if score not in cls.ALLOWED_SCORES:
             raise InvalidScore(f'{score} should be in {cls.ALLOWED_SCORES}')
+
+    @classmethod
+    def _check_scores(cls, white_score, black_score):
+        cls._check_one_score(white_score)
+        cls._check_one_score(black_score)
+        if white_score + black_score != 1:
+            raise InvalidScore(f'sum of scores should be 1, got {white_score} + {black_score}')
