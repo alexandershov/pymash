@@ -5,11 +5,25 @@ class BaseError(Exception):
     pass
 
 
+class RepoGameError(BaseError):
+    pass
+
+
+# TODO: inherit from RepoGameError
 class UnknownResultError(BaseError):
     pass
 
 
+# TODO: inherit from RepoGameError
 class GameWithYourselfError(BaseError):
+    pass
+
+
+class GameError(BaseError):
+    pass
+
+
+class InvalidScore(GameError):
     pass
 
 
@@ -95,9 +109,18 @@ class RepoGame:
 
 
 class Game:
+    ALLOWED_SCORES = [0, 1]
+
     def __init__(self, game_id, white_id, white_score, black_id, black_score):
+        type(self)._check_score(white_score)
+        type(self)._check_score(black_score)
         self.game_id = game_id
         self.white_id = white_id
         self.white_score = white_score
         self.black_id = black_id
         self.black_score = black_score
+
+    @classmethod
+    def _check_score(cls, score):
+        if score not in cls.ALLOWED_SCORES:
+            raise InvalidScore(f'{score} should be in {cls.ALLOWED_SCORES}')

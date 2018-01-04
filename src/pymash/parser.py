@@ -7,7 +7,7 @@ import re
 import textwrap
 import typing as tp
 
-# TODO(aershov182): better logging a whole project
+# TODO(aershov182): better logging a whole project, replace prints with logging calls
 
 
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)

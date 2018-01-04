@@ -31,16 +31,15 @@ async def test_show_leaders(test_client):
     assert flask_index < django_index
 
 
+class _FakeGame(models.Game):
+    def __init__(self, game_id):
+        self.game_id = game_id
+
+
 def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score=0,
                          game_hash=None):
-    game_id = 'some_game_id'
-    game = models.Game(
-        game_id=game_id,
-        white_id=white_id,
-        white_score=white_score,
-        black_id=black_id,
-        black_score=black_score,
-    )
+    # TODO: use mock instead
+    game = _FakeGame('some_game_id')
     if game_hash is None:
         salt = cfg.get_config().game_hash_salt
         game_hash = views.calc_game_hash(game, salt)
@@ -62,6 +61,8 @@ def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score
     (_make_post_game_data(white_score=0, black_score=2), False),
     # bad black & white score sum
     (_make_post_game_data(white_score=1, black_score=1), False),
+    # right sum, but wrong individual scores
+    (_make_post_game_data(white_score=2, black_score=-1), False),
     # bad white_id
     (_make_post_game_data(white_id='some_bad_white_id'), False),
     # bad black_id

@@ -19,7 +19,7 @@ async def show_leaders(request: web.Request) -> dict:
 
 class _PostGameInput:
     valid_id = vol.And(str, vol.Coerce(int))
-    valid_score = vol.And(str, vol.Coerce(int), vol.In([0, 1]))
+    valid_score = vol.And(str, vol.Coerce(int))
 
     class Keys:
         white_id = 'white_id'
@@ -44,18 +44,21 @@ async def post_game(request: web.Request) -> web.Response:
     try:
         parsed_input = _PostGameInput.schema(dict(data))
     except vol.Invalid as exc:
-        # TODO(aershov182): logging
         print(exc)
         return web.HTTPBadRequest()
     keys = _PostGameInput.Keys
-    game = models.Game(
-        game_id=request.match_info['game_id'],
-        white_id=parsed_input[keys.white_id],
-        white_score=parsed_input[keys.white_score],
-        black_id=parsed_input[keys.black_id],
-        black_score=parsed_input[keys.black_score],
-    )
-    # TODO(aershov182): shouldn't this validation live in a model?
+    try:
+        game = models.Game(
+            game_id=request.match_info['game_id'],
+            white_id=parsed_input[keys.white_id],
+            white_score=parsed_input[keys.white_score],
+            black_id=parsed_input[keys.black_id],
+            black_score=parsed_input[keys.black_score],
+        )
+    except models.GameError as exc:
+        print(exc)
+        return web.HTTPBadRequest()
+        # TODO(aershov182): shouldn't this validation live in a model?
     if game.white_score + game.black_score != 1:
         return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
@@ -71,5 +74,6 @@ async def show_game(request: web.Request) -> web.Response:
 
 
 def calc_game_hash(game: models.Game, salt: str) -> str:
+    # TODO: should also depend on white_id & black_id
     s = ':'.join([game.game_id, salt])
     return hashlib.sha1(s.encode('utf-8')).hexdigest()
