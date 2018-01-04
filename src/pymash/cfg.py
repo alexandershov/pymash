@@ -1,5 +1,7 @@
 import os
 
+import voluptuous as vol
+
 
 class BaseError(Exception):
     pass
@@ -9,11 +11,22 @@ class ConfigError(Exception):
     pass
 
 
+_ENV_CONFIG_SCHEMA = vol.Schema(
+    {
+        'PYMASH_DSN': str,
+        'PYMASH_GAME_HASH_SALT': str
+    },
+    required=True, extra=vol.ALLOW_EXTRA)
+
+
 def get_config():
-    # TODO(aershov182): maybe use voluptuous for parsing?
+    try:
+        parsed_config = _ENV_CONFIG_SCHEMA(dict(os.environ))
+    except vol.Invalid as exc:
+        raise ConfigError from exc
     return Config(
-        dsn=_get_env('PYMASH_DSN', str),
-        game_hash_salt=_get_env('PYMASH_GAME_HASH_SALT', str))
+        dsn=parsed_config['PYMASH_DSN'],
+        game_hash_salt=parsed_config['PYMASH_GAME_HASH_SALT'])
 
 
 class Config:
