@@ -1,6 +1,7 @@
 import hashlib
 
 import aiohttp_jinja2
+import voluptuous as vol
 from aiohttp import web
 
 from pymash import db
@@ -25,40 +26,46 @@ async def show_leaders(request: web.Request) -> dict:
     }
 
 
+_POST_GAME_INPUT_SCHEMA = vol.Schema(
+    {
+        'white_id': vol.And(str, vol.Coerce(int)),
+        'black_id': vol.And(str, vol.Coerce(int)),
+        'white_score': vol.And(str, vol.Coerce(int)),
+        'black_score': vol.And(str, vol.Coerce(int)),
+        'hash': str,
+    },
+    required=True, extra=vol.ALLOW_EXTRA)
+
+
 # TODO(aershov182): use some library for dictionary validation & parsing
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
-    if set(data) != {'white_id', 'black_id', 'white_score', 'black_score', 'hash'}:
-        return web.HTTPBadRequest()
     game_id = request.match_info['game_id']
     try:
-        white_score = int(data['white_score'])
-        black_score = int(data['black_score'])
-    except ValueError:
-        return web.HTTPBadRequest()
-    if white_score not in [0, 1] or black_score not in [0, 1] or white_score + black_score != 1:
-        return web.HTTPBadRequest()
-    try:
-        white_id = int(data['white_id'])
-        black_id = int(data['black_id'])
-    except ValueError:
+        parsed_input = _POST_GAME_INPUT_SCHEMA(dict(data))
+    except vol.Invalid as exc:
+        # TODO(aershov182): logging
+        print(exc)
         return web.HTTPBadRequest()
     game = Game(
         game_id=game_id,
-        white_id=white_id,
-        white_score=white_score,
-        black_id=black_id,
-        black_score=black_score,
+        white_id=parsed_input['white_id'],
+        white_score=parsed_input['white_score'],
+        black_id=parsed_input['black_id'],
+        black_score=parsed_input['black_score'],
     )
+    if game.white_score not in [0, 1] or game.black_score not in [0,
+                                                                  1] or game.white_score + game.black_score != 1:
+        return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
     if expected_hash != data['hash']:
         return web.HTTPBadRequest()
     await events.post_game_finished_event(
-        game_id=game_id,
-        white_id=white_id,
-        black_id=black_id,
-        white_score=white_score,
-        black_score=black_score)
+        game_id=game.game_id,
+        white_id=game.white_id,
+        black_id=game.black_id,
+        white_score=game.white_score,
+        black_score=game.black_score)
     redirect_url = request.app.router['new_game'].url_for()
     return web.HTTPFound(redirect_url)
 
