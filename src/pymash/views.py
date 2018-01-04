@@ -30,19 +30,20 @@ class _PostGameInput:
     valid_id = vol.And(str, vol.Coerce(int))
     valid_score = vol.And(str, vol.Coerce(int), vol.In([0, 1]))
 
-    white_id_key = 'white_id'
-    black_id_key = 'black_id'
-    white_score_key = 'white_score'
-    black_score_key = 'black_score'
-    hash_key = 'hash'
+    class Keys:
+        white_id = 'white_id'
+        black_id = 'black_id'
+        white_score = 'white_score'
+        black_score = 'black_score'
+        hash_ = 'hash'
 
     schema = vol.Schema(
         {
-            white_id_key: valid_id,
-            black_id_key: valid_id,
-            white_score_key: valid_score,
-            black_score_key: valid_score,
-            hash_key: str,
+            Keys.white_id: valid_id,
+            Keys.black_id: valid_id,
+            Keys.white_score: valid_score,
+            Keys.black_score: valid_score,
+            Keys.hash_: str,
         },
         required=True, extra=vol.ALLOW_EXTRA)
 
@@ -55,18 +56,19 @@ async def post_game(request: web.Request) -> web.Response:
         # TODO(aershov182): logging
         print(exc)
         return web.HTTPBadRequest()
+    keys = _PostGameInput.Keys
     game = Game(
         game_id=request.match_info['game_id'],
-        white_id=parsed_input[_PostGameInput.white_id_key],
-        white_score=parsed_input[_PostGameInput.white_score_key],
-        black_id=parsed_input[_PostGameInput.black_id_key],
-        black_score=parsed_input[_PostGameInput.black_score_key],
+        white_id=parsed_input[keys.white_id],
+        white_score=parsed_input[keys.white_score],
+        black_id=parsed_input[keys.black_id],
+        black_score=parsed_input[keys.black_score],
     )
     # TODO(aershov182): shouldn't this validation live in a model?
     if game.white_score + game.black_score != 1:
         return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
-    if expected_hash != data[_PostGameInput.hash_key]:
+    if expected_hash != data[keys.hash_]:
         return web.HTTPBadRequest()
     await events.post_game_finished_event(game)
     redirect_url = request.app.router['new_game'].url_for()
