@@ -76,9 +76,12 @@ async def show_game(request: web.Request) -> dict:
         game_id=uuid.uuid4().hex,
         white_id=black.function_id,
         black_id=white.function_id,
-        result=models.UNKNOWN_RESULT,
-    )
-    return
+        result=models.UNKNOWN_RESULT)
+    return {
+        'game': game,
+        'white': white,
+        'black': black,
+    }
 
 
 def calc_game_hash(game: models.Game, salt: str) -> str:
