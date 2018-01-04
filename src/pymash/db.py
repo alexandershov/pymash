@@ -20,7 +20,7 @@ async def find_matchup():
 
 def _make_repo_from_db_row(row: dict) -> models.Repo:
     return models.Repo(
-        repo_id=row[Repos.c.id],
+        repo_id=row[Repos.c.repo_id],
         name=row[Repos.c.name],
         url=row[Repos.c.url],
         rating=row[Repos.c.rating])
@@ -46,6 +46,6 @@ def _make_find_random_function_query():
 
 def _make_function_from_db_row(row: dict) -> models.Function:
     return models.Function(
-        function_id=row[Functions.c.id],
+        function_id=row[Functions.c.function_id],
         repo_id=row[Functions.c.repo_id],
         text=row[Functions.c.text])

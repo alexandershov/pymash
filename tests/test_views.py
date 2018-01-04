@@ -41,22 +41,22 @@ async def test_show_leaders(test_client):
 async def _add_data_for_test_show_game(app):
     async with app['db_engine'].acquire() as conn:
         await conn.execute(Repos.insert().values(
-            id=1,
+            repo_id=1,
             name='django',
             url='https://github.com/django/django',
             rating=1800))
         await conn.execute(Repos.insert().values(
-            id=2,
+            repo_id=2,
             name='flask',
             url='https://github.com/pallete/flask',
             rating=1900))
         await conn.execute(Functions.insert().values(
-            id=666,
+            function_id=666,
             repo_id=1,
             text='def django(): return 1',
             random=0.3))
         await conn.execute(Functions.insert().values(
-            id=777,
+            function_id=777,
             repo_id=2,
             text='def flask(): return 2',
             random=0.6))
