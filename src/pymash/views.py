@@ -9,7 +9,8 @@ from pymash import events
 
 # TODO(aershov182): shouldn't it live in the models?
 class Game:
-    def __init__(self, white_id, white_score, black_id, black_score):
+    def __init__(self, game_id, white_id, white_score, black_id, black_score):
+        self.game_id = game_id
         self.white_id = white_id
         self.white_score = white_score
         self.black_id = black_id
@@ -42,6 +43,16 @@ async def post_game(request: web.Request) -> web.Response:
         black_id = int(data['black_id'])
     except ValueError:
         return web.HTTPBadRequest()
+    game = Game(
+        game_id=game_id,
+        white_id=white_id,
+        white_score=white_score,
+        black_id=black_id,
+        black_score=black_score,
+    )
+    expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
+    if expected_hash != data['hash']:
+        return web.HTTPBadRequest()
     await events.post_game_finished_event(
         game_id=game_id,
         white_id=white_id,
@@ -57,6 +68,5 @@ async def show_game(request: web.Request) -> web.Response:
 
 
 def calc_game_hash(game: Game, salt: str) -> str:
-    s = ':'.join(
-        map(str, [game.white_id, game.white_score, game.black_id, game.black_score, salt]))
+    s = ':'.join([game.game_id, salt])
     return hashlib.sha1(s.encode('utf-8')).hexdigest()
