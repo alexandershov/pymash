@@ -70,7 +70,11 @@ async def post_game(request: web.Request) -> web.Response:
 
 @aiohttp_jinja2.template('game.html')
 async def show_game(request: web.Request) -> dict:
-    white, black = await db.find_two_random_functions()
+    random_functions = await db.try_to_find_two_random_functions(request.app['db_engine'])
+    if len(random_functions) != 2:
+        # TODO: do something sensible here
+        raise ZeroDivisionError
+    white, black = random_functions
     # TODO: check that white & black are from different repos
     game = models.Game(
         game_id=uuid.uuid4().hex,

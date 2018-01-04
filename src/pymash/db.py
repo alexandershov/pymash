@@ -1,7 +1,8 @@
+import random
 import typing as tp
 
 from pymash import models
-from pymash.tables import Repos
+from pymash.tables import *
 
 
 async def find_repos_order_by_rating(engine) -> tp.List[models.Repo]:
@@ -25,5 +26,26 @@ def _make_repo_from_db_row(row: dict) -> models.Repo:
         rating=row[Repos.c.rating])
 
 
-async def find_two_random_functions() -> tp.Tuple[models.Function, models.Function]:
-    return 1, 2
+async def try_to_find_two_random_functions(engine) -> tp.List[models.Function]:
+    select_some_function = _make_find_random_function_query()
+    select_another_function = _make_find_random_function_query()
+    select_two_functions = select_some_function.union_all(select_another_function)
+    async with engine.acquire() as conn:
+        rows = await conn.execute(select_two_functions)
+    return list(map(_make_function_from_db_row, rows))
+
+
+def _make_find_random_function_query():
+    x = random.random()
+    return (Functions
+        .select()
+        .where(Functions.c.random > x)
+        .order_by(Functions.c.random)
+        .limit(1))
+
+
+def _make_function_from_db_row(row: dict) -> models.Function:
+    return models.Function(
+        function_id=row[Functions.c.id],
+        repo_id=row[Functions.c.repo_id],
+        text=row[Functions.c.text])
