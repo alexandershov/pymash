@@ -69,9 +69,11 @@ def _expect_bad_request(post_game_data):
     # bad black & white score sum
     _expect_bad_request(_make_post_game_data(white_score=1, black_score=1)),
     # bad white_id
-    _expect_bad_request(_make_post_game_data(white_id='bad_white_id')),
+    _expect_bad_request(_make_post_game_data(white_id='some_bad_white_id')),
     # bad black_id
-    _expect_bad_request(_make_post_game_data(black_id='bad_black_id')),
+    _expect_bad_request(_make_post_game_data(black_id='some_bad_black_id')),
+    # bad hash
+    _expect_bad_request(_make_post_game_data(game_hash='some_bad_hash')),
     # missing white_id key
     _expect_bad_request({
         'black_id': 1005,
