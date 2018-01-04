@@ -1,4 +1,5 @@
 import hashlib
+import uuid
 
 import aiohttp_jinja2
 import voluptuous as vol
@@ -66,8 +67,16 @@ async def post_game(request: web.Request) -> web.Response:
     return web.HTTPFound(redirect_url)
 
 
-async def show_game(request: web.Request) -> web.Response:
-    return web.Response(text='hello!')
+@aiohttp_jinja2.template('game.html')
+async def show_game(request: web.Request) -> dict:
+    white, black = await db.find_two_random_functions()
+    # TODO: check that white & black are from different repos
+    game = models.Game(
+        game_id=uuid.uuid4().hex,
+        white_id=black.function_id,
+        black_id=white.function_id,
+    )
+    return
 
 
 def calc_game_hash(game: models.Game, salt: str) -> str:

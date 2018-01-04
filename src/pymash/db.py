@@ -23,3 +23,7 @@ def _make_repo_from_db_row(row: dict) -> models.Repo:
         name=row[Repos.c.name],
         url=row[Repos.c.url],
         rating=row[Repos.c.rating])
+
+
+async def find_two_random_functions() -> tp.Tuple[models.Function, models.Function]:
+    return 1, 2

@@ -15,7 +15,7 @@ from pymash import views
 from pymash.tables import Repos
 
 
-async def test_show_game(test_client):
+async def _test_show_game(test_client):
     app = _create_app()
     text = await _get_text(app, test_client, '/game')
     assert '666' in text

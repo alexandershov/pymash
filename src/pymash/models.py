@@ -72,15 +72,10 @@ class Repo:
 
 
 class Function:
-    def __init__(self, function_id: str, text: str) -> None:
+    def __init__(self, function_id: str, repo_id: str, text: str) -> None:
         self.function_id = function_id
+        self.repo_id = repo_id
         self.text = text
-
-
-class Matchup:
-    def __init__(self, white_function: Function, black_function: Function) -> None:
-        self.white_function = white_function
-        self.black_function = black_function
 
 
 # TODO(aershov182): is it okay that we store the whole repo here?
