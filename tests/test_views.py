@@ -9,6 +9,7 @@ from aiohttp import web
 from pymash import cfg
 from pymash import events
 from pymash import main
+from pymash import models
 from pymash import tables
 from pymash import views
 from pymash.tables import Repos
@@ -33,7 +34,7 @@ async def test_show_leaders(test_client):
 def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score=0,
                          game_hash=None):
     game_id = 'some_game_id'
-    game = views.Game(
+    game = models.Game(
         game_id=game_id,
         white_id=white_id,
         white_score=white_score,

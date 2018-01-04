@@ -6,16 +6,7 @@ from aiohttp import web
 
 from pymash import db
 from pymash import events
-
-
-# TODO(aershov182): shouldn't it live in the models?
-class Game:
-    def __init__(self, game_id, white_id, white_score, black_id, black_score):
-        self.game_id = game_id
-        self.white_id = white_id
-        self.white_score = white_score
-        self.black_id = black_id
-        self.black_score = black_score
+from pymash import models
 
 
 @aiohttp_jinja2.template('leaders.html')
@@ -57,7 +48,7 @@ async def post_game(request: web.Request) -> web.Response:
         print(exc)
         return web.HTTPBadRequest()
     keys = _PostGameInput.Keys
-    game = Game(
+    game = models.Game(
         game_id=request.match_info['game_id'],
         white_id=parsed_input[keys.white_id],
         white_score=parsed_input[keys.white_score],
@@ -79,6 +70,6 @@ async def show_game(request: web.Request) -> web.Response:
     return web.Response(text='hello!')
 
 
-def calc_game_hash(game: Game, salt: str) -> str:
+def calc_game_hash(game: models.Game, salt: str) -> str:
     s = ':'.join([game.game_id, salt])
     return hashlib.sha1(s.encode('utf-8')).hexdigest()

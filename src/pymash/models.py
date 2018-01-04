@@ -70,7 +70,7 @@ class Matchup:
 
 
 # TODO(aershov182): is it okay that we store the whole repo here?
-class Game:
+class RepoGame:
     def __init__(self, white: Repo, black: Repo, result: BaseResult):
         if white == black:
             raise GameWithYourselfError
@@ -92,3 +92,12 @@ class Game:
     def _expected_white_score(self):
         rating_diff = self._black.rating - self._white.rating
         return 1 / (1 + 10 ** (rating_diff / 400))
+
+
+class Game:
+    def __init__(self, game_id, white_id, white_score, black_id, black_score):
+        self.game_id = game_id
+        self.white_id = white_id
+        self.white_score = white_score
+        self.black_id = black_id
+        self.black_score = black_score
