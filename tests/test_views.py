@@ -29,8 +29,8 @@ async def test_show_leaders(test_client):
     assert flask_index < django_index
 
 
-def _make_post_game_test_case(white_id=905, black_id=1005, white_score=1, black_score=0,
-                              game_hash=None):
+def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score=0,
+                         game_hash=None):
     return {
         'white_id': white_id,
         'black_id': black_id,
@@ -40,61 +40,35 @@ def _make_post_game_test_case(white_id=905, black_id=1005, white_score=1, black_
     }
 
 
+def _expect_bad_request(post_game_data):
+    return (post_game_data, 400, {}, 0)
+
+
 @pytest.mark.parametrize('data, expected_status, expected_headers, expected_num_calls', [
     # normal case
     (
-            _make_post_game_test_case(),
+            _make_post_game_data(),
             302,
             {'Location': '/game'},
             1,
     ),
     # bad white score
-    (
-            _make_post_game_test_case(white_score=2),
-            400,
-            {},
-            0,
-    ),
+    _expect_bad_request(_make_post_game_data(white_score=2)),
     # bad black score
-    (
-            _make_post_game_test_case(white_score=0, black_score=2),
-            400,
-            {},
-            0,
-    ),
+    _expect_bad_request(_make_post_game_data(white_score=0, black_score=2)),
     # bad black & white score sum
-    (
-            _make_post_game_test_case(white_score=1, black_score=1),
-            400,
-            {},
-            0,
-    ),
+    _expect_bad_request(_make_post_game_data(white_score=1, black_score=1)),
     # bad white_id
-    (
-            _make_post_game_test_case(white_id='bad_white_id'),
-            400,
-            {},
-            0,
-    ),
+    _expect_bad_request(_make_post_game_data(white_id='bad_white_id')),
     # bad black_id
-    (
-            _make_post_game_test_case(black_id='bad_black_id'),
-            400,
-            {},
-            0,
-    ),
+    _expect_bad_request(_make_post_game_data(black_id='bad_black_id')),
     # missing white_id key
-    (
-            {
-                'black_id': 1005,
-                'white_score': 1,
-                'black_score': 0,
-                'hash': 'some_game_hash',
-            },
-            400,
-            {},
-            0,
-    ),
+    _expect_bad_request({
+        'black_id': 1005,
+        'white_score': 1,
+        'black_score': 0,
+        'hash': 'some_game_hash',
+    }),
 ])
 async def test_post_game(data, expected_status, expected_headers, expected_num_calls, test_client,
                          monkeypatch):
