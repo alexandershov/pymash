@@ -88,7 +88,7 @@ async def test_post_game(data, expected_status, expected_headers, expected_num_c
                          monkeypatch):
     num_calls = 0
 
-    async def post_game_finished_event(game_id, white_id, black_id, white_score, black_score):
+    async def post_game_finished_event(game):
         nonlocal num_calls
         num_calls += 1
 

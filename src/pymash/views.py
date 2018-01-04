@@ -62,12 +62,7 @@ async def post_game(request: web.Request) -> web.Response:
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
     if expected_hash != data['hash']:
         return web.HTTPBadRequest()
-    await events.post_game_finished_event(
-        game_id=game.game_id,
-        white_id=game.white_id,
-        black_id=game.black_id,
-        white_score=game.white_score,
-        black_score=game.black_score)
+    await events.post_game_finished_event(game)
     redirect_url = request.app.router['new_game'].url_for()
     return web.HTTPFound(redirect_url)
 
