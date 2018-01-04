@@ -10,14 +10,16 @@ class ConfigError(Exception):
 
 
 def get_config():
+    # TODO(aershov182): maybe use voluptuous for parsing?
     return Config(
         dsn=_get_env('PYMASH_DSN', str),
-    )
+        game_hash_salt=_get_env('PYMASH_GAME_HASH_SALT', str))
 
 
 class Config:
-    def __init__(self, dsn: str):
+    def __init__(self, dsn: str, game_hash_salt: str):
         self.dsn = dsn
+        self.game_hash_salt = game_hash_salt
 
 
 def _get_env(name, parser):
