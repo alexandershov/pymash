@@ -84,5 +84,4 @@ async def show_game(request: web.Request) -> dict:
         'game': game,
         'white': white,
         'black': black,
-        'config': request.app['config'],
     }
