@@ -21,7 +21,7 @@ class _FunctionDbModel(Base):
     id = sa.Column(sa.Integer, sa.Sequence('functions_id_seq'), primary_key=True, nullable=False)
     repo_id = sa.Column(sa.ForeignKey(Repos.c.id), nullable=False)
     text = sa.Column(sa.Text, nullable=False)
-    rnd = sa.Column(sa.Float, default=sa.func.random(), nullable=False)
+    rnd = sa.Column(sa.Float, server_default=sa.func.random(), nullable=False)
 
 
 Functions = _FunctionDbModel.__table__
