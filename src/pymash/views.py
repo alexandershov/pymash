@@ -43,7 +43,6 @@ _POST_GAME_INPUT_SCHEMA = vol.Schema(
 
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
-    game_id = request.match_info['game_id']
     try:
         parsed_input = _POST_GAME_INPUT_SCHEMA(dict(data))
     except vol.Invalid as exc:
@@ -51,12 +50,13 @@ async def post_game(request: web.Request) -> web.Response:
         print(exc)
         return web.HTTPBadRequest()
     game = Game(
-        game_id=game_id,
+        game_id=request.match_info['game_id'],
         white_id=parsed_input['white_id'],
         white_score=parsed_input['white_score'],
         black_id=parsed_input['black_id'],
         black_score=parsed_input['black_score'],
     )
+    # TODO(aershov182): shouldn't this validation live in a model?
     if game.white_score + game.black_score != 1:
         return web.HTTPBadRequest()
     expected_hash = calc_game_hash(game, request.app['config'].game_hash_salt)
