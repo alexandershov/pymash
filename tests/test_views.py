@@ -12,11 +12,18 @@ from pymash import main
 from pymash import models
 from pymash import tables
 from pymash import views
-from pymash.tables import Repos
+from pymash.tables import *
 
 
-async def test_show_game(test_client):
+async def test_show_game(test_client, monkeypatch):
+    values = [0.5, 0.2]
+
+    def stateful_random():
+        return values.pop()
+
+    monkeypatch.setattr(random, 'random', stateful_random)
     app = _create_app()
+    app.on_startup.append(_add_data_for_test_show_game)
     text = await _get_text(app, test_client, '/game')
     assert '666' in text
     assert '777' in text
@@ -30,6 +37,30 @@ async def test_show_leaders(test_client):
     flask_index = text.index('1901')
     django_index = text.index('1801')
     assert flask_index < django_index
+
+
+async def _add_data_for_test_show_game(app):
+    async with app['db_engine'].acquire() as conn:
+        await conn.execute(Repos.insert().values(
+            id=1,
+            name='django',
+            url='https://github.com/django/django',
+            rating=1800))
+        await conn.execute(Repos.insert().values(
+            id=2,
+            name='flask',
+            url='https://github.com/pallete/flask',
+            rating=1900))
+        await conn.execute(Functions.insert().values(
+            id=666,
+            repo_id=1,
+            text='def django(): return 1',
+            random=0.3))
+        await conn.execute(Functions.insert().values(
+            id=777,
+            repo_id=2,
+            text='def flask(): return 2',
+            random=0.6))
 
 
 class _FakeGame(models.Game):
@@ -208,8 +239,7 @@ def _create_app():
 
 async def _clean_tables(app):
     async with app['db_engine'].acquire() as conn:
-        for sa_model in tables.Base.__subclasses__():
-            table = sa_model.__table__
+        for table in [Functions, Repos]:
             await conn.execute(table.delete())
 
 
