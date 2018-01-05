@@ -39,7 +39,7 @@ def _make_find_random_function_query():
     x = random.random()
     return (Functions
         .select()
-        .where(Functions.c.random > x)
+        .where(Functions.c.random >= x)
         .order_by(Functions.c.random)
         .limit(1))
 

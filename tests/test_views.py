@@ -17,14 +17,16 @@ from pymash.tables import *
 
 @pytest.mark.parametrize('random_values, is_success', [
     # normal case
-    ([0.2, 0.5], True),
+    ([0.3, 0.6], True),
+    # if random value is too large, then we cut it to the largest possible value in the database
+    # ([0.3, 0.7], True),
     # first game is with the same repo, second is ok
-    ([0.2, 0.2, 0.2, 0.5], True),
+    ([0.3, 0.3, 0.3, 0.6], True),
     # first two games are with the same repo, third is ok
-    ([0.2, 0.2, 0.2, 0.2, 0.2, 0.5], True),
+    ([0.3, 0.3, 0.3, 0.3, 0.3, 0.6], True),
     # three games are with the same repo - we return 500 in this case
     # (this has a change of happening ~ 1e-9 on production data)
-    ([0.2, 0.2, 0.2, 0.2, 0.2, 0.2], False),
+    ([0.3, 0.3, 0.3, 0.3, 0.3, 0.3], False),
 ])
 async def test_show_game(random_values, is_success, test_client, monkeypatch):
     values = collections.deque(random_values)
