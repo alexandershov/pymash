@@ -1,29 +1,10 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <!-- TODO: DRY it up -->
-    <div>
-        <span>{{ white.text }}</span>
-        <form action="/game/{{ game.game_id }}" method="POST">
-            <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
-            <input type="hidden" name="black_id" value="{{ game.black_id }}"/>
-            <input type="hidden" name="hash"
-                   value="{{ game.get_hash(app['config'].game_hash_salt) }}"/>
-            <input type="hidden" name="white_score" value="1"/>
-            <input type="hidden" name="black_score" value="0"/>
-            <button type="submit">Choose</button>
-        </form>
-    </div>
-    <div>
-        <span>{{ black.text }}</span>
-        <form action="/game/{{ game.game_id }}" method="POST">
-            <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
-            <input type="hidden" name="black_id" value="{{ game.black_id }}"/>
-            <input type="hidden" name="hash"
-                   value="{{ game.get_hash(app['config'].game_hash_salt) }}"/>
-            <input type="hidden" name="white_score" value="0"/>
-            <input type="hidden" name="black_score" value="1"/>
-            <button type="submit">Choose</button>
-        </form>
-    </div>
+    {% with text=white.text, white_score=1, black_score=0 %}
+        {% include 'game_result_form.html' %}
+    {% endwith %}
+    {% with text=black.text, white_score=0, black_score=1 %}
+        {% include 'game_result_form.html' %}
+    {% endwith %}
 {% endblock %}
