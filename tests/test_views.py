@@ -42,6 +42,7 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
     response = await _get(app, test_client, '/game')
     if is_success:
         text = await _get_checked_response_text(response)
+        # TODO(aershov182): change assertions when we'll have a real markup
         assert '666' in text
         assert '777' in text
     else:
