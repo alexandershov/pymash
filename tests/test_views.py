@@ -6,7 +6,7 @@ import urllib.parse as urlparse
 from unittest import mock
 
 import pytest
-from aiohttp import web
+from aiohttp import client as aiohttp_client
 
 from pymash import cfg
 from pymash import events
@@ -206,7 +206,7 @@ async def _get_text(app, test_client, path) -> str:
     return await _get_checked_response_text(resp)
 
 
-async def _get(app, test_client, path) -> web.Response:
+async def _get(app, test_client, path) -> aiohttp_client.ClientResponse:
     client = await test_client(app)
     return await client.get(path)
 
@@ -216,7 +216,7 @@ async def _post_text(app, test_client, path, data=None) -> str:
     return await _get_checked_response_text(resp)
 
 
-async def _post(app, test_client, path, allow_redirects=True, data=None) -> web.Response:
+async def _post(app, test_client, path, allow_redirects=True, data=None) -> aiohttp_client.ClientResponse:
     client = await test_client(app)
     return await client.post(path,
                              allow_redirects=allow_redirects,
