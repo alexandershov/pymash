@@ -1,6 +1,8 @@
 import random
 import typing as tp
 
+import sqlalchemy as sa
+
 from pymash import models
 from pymash.tables import *
 
@@ -37,11 +39,16 @@ async def try_to_find_two_random_functions(engine) -> tp.List[models.Function]:
 
 def _make_find_random_function_query():
     x = random.random()
-    return (Functions
+    # TODO: is there a better way?
+    select_max_random = sa.select(
+        columns=[sa.func.max(Functions.c.random)],
+        from_obj=Functions).as_scalar()
+    result = (Functions
         .select()
-        .where(Functions.c.random >= x)
+        .where(Functions.c.random >= sa.func.least(x, select_max_random))
         .order_by(Functions.c.random)
         .limit(1))
+    return result
 
 
 def _make_function_from_db_row(row: dict) -> models.Function:
