@@ -43,11 +43,8 @@ def _make_find_random_function_query():
     select_max_random = sa.select(
         columns=[sa.func.max(Functions.c.random)],
         from_obj=Functions).as_scalar()
-    result = (Functions
-        .select()
-        .where(Functions.c.random >= sa.func.least(x, select_max_random))
-        .order_by(Functions.c.random)
-        .limit(1))
+    gt_than_random = Functions.c.random >= sa.func.least(x, select_max_random)
+    result = Functions.select().where(gt_than_random).order_by(Functions.c.random).limit(1)
     return result
 
 
