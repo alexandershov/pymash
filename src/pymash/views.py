@@ -1,3 +1,4 @@
+import typing as tp
 import uuid
 
 import aiohttp_jinja2
@@ -69,12 +70,14 @@ async def post_game(request: web.Request) -> web.Response:
 
 @aiohttp_jinja2.template('game.html')
 async def show_game(request: web.Request) -> dict:
-    random_functions = await db.try_to_find_two_random_functions(request.app['db_engine'])
-    if len(random_functions) != 2:
-        # TODO: do something sensible here
+    num_tries = 3
+    for _ in range(num_tries):
+        functions = await db.try_to_find_two_random_functions(request.app['db_engine'])
+        if _are_valid_functions(functions):
+            break
+    else:
         raise ZeroDivisionError
-    white, black = random_functions
-    # TODO: check that white & black are from different repos
+    white, black = functions
     game = models.Game(
         game_id=uuid.uuid4().hex,
         white_id=black.function_id,
@@ -85,3 +88,12 @@ async def show_game(request: web.Request) -> dict:
         'white': white,
         'black': black,
     }
+
+
+def _are_valid_functions(functions: tp.List[models.Function]):
+    if len(functions) != 2:
+        return False
+    white, black = functions
+    if white.repo_id == black.repo_id:
+        return False
+    return True

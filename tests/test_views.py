@@ -19,7 +19,9 @@ from pymash.tables import *
     # normal case
     ([0.2, 0.5]),
     # first game is with the same repo, second is ok
-    ([0.2, 0.2, 0.2, 0.5])
+    ([0.2, 0.2, 0.2, 0.5]),
+    # first two games are with the same repo, third is ok
+    ([0.2, 0.2, 0.2, 0.2, 0.2, 0.5]),
 ])
 async def test_show_game(random_values, test_client, monkeypatch):
     values = collections.deque(random_values)
