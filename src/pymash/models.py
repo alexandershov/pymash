@@ -7,7 +7,7 @@ class BaseError(Exception):
     pass
 
 
-class RepoGameError(BaseError):
+class MatchError(BaseError):
     pass
 
 
@@ -19,11 +19,11 @@ class UnknownResultError(ResultError):
     pass
 
 
-class GameWithYourselfError(RepoGameError):
+class MatchWithYourselfError(MatchError):
     pass
 
 
-class RepoGameUnknownResult(RepoGameError):
+class UnknownMatchResult(MatchError):
     pass
 
 
@@ -113,12 +113,12 @@ class Function:
         self.text = text
 
 
-class RepoGame:
+class Match:
     def __init__(self, white: Repo, black: Repo, result: BaseResult):
         if white == black:
-            raise GameWithYourselfError
+            raise MatchWithYourselfError
         if isinstance(result, UnknownResult):
-            raise RepoGameUnknownResult
+            raise UnknownMatchResult
         self._white = white
         self._black = black
         self._result = result
