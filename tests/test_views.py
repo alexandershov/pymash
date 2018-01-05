@@ -1,3 +1,4 @@
+import collections
 import random
 import string
 import urllib.parse as urlparse
@@ -14,11 +15,17 @@ from pymash import tables
 from pymash.tables import *
 
 
-async def test_show_game(test_client, monkeypatch):
-    values = [0.5, 0.2]
+@pytest.mark.parametrize('random_values', [
+    # normal case
+    ([0.2, 0.5]),
+    # first game is with the same repo, second is ok
+    ([0.2, 0.2, 0.2, 0.5])
+])
+async def test_show_game(random_values, test_client, monkeypatch):
+    values = collections.deque(random_values)
 
     def stateful_random():
-        return values.pop()
+        return values.popleft()
 
     monkeypatch.setattr(random, 'random', stateful_random)
     app = _create_app()
