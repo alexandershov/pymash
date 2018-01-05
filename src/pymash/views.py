@@ -76,7 +76,7 @@ async def show_game(request: web.Request) -> dict:
         if _are_valid_functions(functions):
             break
     else:
-        raise ZeroDivisionError
+        return web.HTTPServiceUnavailable()
     white, black = functions
     game = models.Game(
         game_id=uuid.uuid4().hex,

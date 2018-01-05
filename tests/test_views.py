@@ -22,6 +22,9 @@ from pymash.tables import *
     ([0.2, 0.2, 0.2, 0.5], True),
     # first two games are with the same repo, third is ok
     ([0.2, 0.2, 0.2, 0.2, 0.2, 0.5], True),
+    # three games are with the same repo - we return 500 in this case
+    # (this has a change of happening ~ 1e-9 on production data)
+    ([0.2, 0.2, 0.2, 0.2, 0.2, 0.2], False),
 ])
 async def test_show_game(random_values, is_success, test_client, monkeypatch):
     values = collections.deque(random_values)
@@ -38,7 +41,7 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
         assert '666' in text
         assert '777' in text
     else:
-        assert False
+        assert response.status == 503
 
 
 async def test_show_leaders(test_client):
