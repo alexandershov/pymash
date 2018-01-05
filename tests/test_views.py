@@ -179,6 +179,7 @@ def _get_engine(database=None):
 
 def _replace_database_in_dsn(dsn, new_database):
     parsed = urlparse.urlparse(dsn)
+    # noinspection PyProtectedMember
     replaced = parsed._replace(path=new_database)
     return replaced.geturl()
 
