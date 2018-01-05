@@ -4,7 +4,6 @@ from sqlalchemy.ext import declarative
 Base = declarative.declarative_base()
 
 
-# TODO(aershov182): maybe use strings instead of integers for primary keys?
 class _RepoDbModel(Base):
     __tablename__ = 'repos'
     repo_id = sa.Column(sa.BigInteger, primary_key=True, nullable=False)

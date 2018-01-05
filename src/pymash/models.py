@@ -90,7 +90,7 @@ UNKNOWN_RESULT = UnknownResult()
 
 
 class Repo:
-    def __init__(self, repo_id: str, name: str, url: str, rating: float):
+    def __init__(self, repo_id: int, name: str, url: str, rating: float):
         self.repo_id = repo_id
         self.name = name
         self.url = url
@@ -104,7 +104,7 @@ class Repo:
 
 
 class Function:
-    def __init__(self, function_id: str, repo_id: str, text: str) -> None:
+    def __init__(self, function_id: int, repo_id: int, text: str) -> None:
         self.function_id = function_id
         self.repo_id = repo_id
         self.text = text
@@ -140,7 +140,7 @@ class RepoGame:
 class Game:
     ALLOWED_SCORES = [0, 1]
 
-    def __init__(self, game_id, white_id, black_id, result):
+    def __init__(self, game_id: str, white_id: int, black_id: int, result: BaseResult):
         self.game_id = game_id
         self.white_id = white_id
         self.black_id = black_id
