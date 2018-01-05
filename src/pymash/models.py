@@ -20,8 +20,7 @@ class UnknownResultError(ResultError):
     pass
 
 
-# TODO: inherit from RepoGameError
-class GameWithYourselfError(BaseError):
+class GameWithYourselfError(RepoGameError):
     pass
 
 
