@@ -102,6 +102,9 @@ class Repo:
     def sub_rating(self, delta):
         self.rating -= delta
 
+    def __eq__(self, other):
+        return self.repo_id == other.repo_id
+
 
 class Function:
     def __init__(self, function_id: int, repo_id: int, text: str) -> None:
@@ -110,7 +113,6 @@ class Function:
         self.text = text
 
 
-# TODO(aershov182): is it okay that we store the whole repo here?
 class RepoGame:
     def __init__(self, white: Repo, black: Repo, result: BaseResult):
         if white == black:
