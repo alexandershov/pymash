@@ -9,9 +9,11 @@ from pymash import db
 from pymash import events
 from pymash import models
 
+_DICT_OR_RESPONSE = tp.Union[dict, web.Response]
+
 
 @aiohttp_jinja2.template('leaders.html')
-async def show_leaders(request: web.Request) -> dict:
+async def show_leaders(request: web.Request) -> _DICT_OR_RESPONSE:
     repos = await db.find_repos_order_by_rating(request.app['db_engine'])
     return {
         'repos': repos,
@@ -69,7 +71,7 @@ async def post_game(request: web.Request) -> web.Response:
 
 
 @aiohttp_jinja2.template('game.html')
-async def show_game(request: web.Request) -> dict:
+async def show_game(request: web.Request) -> _DICT_OR_RESPONSE:
     num_tries = 3
     for _ in range(num_tries):
         functions = await db.try_to_find_two_random_functions(request.app['db_engine'])

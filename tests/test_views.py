@@ -82,7 +82,7 @@ async def _add_data_for_test_show_game(app):
             random=0.6))
 
 
-def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score=0,
+def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black_score='0',
                          game_hash=None):
     game = models.Game(
         game_id='some_game_id',
@@ -106,13 +106,13 @@ def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score
     # normal case
     (_make_post_game_data(), True),
     # bad white score
-    (_make_post_game_data(white_score=2), False),
+    (_make_post_game_data(white_score='2'), False),
     # bad black score
-    (_make_post_game_data(white_score=0, black_score=2), False),
+    (_make_post_game_data(white_score='0', black_score='2'), False),
     # bad black & white score sum
-    (_make_post_game_data(white_score=1, black_score=1), False),
+    (_make_post_game_data(white_score='1', black_score='1'), False),
     # right sum, but wrong individual scores
-    (_make_post_game_data(white_score=2, black_score=-1), False),
+    (_make_post_game_data(white_score='2', black_score='-1'), False),
     # bad white_id
     (_make_post_game_data(white_id='some_bad_white_id'), False),
     # bad black_id
@@ -121,9 +121,9 @@ def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score
     (_make_post_game_data(game_hash='some_bad_hash'), False),
     # missing white_id key
     ({
-         'black_id': 1005,
-         'white_score': 1,
-         'black_score': 0,
+         'black_id': '1005',
+         'white_score': '1',
+         'black_score': '0',
          'hash': 'some_game_hash',
      }, False),
 ])
