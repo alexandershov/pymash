@@ -15,12 +15,15 @@ class ResultError(BaseError):
     pass
 
 
-# TODO: inherit from RepoGameError or not?
 class UnknownResultError(ResultError):
     pass
 
 
 class GameWithYourselfError(RepoGameError):
+    pass
+
+
+class RepoGameUnknownResult(RepoGameError):
     pass
 
 
@@ -112,6 +115,8 @@ class RepoGame:
     def __init__(self, white: Repo, black: Repo, result: BaseResult):
         if white == black:
             raise GameWithYourselfError
+        if isinstance(result, UnknownResult):
+            raise RepoGameUnknownResult
         self._white = white
         self._black = black
         self._result = result

@@ -25,10 +25,17 @@ def test_change_ratings(
     _assert_ratings_equal(black.rating, expected_black_rating)
 
 
-def test_repo_game_creation_failure():
-    white = _make_repo(repo_id='repo_id', rating=1400)
+def test_repo_game_with_yourself_failure():
+    white = _make_repo(repo_id='white_id', rating=1400)
     with pytest.raises(models.GameWithYourselfError):
-        models.RepoGame(white, white, models.UNKNOWN_RESULT)
+        models.RepoGame(white, white, models.WHITE_WINS_RESULT)
+
+
+def test_repo_game_unknown_result_failure():
+    white = _make_repo(repo_id='white_id', rating=1400)
+    black = _make_repo(repo_id='black_id', rating=1400)
+    with pytest.raises(models.RepoGameUnknownResult):
+        models.RepoGame(white, black, models.UNKNOWN_RESULT)
 
 
 def _make_repo(repo_id, rating):
