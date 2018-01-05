@@ -110,6 +110,7 @@ def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score
 async def test_post_game(data, is_success, test_client, monkeypatch):
     num_calls = 0
 
+    # TODO: use mock instead
     async def post_game_finished_event(game):
         nonlocal num_calls
         num_calls += 1
