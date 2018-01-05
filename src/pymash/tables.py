@@ -9,7 +9,7 @@ class _RepoDbModel(Base):
     repo_id = sa.Column(sa.BigInteger, primary_key=True, nullable=False)
     url = sa.Column(sa.Text, nullable=False)
     name = sa.Column(sa.Text, nullable=False)
-    rating = sa.Column(sa.Float, nullable=False)
+    rating = sa.Column(sa.Float, nullable=False, index=True)
 
 
 Repos = _RepoDbModel.__table__
