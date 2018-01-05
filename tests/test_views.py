@@ -1,7 +1,9 @@
+import asyncio
 import collections
 import random
 import string
 import urllib.parse as urlparse
+from unittest import mock
 
 import pytest
 import sqlalchemy as sa
@@ -126,14 +128,9 @@ def _make_post_game_data(white_id=905, black_id=1005, white_score=1, black_score
      }, False),
 ])
 async def test_post_game(data, is_success, test_client, monkeypatch):
-    num_calls = 0
+    post_game_finished_event_mock = mock.Mock(return_value=_make_future_with_result(None))
 
-    # TODO: use mock instead
-    async def post_game_finished_event(game):
-        nonlocal num_calls
-        num_calls += 1
-
-    monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event)
+    monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event_mock)
     app = _create_app()
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
@@ -141,10 +138,16 @@ async def test_post_game(data, is_success, test_client, monkeypatch):
     if is_success:
         assert response.status == 302
         assert response.headers['Location'] == '/game'
-        assert num_calls == 1
+        post_game_finished_event_mock.assert_called_once()
     else:
         assert response.status == 400
-        assert num_calls == 0
+        post_game_finished_event_mock.assert_not_called()
+
+
+def _make_future_with_result(result):
+    future = asyncio.Future()
+    future.set_result(result)
+    return future
 
 
 async def _add_repos_for_test_show_leaders(app):
