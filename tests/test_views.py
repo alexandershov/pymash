@@ -15,15 +15,15 @@ from pymash import tables
 from pymash.tables import *
 
 
-@pytest.mark.parametrize('random_values', [
+@pytest.mark.parametrize('random_values, is_success', [
     # normal case
-    ([0.2, 0.5]),
+    ([0.2, 0.5], True),
     # first game is with the same repo, second is ok
-    ([0.2, 0.2, 0.2, 0.5]),
+    ([0.2, 0.2, 0.2, 0.5], True),
     # first two games are with the same repo, third is ok
-    ([0.2, 0.2, 0.2, 0.2, 0.2, 0.5]),
+    ([0.2, 0.2, 0.2, 0.2, 0.2, 0.5], True),
 ])
-async def test_show_game(random_values, test_client, monkeypatch):
+async def test_show_game(random_values, is_success, test_client, monkeypatch):
     values = collections.deque(random_values)
 
     def stateful_random():
@@ -32,9 +32,13 @@ async def test_show_game(random_values, test_client, monkeypatch):
     monkeypatch.setattr(random, 'random', stateful_random)
     app = _create_app()
     app.on_startup.append(_add_data_for_test_show_game)
-    text = await _get_text(app, test_client, '/game')
-    assert '666' in text
-    assert '777' in text
+    response = await _get(app, test_client, '/game')
+    if is_success:
+        text = await _get_checked_response_text(response)
+        assert '666' in text
+        assert '777' in text
+    else:
+        assert False
 
 
 async def test_show_leaders(test_client):
@@ -216,9 +220,13 @@ def _get_test_db_name():
 
 
 async def _get_text(app, test_client, path) -> str:
-    client = await test_client(app)
-    resp = await client.get(path)
+    resp = await _get(app, test_client, path)
     return await _get_checked_response_text(resp)
+
+
+async def _get(app, test_client, path) -> web.Response:
+    client = await test_client(app)
+    return await client.get(path)
 
 
 async def _post_text(app, test_client, path, data=None) -> str:
