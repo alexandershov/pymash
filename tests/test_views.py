@@ -6,7 +6,6 @@ import urllib.parse as urlparse
 from unittest import mock
 
 import pytest
-import sqlalchemy as sa
 from aiohttp import web
 
 from pymash import cfg
@@ -154,34 +153,6 @@ def _make_future_with_result(result):
 async def _add_repos_for_test_show_leaders(app):
     await _add_some_repo_with_rating(app, 1801)
     await _add_some_repo_with_rating(app, 1901)
-
-
-@pytest.fixture(scope='session')
-def system_engine():
-    yield from _get_engine('postgres')
-
-
-@pytest.fixture(scope='session')
-def pymash_engine():
-    yield from _get_engine()
-
-
-def _get_engine(database=None):
-    config = cfg.get_config()
-    if database is not None:
-        dsn = _replace_database_in_dsn(config.dsn, database)
-    else:
-        dsn = config.dsn
-    engine = sa.create_engine(dsn)
-    yield engine
-    engine.dispose()
-
-
-def _replace_database_in_dsn(dsn, new_database):
-    parsed = urlparse.urlparse(dsn)
-    # noinspection PyProtectedMember
-    replaced = parsed._replace(path=new_database)
-    return replaced.geturl()
 
 
 @pytest.fixture(scope='session', autouse=True)
