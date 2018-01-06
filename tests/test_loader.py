@@ -1,9 +1,18 @@
+from unittest import mock
+
 from pymash import loader
+from pymash import models
 from pymash.tables import *
 
 
-def test_load_most_popular(pymash_engine):
-    loader.load_most_popular()
+def test_load_most_popular(pymash_engine, monkeypatch):
+    find_mock = mock.Mock(return_value=[
+        models.GithubRepo(
+            name='django',
+            url='https://github.com/django/django',
+            num_stars=25000)])
+    monkeypatch.setattr(loader, 'find_most_popular_github_repos', find_mock)
+    loader.load_most_popular(pymash_engine)
     _assert_repo_was_loaded(pymash_engine)
 
 

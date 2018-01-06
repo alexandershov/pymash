@@ -3,6 +3,7 @@ import typing as tp
 
 import sqlalchemy as sa
 import sqlalchemy.exc as sa_exc
+from sqlalchemy.dialects.postgresql import insert
 
 from pymash import models
 from pymash.tables import *
@@ -93,6 +94,20 @@ def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
             game_from_db = find_game_by_id(engine, game.game_id)
             if game_from_db.result != game.result:
                 raise GameResultChanged
+
+
+def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
+    with engine.connect() as conn:
+        insert_data = {
+            Repos.c.name: github_repo.name,
+            Repos.c.url: github_repo.url,
+            Repos.c.rating: models.Repo.DEFAULT_RATING,
+        }
+        update_data = {
+            Repos.c.name: github_repo.name,
+            Repos.c.url: github_repo.url,
+        }
+        conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(update_data))
 
 
 def _find_many_by_ids(engine, ids, table, id_column):

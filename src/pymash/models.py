@@ -92,7 +92,16 @@ BLACK_WINS_RESULT = GameResult(white_score=0, black_score=1)
 UNKNOWN_RESULT = UnknownResult()
 
 
+class GithubRepo:
+    def __init__(self, name: str, url: str, num_stars: int) -> None:
+        self.name = name
+        self.url = url
+        self.num_stars = num_stars
+
+
 class Repo:
+    DEFAULT_RATING = 1800
+
     def __init__(self, repo_id: int, name: str, url: str, rating: float):
         self.repo_id = repo_id
         self.name = name
