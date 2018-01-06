@@ -3,6 +3,7 @@ import typing as tp
 
 import sqlalchemy as sa
 import sqlalchemy.exc as sa_exc
+from psycopg2 import errorcodes
 from sqlalchemy.dialects.postgresql import insert
 
 from pymash import models
@@ -91,6 +92,7 @@ def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
                 conn.execute(_make_update_rating_query(match.black))
         except sa_exc.IntegrityError as exc:
             assert Games.c.game_id.name in exc.params
+            assert exc.orig.pgcode == errorcodes.UNIQUE_VIOLATION
             game_from_db = find_game_by_id(engine, game.game_id)
             if game_from_db.result != game.result:
                 raise GameResultChanged
