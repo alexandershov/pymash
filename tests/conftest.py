@@ -6,6 +6,7 @@ import sqlalchemy as sa
 
 from pymash import cfg
 from pymash import tables
+from pymash.tables import *
 
 
 @pytest.fixture(scope='session')
@@ -34,6 +35,35 @@ def _create_database(system_engine, pymash_engine):
 
 def _create_tables(pymash_engine):
     tables.Base.metadata.create_all(pymash_engine)
+
+
+@pytest.fixture
+def add_functions_and_repos(pymash_engine):
+    with pymash_engine.connect() as conn:
+        conn.execute(Repos.insert().values({
+            Repos.c.repo_id: 1,
+            Repos.c.name: 'django',
+            Repos.c.url: 'https://github.com/django/django',
+            Repos.c.rating: 1800,
+        }))
+        conn.execute(Repos.insert().values({
+            Repos.c.repo_id: 2,
+            Repos.c.name: 'flask',
+            Repos.c.url: 'https://github.com/pallete/flask',
+            Repos.c.rating: 1900,
+        }))
+        conn.execute(Functions.insert().values({
+            Functions.c.function_id: 666,
+            Functions.c.repo_id: 1,
+            Functions.c.text: 'def django(): return 1',
+            Functions.c.random: 0.3,
+        }))
+        conn.execute(Functions.insert().values({
+            Functions.c.function_id: 777,
+            Functions.c.repo_id: 2,
+            Functions.c.text: 'def flask(): return 2',
+            Functions.c.random: 0.6,
+        }))
 
 
 def _run_system_commands(system_engine, *commands):
