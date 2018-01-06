@@ -10,6 +10,9 @@ class NotFound(BaseError):
     pass
 
 
+# TODO: add cron runner and connect post/process functions to sqs
+
+
 async def post_game_finished_event(game: models.Game) -> None:
     # TODO: implement it
     raise NotImplementedError
