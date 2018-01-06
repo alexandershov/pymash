@@ -10,7 +10,7 @@ def test_process_game_finished_event(pymash_engine):
     _process_and_check(pymash_engine, _get_game())
 
 
-def _test_process_game_finished_event_twice(pymash_engine):
+def test_process_game_finished_event_twice(pymash_engine):
     _add_data(pymash_engine)
     game = _get_game()
     _process_and_check(pymash_engine, game)

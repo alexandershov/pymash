@@ -44,6 +44,9 @@ class BaseResult:
     def black_score(self) -> float:
         raise NotImplementedError
 
+    def __eq__(self, other: 'BaseResult') -> bool:
+        return (self.white_score, self.black_score) == (other.white_score, other.black_score)
+
 
 class UnknownResult(BaseResult):
     @property

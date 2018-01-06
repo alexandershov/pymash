@@ -2,6 +2,7 @@ import random
 import typing as tp
 
 import sqlalchemy as sa
+import sqlalchemy.exc as sa_exc
 
 from pymash import models
 from pymash.tables import *
@@ -12,6 +13,10 @@ class BaseError(Exception):
 
 
 class NotFound(BaseError):
+    pass
+
+
+class GameResultChanged(BaseError):
     pass
 
 
@@ -50,6 +55,16 @@ def find_many_functions_by_ids(engine, function_ids) -> tp.List[models.Function]
     return list(map(_make_function_from_db_row, rows))
 
 
+def find_game_by_id(engine, game_id) -> models.Game:
+    rows = _find_many_by_ids(
+        engine=engine,
+        ids=[game_id],
+        table=Games,
+        id_column=Games.c.game_id)
+    assert len(rows) == 1
+    return _make_game_from_db_row(rows[0])
+
+
 def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
     rows = _find_many_by_ids(
         engine=engine,
@@ -61,23 +76,31 @@ def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
 
 def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
     with engine.connect() as conn:
-        with conn.begin():
-            conn.execute(Games.insert().values(
-                game_id=game.game_id,
-                white_id=game.white_id,
-                black_id=game.black_id,
-                white_score=game.result.white_score,
-                black_score=game.result.black_score,
-            ))
-            white_repo = match.white
-            black_repo = match.black
-            # TODO: is there a way to Repos.c.rating instead of rating=?
-            # TODO: dry it up
-            conn.execute(Repos.update().where(Repos.c.repo_id == white_repo.repo_id).values(rating=white_repo.rating))
-            conn.execute(Repos.update().where(Repos.c.repo_id == black_repo.repo_id).values(rating=black_repo.rating))
+        try:
+            with conn.begin():
+                conn.execute(Games.insert().values(
+                    game_id=game.game_id,
+                    white_id=game.white_id,
+                    black_id=game.black_id,
+                    white_score=game.result.white_score,
+                    black_score=game.result.black_score))
+                white_repo = match.white
+                black_repo = match.black
+                # TODO: is there a way to Repos.c.rating instead of rating=?
+                # TODO: dry it up
+                conn.execute(
+                    Repos.update().where(Repos.c.repo_id == white_repo.repo_id).values(rating=white_repo.rating))
+                conn.execute(
+                    Repos.update().where(Repos.c.repo_id == black_repo.repo_id).values(rating=black_repo.rating))
+        except sa_exc.IntegrityError as exc:
+            assert Games.c.game_id.name in exc.params
+            game_from_db = find_game_by_id(engine, game.game_id)
+            if game_from_db.result != game.result:
+                raise GameResultChanged
 
 
 def _find_many_by_ids(engine, ids, table, id_column):
+    # TODO: is there a way to determine id_column automatically from table
     with engine.connect() as conn:
         rows = list(conn.execute(table.select().where(id_column.in_(ids))))
     if len(rows) != len(ids):
@@ -102,3 +125,14 @@ def _make_function_from_db_row(row: dict) -> models.Function:
         function_id=row[Functions.c.function_id],
         repo_id=row[Functions.c.repo_id],
         text=row[Functions.c.text])
+
+
+def _make_game_from_db_row(row: dict) -> models.Game:
+    game_result = models.GameResult(
+        white_score=row[Games.c.white_score],
+        black_score=row[Games.c.black_score])
+    return models.Game(
+        game_id=row[Games.c.game_id],
+        white_id=row[Games.c.white_id],
+        black_id=row[Games.c.black_id],
+        result=game_result)
