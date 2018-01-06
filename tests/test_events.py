@@ -8,7 +8,6 @@ from pymash.tables import *
 
 
 def test_process_game_finished_event(pymash_engine):
-    _clean_tables(pymash_engine)
     _add_data(pymash_engine)
     game = _get_game()
     events.process_game_finished_event(pymash_engine, game)
@@ -42,18 +41,18 @@ def _add_data(pymash_engine):
             random=0.6))
 
 
-# TODO: remove duplication with _clean_tables in test_views.py
-def _clean_tables(pymash_engine):
+@pytest.fixture(autouse=True)
+def clean_tables(pymash_engine):
     with pymash_engine.connect() as conn:
         for table in [Games, Functions, Repos]:
             conn.execute(table.delete())
 
 
-def _get_game():
+def _get_game(white_id=666, black_id=777):
     return models.Game(
         game_id='some_game_id',
-        white_id=666,
-        black_id=777,
+        white_id=white_id,
+        black_id=black_id,
         result=models.BLACK_WINS_RESULT)
 
 
