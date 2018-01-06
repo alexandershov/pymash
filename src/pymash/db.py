@@ -100,8 +100,10 @@ def _find_many_by_ids(engine, ids, table, id_column):
     with engine.connect() as conn:
         rows = list(conn.execute(table.select().where(id_column.in_(ids))))
     if len(rows) != len(ids):
-        # TODO: better error message
-        raise NotFound
+        row_ids = [a_row[id_column] for a_row in rows]
+        not_found_ids = set(ids) - set(row_ids)
+        msg = f'ids {not_found_ids} does not exist in {table.name}'
+        raise NotFound(msg)
     return rows
 
 
