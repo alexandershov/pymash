@@ -10,15 +10,11 @@ from pymash.tables import *
 def test_process_game_finished_event(pymash_engine):
     _clean_tables(pymash_engine)
     _add_data(pymash_engine)
-    game = models.Game(
-        game_id='some_game_id',
-        white_id=666,
-        black_id=777,
-        result=models.BLACK_WINS_RESULT)
+    game = _get_game()
     events.process_game_finished_event(pymash_engine, game)
+    _assert_game_saved(pymash_engine, game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1908.63)
-    _assert_game_saved(pymash_engine, game)
 
 
 # TODO: remove duplication with test_views.py
@@ -51,6 +47,14 @@ def _clean_tables(pymash_engine):
     with pymash_engine.connect() as conn:
         for table in [Games, Functions, Repos]:
             conn.execute(table.delete())
+
+
+def _get_game():
+    return models.Game(
+        game_id='some_game_id',
+        white_id=666,
+        black_id=777,
+        result=models.BLACK_WINS_RESULT)
 
 
 def _assert_repo_has_rating(pymash_engine, repo_id, expected_rating):
