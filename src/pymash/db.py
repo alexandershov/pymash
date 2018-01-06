@@ -106,10 +106,12 @@ def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
             Repos.c.rating: models.Repo.DEFAULT_RATING,
         }
         update_data = {
-            Repos.c.name: github_repo.name,
-            Repos.c.url: github_repo.url,
+            Repos.c.name.key: github_repo.name,
+            Repos.c.url.key: github_repo.url,
         }
-        conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(update_data))
+        conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(
+            index_elements=[Repos.c.url],
+            set_=update_data))
 
 
 def _find_many_by_ids(engine, ids, table, id_column):

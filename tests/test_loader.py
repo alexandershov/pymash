@@ -5,7 +5,7 @@ from pymash import models
 from pymash.tables import *
 
 
-def _test_load_most_popular(pymash_engine, monkeypatch):
+def test_load_most_popular(pymash_engine, monkeypatch):
     find_mock = mock.Mock(return_value=[
         models.GithubRepo(
             name='django',
