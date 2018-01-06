@@ -8,6 +8,7 @@ from pymash.tables import *
 
 
 def test_process_game_finished_event(pymash_engine):
+    _clean_tables(pymash_engine)
     _add_data(pymash_engine)
     game = models.Game(
         game_id='some_game_id',
@@ -17,7 +18,7 @@ def test_process_game_finished_event(pymash_engine):
     events.process_game_finished_event(pymash_engine, game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1908.63)
-    # TODO: check that game was added
+    _assert_game_saved(pymash_engine, game)
 
 
 # TODO: remove duplication with test_views.py
@@ -48,7 +49,7 @@ def _add_data(pymash_engine):
 # TODO: remove duplication with _clean_tables in test_views.py
 def _clean_tables(pymash_engine):
     with pymash_engine.connect() as conn:
-        for table in [Functions, Repos]:
+        for table in [Games, Functions, Repos]:
             conn.execute(table.delete())
 
 
@@ -58,3 +59,14 @@ def _assert_repo_has_rating(pymash_engine, repo_id, expected_rating):
         rows = conn.execute(Repos.select().where(Repos.c.repo_id == repo_id))
 
     assert list(rows)[0][Repos.c.rating] == pytest.approx(expected_rating, abs=0.01)
+
+
+def _assert_game_saved(pymash_engine, game):
+    with pymash_engine.connect() as conn:
+        rows = list(conn.execute(Games.select().where(Games.c.game_id == game.game_id)))
+    row = rows[0]
+    assert row[Games.c.game_id] == game.game_id
+    assert row[Games.c.white_id] == game.white_id
+    assert row[Games.c.black_id] == game.black_id
+    assert row[Games.c.white_score] == game.result.white_score
+    assert row[Games.c.black_score] == game.result.black_score

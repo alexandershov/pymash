@@ -25,4 +25,16 @@ class _FunctionDbModel(Base):
 
 Functions = _FunctionDbModel.__table__
 
-__all__ = ['Repos', 'Functions']
+
+class _GameDbModel(Base):
+    __tablename__ = 'games'
+    game_id = sa.Column(sa.Text, primary_key=True, nullable=False)
+    white_id = sa.Column(sa.ForeignKey(Functions.c.function_id), nullable=False)
+    black_id = sa.Column(sa.ForeignKey(Functions.c.function_id), nullable=False)
+    white_score = sa.Column(sa.Integer, nullable=False)
+    black_score = sa.Column(sa.Integer, nullable=False)
+
+
+Games = _GameDbModel.__table__
+
+__all__ = ['Repos', 'Functions', 'Games']

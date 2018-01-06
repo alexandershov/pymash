@@ -60,7 +60,14 @@ def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
 
 
 def insert_game(engine, game: models.Game) -> None:
-    pass
+    with engine.connect() as conn:
+        conn.execute(Games.insert().values(
+            game_id=game.game_id,
+            white_id=game.white_id,
+            black_id=game.black_id,
+            white_score=game.result.white_score,
+            black_score=game.result.black_score,
+        ))
 
 
 def save_match(engine, match: models.Match) -> None:

@@ -192,7 +192,7 @@ def _create_app():
 
 async def _clean_tables(app):
     async with app['db_engine'].acquire() as conn:
-        for table in [Functions, Repos]:
+        for table in [Games, Functions, Repos]:
             await conn.execute(table.delete())
 
 
