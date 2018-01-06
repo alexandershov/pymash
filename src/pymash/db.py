@@ -85,14 +85,8 @@ def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
                     black_id=game.black_id,
                     white_score=game.result.white_score,
                     black_score=game.result.black_score))
-                white_repo = match.white
-                black_repo = match.black
-                # TODO: is there a way to Repos.c.rating instead of rating=?
-                # TODO: dry it up
-                conn.execute(
-                    Repos.update().where(Repos.c.repo_id == white_repo.repo_id).values(rating=white_repo.rating))
-                conn.execute(
-                    Repos.update().where(Repos.c.repo_id == black_repo.repo_id).values(rating=black_repo.rating))
+                conn.execute(_make_update_rating_query(match.white))
+                conn.execute(_make_update_rating_query(match.black))
         except sa_exc.IntegrityError as exc:
             assert Games.c.game_id.name in exc.params
             game_from_db = find_game_by_id(engine, game.game_id)
@@ -108,6 +102,11 @@ def _find_many_by_ids(engine, ids, table, id_column):
         # TODO: better error message
         raise NotFound
     return rows
+
+
+def _make_update_rating_query(repo: models.Repo):
+    return Repos.update().where(Repos.c.repo_id == repo.repo_id).values(
+        {Repos.c.rating: repo.rating})
 
 
 def _make_find_random_function_query():
