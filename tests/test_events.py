@@ -7,7 +7,17 @@ from pymash.tables import *
 
 def test_process_game_finished_event(pymash_engine):
     _add_data(pymash_engine)
+    _process_and_check(pymash_engine, _get_game())
+
+
+def test_process_game_finished_event_twice(pymash_engine):
+    _add_data(pymash_engine)
     game = _get_game()
+    _process_and_check(pymash_engine, game)
+    _process_and_check(pymash_engine, game)
+
+
+def _process_and_check(pymash_engine, game):
     events.process_game_finished_event(pymash_engine, game)
     _assert_game_saved(pymash_engine, game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
