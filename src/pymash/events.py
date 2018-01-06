@@ -23,5 +23,4 @@ def process_game_finished_event(engine, game: models.Game) -> None:
         raise NotFound
     match = models.Match(white_repo, black_repo, game.result)
     match.change_ratings()
-    db.insert_game(engine, game)
-    db.save_match(engine, match)
+    db.save_game_and_match(engine, game, match)

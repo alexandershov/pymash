@@ -59,7 +59,7 @@ def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
     return list(map(_make_repo_from_db_row, rows))
 
 
-def insert_game(engine, game: models.Game) -> None:
+def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
     with engine.connect() as conn:
         conn.execute(Games.insert().values(
             game_id=game.game_id,
@@ -68,16 +68,12 @@ def insert_game(engine, game: models.Game) -> None:
             white_score=game.result.white_score,
             black_score=game.result.black_score,
         ))
-
-
-def save_match(engine, match: models.Match) -> None:
-    white = match.white
-    black = match.black
-    with engine.connect() as conn:
+        white_repo = match.white
+        black_repo = match.black
         # TODO: is there a way to Repos.c.rating instead of rating=?
         # TODO: dry it up
-        conn.execute(Repos.update().where(Repos.c.repo_id == white.repo_id).values(rating=white.rating))
-        conn.execute(Repos.update().where(Repos.c.repo_id == black.repo_id).values(rating=black.rating))
+        conn.execute(Repos.update().where(Repos.c.repo_id == white_repo.repo_id).values(rating=white_repo.rating))
+        conn.execute(Repos.update().where(Repos.c.repo_id == black_repo.repo_id).values(rating=black_repo.rating))
 
 
 def _find_many_by_ids(engine, ids, table, id_column):
