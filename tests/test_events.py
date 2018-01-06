@@ -1,7 +1,5 @@
 import pytest
-import sqlalchemy as sa
 
-from pymash import cfg
 from pymash import events
 from pymash import models
 from pymash.tables import *
