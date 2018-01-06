@@ -54,34 +54,6 @@ async def test_show_leaders(pymash_engine, test_client):
     assert flask_index < django_index
 
 
-async def _add_data_for_test_show_game(app):
-    async with app['db_engine'].acquire() as conn:
-        await conn.execute(Repos.insert().values({
-            Repos.c.repo_id: 1,
-            Repos.c.name: 'django',
-            Repos.c.url: 'https://github.com/django/django',
-            Repos.c.rating: 1800,
-        }))
-        await conn.execute(Repos.insert().values({
-            Repos.c.repo_id: 2,
-            Repos.c.name: 'flask',
-            Repos.c.url: 'https://github.com/pallete/flask',
-            Repos.c.rating: 1900,
-        }))
-        await conn.execute(Functions.insert().values({
-            Functions.c.function_id: 666,
-            Functions.c.repo_id: 1,
-            Functions.c.text: 'def django(): return 1',
-            Functions.c.random: 0.3,
-        }))
-        await conn.execute(Functions.insert().values({
-            Functions.c.function_id: 777,
-            Functions.c.repo_id: 2,
-            Functions.c.text: 'def flask(): return 2',
-            Functions.c.random: 0.6,
-        }))
-
-
 def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black_score='0',
                          game_hash=None):
     if game_hash is None:
