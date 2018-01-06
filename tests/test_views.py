@@ -156,51 +156,6 @@ async def _add_repos_for_test_show_leaders(app):
     await _add_some_repo_with_rating(app, 1901)
 
 
-@pytest.fixture(scope='session', autouse=True)
-def _create_database(system_engine, pymash_engine):
-    test_db_name = _get_test_db_name()
-    _run_system_commands(
-        system_engine,
-        _drop_db_stmt(test_db_name), _create_db_stmt(test_db_name))
-    _create_tables(pymash_engine)
-    yield
-    pymash_engine.dispose()
-    _run_system_commands(
-        system_engine,
-        _drop_db_stmt(test_db_name))
-
-
-def _create_tables(pymash_engine):
-    tables.Base.metadata.create_all(pymash_engine)
-
-
-def _run_system_commands(system_engine, *commands):
-    # we need isolation_level="AUTOCOMMIT", because CREATE/DROP DATABASE can't run in a transaction
-    with system_engine.connect().execution_options(isolation_level="AUTOCOMMIT") as conn:
-        for a_command in commands:
-            conn.execute(a_command)
-
-
-def _drop_db_stmt(db_name):
-    assert _is_valid_db_name(db_name)
-    return f'DROP DATABASE IF EXISTS {db_name}'
-
-
-def _create_db_stmt(db_name):
-    assert _is_valid_db_name(db_name)
-    return f'CREATE DATABASE {db_name}'
-
-
-def _is_valid_db_name(db_name):
-    allowed_characters = string.ascii_letters + '_'
-    return all(c in allowed_characters for c in db_name)
-
-
-def _get_test_db_name():
-    config = cfg.get_config()
-    return urlparse.urlparse(config.dsn).path.lstrip('/')
-
-
 async def _get_text(app, test_client, path) -> str:
     resp = await _get(app, test_client, path)
     return await _get_checked_response_text(resp)
