@@ -14,9 +14,10 @@ def test_process_game_finished_event(pymash_engine):
         white_id=666,
         black_id=777,
         result=models.BLACK_WINS_RESULT)
-    events.process_game_finished_event(game)
+    events.process_game_finished_event(pymash_engine, game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1908.63)
+    # TODO: check that game was added
 
 
 # TODO: remove duplication with test_views.py

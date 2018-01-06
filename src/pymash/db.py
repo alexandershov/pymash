@@ -7,6 +7,14 @@ from pymash import models
 from pymash.tables import *
 
 
+class BaseError(Exception):
+    pass
+
+
+class NotFound(BaseError):
+    pass
+
+
 async def find_repos_order_by_rating(engine) -> tp.List[models.Repo]:
     repos = []
     async with engine.acquire() as conn:
@@ -31,6 +39,47 @@ async def try_to_find_two_random_functions(engine) -> tp.List[models.Function]:
     async with engine.acquire() as conn:
         rows = await conn.execute(select_two_functions)
     return list(map(_make_function_from_db_row, rows))
+
+
+def find_many_functions_by_ids(engine, function_ids) -> tp.List[models.Function]:
+    rows = _find_many_by_ids(
+        engine=engine,
+        ids=function_ids,
+        table=Functions,
+        id_column=Functions.c.function_id)
+    return list(map(_make_function_from_db_row, rows))
+
+
+def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
+    rows = _find_many_by_ids(
+        engine=engine,
+        ids=repo_ids,
+        table=Repos,
+        id_column=Repos.c.repo_id)
+    return list(map(_make_repo_from_db_row, rows))
+
+
+def insert_game(engine, game: models.Game) -> None:
+    pass
+
+
+def save_match(engine, match: models.Match) -> None:
+    white = match.white
+    black = match.black
+    with engine.connect() as conn:
+        # TODO: is there a way to Repos.c.rating instead of rating=?
+        # TODO: dry it up
+        conn.execute(Repos.update().where(Repos.c.repo_id == white.repo_id).values(rating=white.rating))
+        conn.execute(Repos.update().where(Repos.c.repo_id == black.repo_id).values(rating=black.rating))
+
+
+def _find_many_by_ids(engine, ids, table, id_column):
+    with engine.connect() as conn:
+        rows = list(conn.execute(table.select().where(id_column.in_(ids))))
+    if len(rows) != len(ids):
+        # TODO: better error message
+        raise NotFound
+    return rows
 
 
 def _make_find_random_function_query():

@@ -119,15 +119,15 @@ class Match:
             raise MatchWithYourselfError
         if isinstance(result, UnknownResult):
             raise UnknownMatchResult
-        self._white = white
-        self._black = black
+        self.white = white
+        self.black = black
         self._result = result
 
     def change_ratings(self):
         white_delta = RATING_CHANGE_COEFF * (self._white_score - self._expected_white_score)
 
-        self._white.add_rating(white_delta)
-        self._black.sub_rating(white_delta)
+        self.white.add_rating(white_delta)
+        self.black.sub_rating(white_delta)
 
     @property
     def _white_score(self):
@@ -135,7 +135,7 @@ class Match:
 
     @property
     def _expected_white_score(self):
-        rating_diff = self._black.rating - self._white.rating
+        rating_diff = self.black.rating - self.white.rating
         return 1 / (1 + 10 ** (rating_diff / 400))
 
 
