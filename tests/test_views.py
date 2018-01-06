@@ -1,8 +1,6 @@
 import asyncio
 import collections
 import random
-import string
-import urllib.parse as urlparse
 from unittest import mock
 
 import aiohttp
@@ -12,7 +10,6 @@ from pymash import cfg
 from pymash import events
 from pymash import main
 from pymash import models
-from pymash import tables
 from pymash.tables import *
 
 
