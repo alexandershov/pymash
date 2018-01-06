@@ -79,12 +79,13 @@ def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
     with engine.connect().execution_options(isolation_level='SERIALIZABLE') as conn:
         try:
             with conn.begin():
-                conn.execute(Games.insert().values(
-                    game_id=game.game_id,
-                    white_id=game.white_id,
-                    black_id=game.black_id,
-                    white_score=game.result.white_score,
-                    black_score=game.result.black_score))
+                conn.execute(Games.insert().values({
+                    Games.c.game_id: game.game_id,
+                    Games.c.white_id: game.white_id,
+                    Games.c.black_id: game.black_id,
+                    Games.c.white_score: game.result.white_score,
+                    Games.c.black_score: game.result.black_score,
+                }))
                 conn.execute(_make_update_rating_query(match.white))
                 conn.execute(_make_update_rating_query(match.black))
         except sa_exc.IntegrityError as exc:

@@ -46,26 +46,30 @@ def test_process_game_finished_event_unknown_white_id(pymash_engine):
 # TODO: remove duplication with test_views.py
 def _add_data(pymash_engine):
     with pymash_engine.connect() as conn:
-        conn.execute(Repos.insert().values(
-            repo_id=1,
-            name='django',
-            url='https://github.com/django/django',
-            rating=1800))
-        conn.execute(Repos.insert().values(
-            repo_id=2,
-            name='flask',
-            url='https://github.com/pallete/flask',
-            rating=1900))
-        conn.execute(Functions.insert().values(
-            function_id=666,
-            repo_id=1,
-            text='def django(): return 1',
-            random=0.3))
-        conn.execute(Functions.insert().values(
-            function_id=777,
-            repo_id=2,
-            text='def flask(): return 2',
-            random=0.6))
+        conn.execute(Repos.insert().values({
+            Repos.c.repo_id: 1,
+            Repos.c.name: 'django',
+            Repos.c.url: 'https://github.com/django/django',
+            Repos.c.rating: 1800,
+        }))
+        conn.execute(Repos.insert().values({
+            Repos.c.repo_id: 2,
+            Repos.c.name: 'flask',
+            Repos.c.url: 'https://github.com/pallete/flask',
+            Repos.c.rating: 1900,
+        }))
+        conn.execute(Functions.insert().values({
+            Functions.c.function_id: 666,
+            Functions.c.repo_id: 1,
+            Functions.c.text: 'def django(): return 1',
+            Functions.c.random: 0.3,
+        }))
+        conn.execute(Functions.insert().values({
+            Functions.c.function_id: 777,
+            Functions.c.repo_id: 2,
+            Functions.c.text: 'def flask(): return 2',
+            Functions.c.random: 0.6,
+        }))
 
 
 @pytest.fixture(autouse=True)
