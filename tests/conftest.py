@@ -37,6 +37,13 @@ def _create_tables(pymash_engine):
     tables.Base.metadata.create_all(pymash_engine)
 
 
+@pytest.fixture(autouse=True)
+def clean_tables(pymash_engine):
+    with pymash_engine.connect() as conn:
+        for table in [Games, Functions, Repos]:
+            conn.execute(table.delete())
+
+
 @pytest.fixture
 def add_functions_and_repos(pymash_engine):
     with pymash_engine.connect() as conn:

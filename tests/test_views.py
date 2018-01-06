@@ -26,7 +26,7 @@ from pymash.tables import *
     # (this has a change of happening ~ 1e-9 on production data)
     ([0.3, 0.3, 0.3, 0.3, 0.3, 0.3], False),
 ])
-async def test_show_game(random_values, is_success, test_client, monkeypatch):
+async def test_show_game(random_values, is_success, test_client, monkeypatch, add_functions_and_repos):
     values = collections.deque(random_values)
 
     def stateful_random():
@@ -34,7 +34,6 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
 
     monkeypatch.setattr(random, 'random', stateful_random)
     app = _create_app()
-    app.on_startup.append(_add_data_for_test_show_game)
     response = await _get(app, test_client, '/game')
     if is_success:
         text = await _get_checked_response_text(response)
@@ -45,9 +44,9 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
         assert response.status == 503
 
 
-async def test_show_leaders(test_client):
+async def test_show_leaders(pymash_engine, test_client):
     app = _create_app()
-    app.on_startup.append(_add_repos_for_test_show_leaders)
+    _add_repos_for_test_show_leaders(pymash_engine)
     # TODO(aershov182): change assertions when we'll have a real markup
     text = await _get_text(app, test_client, '/leaders')
     flask_index = text.index('1901')
@@ -152,9 +151,9 @@ def _make_future_with_result(result):
     return future
 
 
-async def _add_repos_for_test_show_leaders(app):
-    await _add_some_repo_with_rating(app, 1801)
-    await _add_some_repo_with_rating(app, 1901)
+def _add_repos_for_test_show_leaders(pymash_engine):
+    _add_some_repo_with_rating(pymash_engine, 1801)
+    _add_some_repo_with_rating(pymash_engine, 1901)
 
 
 async def _get_text(app, test_client, path) -> str:
@@ -187,7 +186,6 @@ async def _get_checked_response_text(resp):
 
 def _create_app():
     app = main.create_app()
-    app.on_startup.append(_clean_tables)
     return app
 
 
@@ -197,11 +195,11 @@ async def _clean_tables(app):
             await conn.execute(table.delete())
 
 
-async def _add_some_repo_with_rating(app, rating):
+def _add_some_repo_with_rating(pymash_engine, rating):
     name = 'some_repo_name_' + str(random.randint(1, 1000))
     url = f'https://github.com/org/{name}'
-    async with app['db_engine'].acquire() as conn:
-        await conn.execute(Repos.insert().values({
+    with pymash_engine.connect() as conn:
+        conn.execute(Repos.insert().values({
             Repos.c.name: name,
             Repos.c.url: url,
             Repos.c.rating: rating,

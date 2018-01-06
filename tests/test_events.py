@@ -39,13 +39,6 @@ def test_process_game_finished_event_unknown_white_id(pymash_engine, add_functio
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)
 
 
-@pytest.fixture(autouse=True)
-def clean_tables(pymash_engine):
-    with pymash_engine.connect() as conn:
-        for table in [Games, Functions, Repos]:
-            conn.execute(table.delete())
-
-
 def _get_game(white_id=666, black_id=777, result=models.BLACK_WINS_RESULT):
     return models.Game(
         game_id='some_game_id',
