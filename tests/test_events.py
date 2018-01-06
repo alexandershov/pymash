@@ -1,3 +1,4 @@
+import pytest
 import sqlalchemy as sa
 
 from pymash import cfg
@@ -7,17 +8,19 @@ from pymash.tables import *
 
 
 def test_process_game_finished_event(pymash_engine):
-    _add_repos(pymash_engine)
+    _add_data(pymash_engine)
     game = models.Game(
         game_id='some_game_id',
         white_id=666,
         black_id=777,
         result=models.BLACK_WINS_RESULT)
     events.process_game_finished_event(game)
+    _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
+    _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1908.63)
 
 
 # TODO: remove duplication with test_views.py
-def _add_repos(pymash_engine):
+def _add_data(pymash_engine):
     with pymash_engine.connect() as conn:
         conn.execute(Repos.insert().values(
             repo_id=1,
@@ -46,3 +49,11 @@ def _clean_tables(pymash_engine):
     with pymash_engine.connect() as conn:
         for table in [Functions, Repos]:
             conn.execute(table.delete())
+
+
+def _assert_repo_has_rating(pymash_engine, repo_id, expected_rating):
+    with pymash_engine.connect() as conn:
+        # TODO: is there select_one?
+        rows = conn.execute(Repos.select().where(Repos.c.repo_id == repo_id))
+
+    assert list(rows)[0][Repos.c.rating] == pytest.approx(expected_rating, abs=0.01)
