@@ -75,7 +75,8 @@ def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
 
 
 def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
-    with engine.connect() as conn:
+    # TODO: check that doing execution_options doesn't permanently change connection when it will be returned to pool
+    with engine.connect().execution_options(isolation_level='SERIALIZABLE') as conn:
         try:
             with conn.begin():
                 conn.execute(Games.insert().values(
