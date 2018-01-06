@@ -7,19 +7,28 @@ from pymash.tables import *
 
 def test_process_game_finished_event(pymash_engine):
     _add_data(pymash_engine)
-    _process_and_check(pymash_engine, _get_game())
+    game = _get_game()
+    _process_and_check(pymash_engine, game, game)
 
 
 def test_process_game_finished_event_twice(pymash_engine):
     _add_data(pymash_engine)
     game = _get_game()
-    _process_and_check(pymash_engine, game)
-    _process_and_check(pymash_engine, game)
+    _process_and_check(pymash_engine, game, game)
+    _process_and_check(pymash_engine, game, game)
 
 
-def _process_and_check(pymash_engine, game):
+def test_process_different_game_finished_event_twice(pymash_engine):
+    _add_data(pymash_engine)
+    game = _get_game()
+    _process_and_check(pymash_engine, game, game)
+    changed_game = _get_game(result=models.WHITE_WINS_RESULT)
+    _process_and_check(pymash_engine, changed_game, game)
+
+
+def _process_and_check(pymash_engine, game, expected_game):
     events.process_game_finished_event(pymash_engine, game)
-    _assert_game_saved(pymash_engine, game)
+    _assert_game_saved(pymash_engine, expected_game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1908.63)
 
@@ -66,12 +75,12 @@ def clean_tables(pymash_engine):
             conn.execute(table.delete())
 
 
-def _get_game(white_id=666, black_id=777):
+def _get_game(white_id=666, black_id=777, result=models.BLACK_WINS_RESULT):
     return models.Game(
         game_id='some_game_id',
         white_id=white_id,
         black_id=black_id,
-        result=models.BLACK_WINS_RESULT)
+        result=result)
 
 
 def _assert_repo_has_rating(pymash_engine, repo_id, expected_rating):

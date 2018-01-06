@@ -26,4 +26,4 @@ def process_game_finished_event(engine, game: models.Game) -> None:
     try:
         db.save_game_and_match(engine, game, match)
     except db.GameResultChanged:
-        print('someone is trying to change results of finished games')
+        print(f'someone is trying to change results of finished game {game.game_id}')
