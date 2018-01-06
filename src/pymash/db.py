@@ -129,10 +129,8 @@ def _make_update_rating_query(repo: models.Repo):
 
 def _make_find_random_function_query():
     x = random.random()
-    # TODO: is there a better way?
-    select_max_random = sa.select(
-        columns=[sa.func.max(Functions.c.random)],
-        from_obj=Functions).as_scalar()
+    select_max_random = Functions.select().with_only_columns(
+        [sa.func.max(Functions.c.random)]).as_scalar()
     gt_than_random = Functions.c.random >= sa.func.least(x, select_max_random)
     result = Functions.select().where(gt_than_random).order_by(Functions.c.random).limit(1)
     return result
