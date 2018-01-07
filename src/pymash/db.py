@@ -100,8 +100,7 @@ def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
                 raise GameResultChanged
 
 
-# TODO: return models.Repo and use it in caller
-def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
+def save_github_repo(engine, github_repo: models.GithubRepo) -> models.Repo:
     with engine.connect() as conn:
         insert_data = {
             Repos.c.github_id: github_repo.github_id,
@@ -113,18 +112,34 @@ def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
             Repos.c.name.key: github_repo.name,
             Repos.c.url.key: github_repo.url,
         }
-        conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(
+        rows = conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(
             index_elements=[Repos.c.github_id],
-            set_=update_data))
+            set_=update_data).returning(*Repos.columns))
+        rows = list(rows)
+        assert len(rows) == 1
+        return _make_repo_from_db_row(rows[0])
 
 
 def update_functions(engine, repo: models.Repo, functions):
-    return
-    # with engine.connect() as conn:
-    #     with conn.begin():
-    #         conn.execute(Functions.update().where(Functions.c.repo_id = repo.repo_id).values(
-    #             {Functions.c.is_active.key: False}
-    #         ))
+    with engine.connect() as conn:
+        with conn.begin():
+            conn.execute(Functions.update().where(Functions.c.repo_id == repo.repo_id).values(
+                {Functions.c.is_active.key: False}
+            ))
+            for a_function in functions:
+                insert_data = {
+                    Functions.c.repo_id: repo.repo_id,
+                    Functions.c.text: a_function.text,
+                    Functions.c.is_active: True,
+                }
+                update_data = {
+                    Functions.c.is_active.key: True,
+                }
+                statement = insert(Functions).values(insert_data).on_conflict_do_update(
+                    index_elements=[Functions.c.repo_id, Functions.c.text],
+                    set_=update_data
+                )
+                conn.execute(statement)
 
 
 def _find_many_by_ids(engine, ids, table, id_column):
