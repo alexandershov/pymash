@@ -1,5 +1,6 @@
 import argparse
 
+import aioboto3
 from aiohttp import web
 from aiopg import sa
 import aiohttp_jinja2
@@ -15,11 +16,20 @@ def main():
     web.run_app(app, host=args.host, port=args.port)
 
 
+# TODO: should we pass a loop here?
 def create_app() -> web.Application:
     app = web.Application()
-    app['config'] = cfg.get_config()
+    config = cfg.get_config()
+    app['config'] = config
+    app['sqs_client'] = aioboto3.client(
+        'sqs',
+        loop=app.loop,
+        region_name=config.aws_region,
+        aws_access_key_id=config.aws_access_key_id,
+        aws_secret_access_key=config.aws_secret_access_key)
     app.on_startup.append(_create_engine)
     app.on_cleanup.append(_close_engine)
+    app.on_cleanup.append(_close_sqs_client)
     routes.setup_routes(app)
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('pymash', 'templates')
@@ -34,6 +44,10 @@ async def _create_engine(app):
 async def _close_engine(app):
     app['db_engine'].close()
     await app['db_engine'].wait_closed()
+
+
+async def _close_sqs_client(app):
+    await app['sqs_client'].close()
 
 
 def _parse_args():
