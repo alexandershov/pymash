@@ -1,3 +1,7 @@
+import json
+
+from aiohttp import web
+
 from pymash import db
 from pymash import models
 
@@ -13,9 +17,22 @@ class NotFound(BaseError):
 # TODO: add cron runner and connect post/process functions to sqs
 
 
-async def post_game_finished_event(game: models.Game) -> None:
-    # TODO: implement it
-    raise NotImplementedError
+async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
+    message = {
+        'game_id': game.game_id,
+        'white_id': game.white_id,
+        'black_id': game.black_id,
+        'white_score': game.result.white_score,
+        'black_score': game.result.black_score,
+    }
+
+    await app['games_queue'].send_message(MessageBody=json.dumps(message))
+
+
+async def _ensure_games_queue_is_ready(app):
+    if 'pymash_queue' in app:
+        return
+    app['games_queue'] = await app['sqs_resource'].get_queue_by_name(QueueName=app['config'].sqs_games_queue_name)
 
 
 def process_game_finished_event(engine, game: models.Game) -> None:

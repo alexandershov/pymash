@@ -21,7 +21,7 @@ def create_app() -> web.Application:
     app = web.Application()
     config = cfg.get_config()
     app['config'] = config
-    app['sqs_client'] = aioboto3.client(
+    app['sqs_resource'] = aioboto3.resource(
         'sqs',
         loop=app.loop,
         region_name=config.aws_region,
@@ -29,7 +29,7 @@ def create_app() -> web.Application:
         aws_secret_access_key=config.aws_secret_access_key)
     app.on_startup.append(_create_engine)
     app.on_cleanup.append(_close_engine)
-    app.on_cleanup.append(_close_sqs_client)
+    app.on_cleanup.append(_close_sqs_resource)
     routes.setup_routes(app)
     aiohttp_jinja2.setup(
         app, loader=jinja2.PackageLoader('pymash', 'templates')
@@ -46,8 +46,8 @@ async def _close_engine(app):
     await app['db_engine'].wait_closed()
 
 
-async def _close_sqs_client(app):
-    await app['sqs_client'].close()
+async def _close_sqs_resource(app):
+    await app['sqs_resource'].close()
 
 
 def _parse_args():
