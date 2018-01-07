@@ -124,8 +124,8 @@ def _make_future_with_result(result):
 
 
 def _add_repos_for_test_show_leaders(pymash_engine):
-    _add_some_repo_with_rating(pymash_engine, 1801)
-    _add_some_repo_with_rating(pymash_engine, 1901)
+    _add_some_repo_with_rating(pymash_engine, 1001, 1801)
+    _add_some_repo_with_rating(pymash_engine, 1002, 1901)
 
 
 async def _get_text(app, test_client, path) -> str:
@@ -167,9 +167,7 @@ async def _clean_tables(app):
             await conn.execute(table.delete())
 
 
-def _add_some_repo_with_rating(pymash_engine, rating):
-    # TODO: there's a possibility of unique constraint violation (1 case in 1000)
-    github_id = random.randint(1, 1000)
+def _add_some_repo_with_rating(pymash_engine, github_id, rating):
     name = 'some_repo_name_' + str(github_id)
     url = f'https://github.com/org/{name}'
     with pymash_engine.connect() as conn:
