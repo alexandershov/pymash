@@ -40,20 +40,19 @@ def test_process_different_game_finished_event_twice(pymash_engine, add_function
     _check_game_and_repos(pymash_engine, game)
 
 
+def test_process_game_finished_event_unknown_white_id(pymash_engine, add_functions_and_repos, monkeypatch):
+    game = _get_game(white_id=1000000)
+    _monkeypatch_boto3(monkeypatch, [game])
+    process_finished_games.main(is_infinite=False)
+    _assert_game_not_saved(pymash_engine, game)
+    _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1800)
+    _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)
+
+
 def _check_game_and_repos(pymash_engine, expected_game):
     _assert_game_saved(pymash_engine, expected_game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1908.63)
-
-
-@pytest.mark.skip
-def test_process_game_finished_event_unknown_white_id(pymash_engine, add_functions_and_repos):
-    game = _get_game(white_id=1000000)
-    with pytest.raises(events.NotFound):
-        events.process_game_finished_event(pymash_engine, game)
-    _assert_game_not_saved(pymash_engine, game)
-    _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1800)
-    _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)
 
 
 def _get_game(white_id=666, black_id=777, result=models.BLACK_WINS_RESULT):

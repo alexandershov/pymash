@@ -25,7 +25,7 @@ def main(is_infinite=True):
                     engine,
                     _parse_message(json.loads(a_message.body)))
             except events.NotFound as exc:
-                print(f'skipping {a_message!r} because of {exc}')
+                print(f'skipping {a_message!r} because of {exc!r}')
             a_message.delete()
         if not is_infinite:
             break
