@@ -19,11 +19,13 @@ def test_process_game_finished_event(pymash_engine, add_functions_and_repos, mon
     _check_game_and_repos(pymash_engine, game)
 
 
-@pytest.mark.skip
-def test_process_game_finished_event_twice(pymash_engine, add_functions_and_repos):
+def test_process_game_finished_event_twice(pymash_engine, add_functions_and_repos, monkeypatch):
     game = _get_game()
-    _check_game_and_repos(pymash_engine, game, game)
-    _check_game_and_repos(pymash_engine, game, game)
+    _monkeypatch_boto3(monkeypatch, [game])
+    process_finished_games.main(is_infinite=False)
+    _check_game_and_repos(pymash_engine, game)
+    process_finished_games.main(is_infinite=False)
+    _check_game_and_repos(pymash_engine, game)
 
 
 @pytest.mark.skip
