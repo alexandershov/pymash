@@ -15,7 +15,7 @@ class NotFound(BaseError):
     pass
 
 
-# TODO: add cron runner and connect post/process functions to sqs
+# TODO: add cron runner
 
 
 # TODO: mock it better!
