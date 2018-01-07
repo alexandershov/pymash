@@ -1,8 +1,8 @@
 import json
 
 import boto3
-
 import sqlalchemy as sa
+
 from pymash import cfg
 from pymash import events
 from pymash import models
@@ -16,11 +16,15 @@ def main():
     while True:
         messages = games_queue.receive_messages(MaxNumberOfMessages=10)
         for a_message in messages:
-            events.process_game_finished_event(engine, _parse_message(json.loads(a_message.body)))
+            try:
+                events.process_game_finished_event(
+                    engine,
+                    _parse_message(json.loads(a_message.body)))
+            except events.NotFound as exc:
+                print(f'skipping {a_message!r} because of {exc}')
             a_message.delete()
 
 
-# TODO: validate data
 def _parse_message(data: dict) -> models.Game:
     result = models.GameResult(data['white_score'], data['black_score'])
     return models.Game(
