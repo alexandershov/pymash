@@ -10,9 +10,10 @@ def test_load_most_popular(pymash_engine, monkeypatch):
         models.GithubRepo(
             name='django',
             url='https://github.com/django/django',
+            zipball_url='https://api.github.com/repos/django/django/zipball',
             num_stars=25000)])
     monkeypatch.setattr(loader, 'find_most_popular_github_repos', find_mock)
-    loader.load_most_popular(pymash_engine)
+    loader.load_most_popular(pymash_engine, 'python', 1000)
     _assert_repo_was_loaded(pymash_engine)
 
 
