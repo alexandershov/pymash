@@ -8,6 +8,7 @@ import datetime as dt
 import pytest
 
 from pymash import process_finished_games
+from pymash import events
 from pymash import models
 from pymash.tables import *
 
@@ -98,18 +99,6 @@ def _assert_game_not_saved(pymash_engine, game):
 def _convert_games_to_messages(games: tp.List[models.Game]):
     result = []
     for a_game in games:
-        body = json.dumps(_make_event_from_game(a_game))
+        body = json.dumps(events.make_event_from_game(a_game))
         result.append(mock.Mock(body=body))
     return result
-
-
-# TODO: remove duplication with the main code
-def _make_event_from_game(game: models.Game) -> dict:
-    return {
-        'game_id': game.game_id,
-        'white_id': game.white_id,
-        'black_id': game.black_id,
-        'white_score': game.result.white_score,
-        'black_score': game.result.black_score,
-        'occurred_at': dt.datetime.utcnow().isoformat(),
-    }

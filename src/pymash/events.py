@@ -20,7 +20,13 @@ class NotFound(BaseError):
 
 # TODO: mock it better!
 async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
-    message = {
+    event = make_event_from_game(game)
+    await _ensure_games_queue_is_ready(app)
+    await app['games_queue'].send_message(MessageBody=json.dumps(event))
+
+
+def make_event_from_game(game: models.Game) -> dict:
+    return {
         'game_id': game.game_id,
         'white_id': game.white_id,
         'black_id': game.black_id,
@@ -28,8 +34,6 @@ async def post_game_finished_event(app: web.Application, game: models.Game) -> N
         'black_score': game.result.black_score,
         'occurred_at': dt.datetime.utcnow().isoformat(),
     }
-    await _ensure_games_queue_is_ready(app)
-    await app['games_queue'].send_message(MessageBody=json.dumps(message))
 
 
 async def _ensure_games_queue_is_ready(app):
