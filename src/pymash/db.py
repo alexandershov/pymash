@@ -99,6 +99,7 @@ def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
                 raise GameResultChanged
 
 
+# TODO: return models.Repo and use it in caller
 def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
     with engine.connect() as conn:
         insert_data = {
@@ -108,13 +109,16 @@ def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
             Repos.c.rating: models.Repo.DEFAULT_RATING,
         }
         update_data = {
-            Repos.c.github_id.key: github_repo.github_id,
             Repos.c.name.key: github_repo.name,
             Repos.c.url.key: github_repo.url,
         }
         conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(
             index_elements=[Repos.c.github_id],
             set_=update_data))
+
+
+def update_functions(engine, github_repo, functions):
+    pass
 
 
 def _find_many_by_ids(engine, ids, table, id_column):

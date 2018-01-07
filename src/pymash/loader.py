@@ -1,3 +1,4 @@
+import glob
 import tempfile
 import typing as tp
 import urllib.request as urllib_request
@@ -9,6 +10,7 @@ import os
 from pymash import cfg
 from pymash import db
 from pymash import models
+from pymash import parser
 
 
 def load_most_popular(engine, language, limit):
@@ -41,7 +43,20 @@ def _unzip_file(path, output_dir):
 def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
     with tempfile.TemporaryFile() as temp_file:
         db.save_github_repo(engine, github_repo)
-        return
         urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
         with tempfile.TemporaryDirectory() as temp_dir:
             _unzip_file(temp_file.name, temp_dir.name)
+            for a_file in _find_files(temp_dir.name, 'py'):
+                with open(a_file) as fileobj:
+                    functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
+                    # TODO: set limit on a number of functions & pick the most suitable functions
+                    db.update_functions(engine, github_repo, functions)
+
+
+def _find_files(directory, extension):
+    files = []
+    pattern = os.path.join(directory, f'**/*.{extension}')
+    for path in glob.iglob(pattern, recursive=True):
+        full_path = os.path.join(directory, path)
+        files.append(full_path)
+    return files
