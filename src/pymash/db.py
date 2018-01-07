@@ -117,8 +117,13 @@ def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
             set_=update_data))
 
 
-def update_functions(engine, github_repo, functions):
-    pass
+def update_functions(engine, repo: models.Repo, functions):
+    return
+    # with engine.connect() as conn:
+    #     with conn.begin():
+    #         conn.execute(Functions.update().where(Functions.c.repo_id = repo.repo_id).values(
+    #             {Functions.c.is_active.key: False}
+    #         ))
 
 
 def _find_many_by_ids(engine, ids, table, id_column):
@@ -151,6 +156,7 @@ def _make_function_from_db_row(row: dict) -> models.Function:
     return models.Function(
         function_id=row[Functions.c.function_id],
         repo_id=row[Functions.c.repo_id],
+        # TODO: add is_active
         text=row[Functions.c.text])
 
 

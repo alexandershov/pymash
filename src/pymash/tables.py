@@ -21,6 +21,7 @@ class _FunctionDbModel(Base):
     function_id = sa.Column(sa.BigInteger, primary_key=True, nullable=False)
     repo_id = sa.Column(sa.ForeignKey(Repos.c.repo_id), nullable=False)
     text = sa.Column(sa.Text, nullable=False)
+    is_active = sa.Column(sa.Boolean, nullable=False)
     random = sa.Column(sa.Float, server_default=sa.func.random(), index=True, nullable=False)
 
 

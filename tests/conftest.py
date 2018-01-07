@@ -65,12 +65,14 @@ def add_functions_and_repos(pymash_engine):
             Functions.c.function_id: 666,
             Functions.c.repo_id: 1,
             Functions.c.text: 'def django(): return 1',
+            Functions.c.is_active: True,
             Functions.c.random: 0.3,
         }))
         conn.execute(Functions.insert().values({
             Functions.c.function_id: 777,
             Functions.c.repo_id: 2,
             Functions.c.text: 'def flask(): return 2',
+            Functions.c.is_active: True,
             Functions.c.random: 0.6,
         }))
 
