@@ -29,6 +29,7 @@ def main(is_infinite=True):
             a_message.delete()
         if not is_infinite:
             break
+    # TODO: call .dispose() under try/finally or context manager
     engine.dispose()
 
 
