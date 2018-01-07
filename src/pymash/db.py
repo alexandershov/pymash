@@ -31,7 +31,7 @@ async def find_repos_order_by_rating(engine) -> tp.List[models.Repo]:
     return repos
 
 
-def _make_repo_from_db_row(row: dict) -> models.Repo:
+def make_repo_from_db_row(row: dict) -> models.Repo:
     return models.Repo(
         repo_id=row[Repos.c.repo_id],
         github_id=row[Repos.c.github_id],
@@ -75,7 +75,7 @@ def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
         ids=repo_ids,
         table=Repos,
         id_column=Repos.c.repo_id)
-    return list(map(_make_repo_from_db_row, rows))
+    return list(map(make_repo_from_db_row, rows))
 
 
 def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
@@ -117,7 +117,7 @@ def save_github_repo(engine, github_repo: models.GithubRepo) -> models.Repo:
             set_=update_data).returning(*Repos.columns))
         rows = list(rows)
         assert len(rows) == 1
-        return _make_repo_from_db_row(rows[0])
+        return make_repo_from_db_row(rows[0])
 
 
 def update_functions(engine, repo: models.Repo, functions):

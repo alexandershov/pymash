@@ -2,6 +2,7 @@ from unittest import mock
 
 import os
 
+from pymash import db
 from pymash import loader
 from pymash import models
 from pymash.tables import *
@@ -49,8 +50,19 @@ def _add_data(pymash_engine):
 def _assert_repo_was_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         rows = list(conn.execute(Repos.select()))
-    # TODO: check fields
+        django_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1001)))[0]
+        flask_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1002)))[0]
     assert len(rows) == 2
+
+    django_repo = db.make_repo_from_db_row(django_row)
+    assert django_repo.name == 'django'
+    assert django_repo.url == 'https://github.com/django/django'
+    assert django_repo.rating == models.Repo.DEFAULT_RATING
+
+    flask_repo = db.make_repo_from_db_row(flask_row)
+    assert flask_repo.name == 'flask'
+    assert flask_repo.url == 'https://github.com/pallets/flask'
+    assert flask_repo.rating == 1900
 
 
 def _assert_functions_were_loaded(pymash_engine):
