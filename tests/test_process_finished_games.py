@@ -28,12 +28,16 @@ def test_process_game_finished_event_twice(pymash_engine, add_functions_and_repo
     _check_game_and_repos(pymash_engine, game)
 
 
-@pytest.mark.skip
-def test_process_different_game_finished_event_twice(pymash_engine, add_functions_and_repos):
+def test_process_different_game_finished_event_twice(pymash_engine, add_functions_and_repos, monkeypatch):
     game = _get_game()
-    _check_game_and_repos(pymash_engine, game, game)
+    _monkeypatch_boto3(monkeypatch, [game])
+    process_finished_games.main(is_infinite=False)
+    _check_game_and_repos(pymash_engine, game)
+
     changed_game = _get_game(result=models.WHITE_WINS_RESULT)
-    _check_game_and_repos(pymash_engine, changed_game, game)
+    _monkeypatch_boto3(monkeypatch, [changed_game])
+    process_finished_games.main(is_infinite=False)
+    _check_game_and_repos(pymash_engine, game)
 
 
 def _check_game_and_repos(pymash_engine, expected_game):
