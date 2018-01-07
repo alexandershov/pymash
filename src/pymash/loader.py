@@ -41,12 +41,12 @@ def _unzip_file(path, output_dir):
 
 
 def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
-    with tempfile.TemporaryFile() as temp_file:
+    with tempfile.NamedTemporaryFile() as temp_file:
         db.save_github_repo(engine, github_repo)
         urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
         with tempfile.TemporaryDirectory() as temp_dir:
-            _unzip_file(temp_file.name, temp_dir.name)
-            for a_file in _find_files(temp_dir.name, 'py'):
+            _unzip_file(temp_file.name, temp_dir)
+            for a_file in _find_files(temp_dir, 'py'):
                 with open(a_file) as fileobj:
                     functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
                     # TODO: set limit on a number of functions & pick the most suitable functions
