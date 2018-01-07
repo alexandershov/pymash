@@ -1,4 +1,6 @@
 import typing as tp
+import urllib.request as urllib_request
+import zipfile
 
 import github
 from pymash import cfg
@@ -25,6 +27,11 @@ def _parse_github_repo(repo) -> models.GithubRepo:
         url=repo.html_url,
         zipball_url=repo.get_archive_link('zipball'),
         num_stars=repo.stargazers_count)
+
+
+def unzip_file(path, output_dir):
+    with zipfile.ZipFile(path) as z:
+        z.extractall(path=output_dir)
 
 
 def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
