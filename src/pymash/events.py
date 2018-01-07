@@ -27,12 +27,12 @@ async def post_game_finished_event(app: web.Application, game: models.Game) -> N
         'black_score': game.result.black_score,
         'occurred_at': dt.datetime.utcnow(),
     }
-
+    await _ensure_games_queue_is_ready(app)
     await app['games_queue'].send_message(MessageBody=json.dumps(message))
 
 
 async def _ensure_games_queue_is_ready(app):
-    if 'pymash_queue' in app:
+    if 'games_queue' in app:
         return
     app['games_queue'] = await app['sqs_resource'].get_queue_by_name(QueueName=app['config'].sqs_games_queue_name)
 
