@@ -47,7 +47,7 @@ async def try_to_find_two_random_functions(engine) -> tp.List[models.Function]:
     select_two_functions = select_some_function.union_all(select_another_function)
     async with engine.acquire() as conn:
         rows = await conn.execute(select_two_functions)
-    return list(map(_make_function_from_db_row, rows))
+    return list(map(make_function_from_db_row, rows))
 
 
 def find_many_functions_by_ids(engine, function_ids) -> tp.List[models.Function]:
@@ -56,7 +56,7 @@ def find_many_functions_by_ids(engine, function_ids) -> tp.List[models.Function]
         ids=function_ids,
         table=Functions,
         id_column=Functions.c.function_id)
-    return list(map(_make_function_from_db_row, rows))
+    return list(map(make_function_from_db_row, rows))
 
 
 def find_game_by_id(engine, game_id) -> models.Game:
@@ -168,7 +168,7 @@ def _make_find_random_function_query():
     return result
 
 
-def _make_function_from_db_row(row: dict) -> models.Function:
+def make_function_from_db_row(row: dict) -> models.Function:
     return models.Function(
         function_id=row[Functions.c.function_id],
         repo_id=row[Functions.c.repo_id],

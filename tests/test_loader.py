@@ -1,6 +1,6 @@
-from unittest import mock
-
 import os
+import typing as tp
+from unittest import mock
 
 from pymash import db
 from pymash import loader
@@ -45,6 +45,13 @@ def _add_data(pymash_engine):
             Functions.c.is_active: True,
             Functions.c.random: 0.6,
         }))
+        conn.execute(Functions.insert().values({
+            Functions.c.function_id: 888,
+            Functions.c.repo_id: 2,
+            Functions.c.text: 'def mul(x, y):\n    return x * y',
+            Functions.c.is_active: True,
+            Functions.c.random: 0.7,
+        }))
 
 
 def _assert_repo_was_loaded(pymash_engine):
@@ -68,8 +75,30 @@ def _assert_repo_was_loaded(pymash_engine):
 def _assert_functions_were_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         rows = list(conn.execute(Functions.select()))
-    # TODO: check fields
-    assert len(rows) == 4
+        django_rows = list(conn.execute(Functions.select(Functions.c.repo_id != 2)))
+        flask_rows = list(conn.execute(Functions.select(Functions.c.repo_id == 2)))
+    assert len(rows) == 5
+    assert len(django_rows) == 2
+    assert len(flask_rows) == 3
+    django_functions = list(map(db.make_function_from_db_row, django_rows))
+    flask_functions = list(map(db.make_function_from_db_row, flask_rows))
+    assert _group_by_text(django_functions) == {
+        'def add(x, y):\n    return x + y': True,
+        'def sub(x, y):\n    return x - y': True,
+    }
+    assert _group_by_text(flask_functions) == {
+        'def add(x, y):\n    return x + y': True,
+        'def sub(x, y):\n    return x - y': True,
+        'def mul(x, y):\n    return x * y': False,
+    }
+
+
+def _group_by_text(functions: tp.List[models.Function]):
+    assert len({a_function.text for a_function in functions}) == len(functions)
+    return {
+        a_function.text: a_function.is_active
+        for a_function in functions
+    }
 
 
 def _make_data_dir_path(relative_name):
