@@ -1,5 +1,6 @@
 import json
 
+import datetime as dt
 from aiohttp import web
 
 from pymash import db
@@ -24,6 +25,7 @@ async def post_game_finished_event(app: web.Application, game: models.Game) -> N
         'black_id': game.black_id,
         'white_score': game.result.white_score,
         'black_score': game.result.black_score,
+        'occurred_at': dt.datetime.utcnow(),
     }
 
     await app['games_queue'].send_message(MessageBody=json.dumps(message))
