@@ -18,6 +18,7 @@ class NotFound(BaseError):
 # TODO: add cron runner and connect post/process functions to sqs
 
 
+# TODO: mock it better!
 async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
     message = {
         'game_id': game.game_id,
@@ -25,7 +26,7 @@ async def post_game_finished_event(app: web.Application, game: models.Game) -> N
         'black_id': game.black_id,
         'white_score': game.result.white_score,
         'black_score': game.result.black_score,
-        'occurred_at': dt.datetime.utcnow(),
+        'occurred_at': dt.datetime.utcnow().isoformat(),
     }
     await _ensure_games_queue_is_ready(app)
     await app['games_queue'].send_message(MessageBody=json.dumps(message))

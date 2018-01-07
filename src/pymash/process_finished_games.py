@@ -8,7 +8,7 @@ from pymash import events
 from pymash import models
 
 
-def main():
+def main(is_infinite=True):
     config = cfg.get_config()
     sqs = boto3.resource(
         'sqs',
@@ -27,6 +27,9 @@ def main():
             except events.NotFound as exc:
                 print(f'skipping {a_message!r} because of {exc}')
             a_message.delete()
+        if not is_infinite:
+            break
+    engine.dispose()
 
 
 def _parse_message(data: dict) -> models.Game:
