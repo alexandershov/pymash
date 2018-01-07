@@ -93,7 +93,8 @@ UNKNOWN_RESULT = UnknownResult()
 
 
 class GithubRepo:
-    def __init__(self, name: str, url: str, zipball_url: str, num_stars: int) -> None:
+    def __init__(self, github_id: int, name: str, url: str, zipball_url: str, num_stars: int) -> None:
+        self.github_id = github_id
         self.name = name
         self.url = url
         self.zipball_url = zipball_url
@@ -103,8 +104,9 @@ class GithubRepo:
 class Repo:
     DEFAULT_RATING = 1800
 
-    def __init__(self, repo_id: int, name: str, url: str, rating: float):
+    def __init__(self, repo_id: int, github_id: int, name: str, url: str, rating: float):
         self.repo_id = repo_id
+        self.github_id = github_id
         self.name = name
         self.url = url
         self.rating = rating

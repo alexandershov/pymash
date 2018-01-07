@@ -41,6 +41,7 @@ def test_match_unknown_result_failure():
 def _make_repo(repo_id, rating):
     return models.Repo(
         repo_id=repo_id,
+        github_id=1000,
         name='some_repo_name',
         url='http://some.repo.url',
         rating=rating)

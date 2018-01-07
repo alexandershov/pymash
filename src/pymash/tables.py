@@ -7,7 +7,8 @@ Base = declarative.declarative_base()
 class _RepoDbModel(Base):
     __tablename__ = 'repos'
     repo_id = sa.Column(sa.BigInteger, primary_key=True, nullable=False)
-    url = sa.Column(sa.Text, nullable=False, unique=True)
+    github_id = sa.Column(sa.BigInteger, unique=True, nullable=False)
+    url = sa.Column(sa.Text, nullable=False)
     name = sa.Column(sa.Text, nullable=False)
     rating = sa.Column(sa.Float, nullable=False, index=True)
 

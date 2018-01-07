@@ -168,11 +168,14 @@ async def _clean_tables(app):
 
 
 def _add_some_repo_with_rating(pymash_engine, rating):
-    name = 'some_repo_name_' + str(random.randint(1, 1000))
+    # TODO: there's a possibility of unique constraint violation (1 case in 1000)
+    github_id = random.randint(1, 1000)
+    name = 'some_repo_name_' + str(github_id)
     url = f'https://github.com/org/{name}'
     with pymash_engine.connect() as conn:
         conn.execute(Repos.insert().values({
             Repos.c.name: name,
+            Repos.c.github_id: github_id,
             Repos.c.url: url,
             Repos.c.rating: rating,
         }))

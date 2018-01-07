@@ -49,12 +49,14 @@ def add_functions_and_repos(pymash_engine):
     with pymash_engine.connect() as conn:
         conn.execute(Repos.insert().values({
             Repos.c.repo_id: 1,
+            Repos.c.github_id: 1001,
             Repos.c.name: 'django',
             Repos.c.url: 'https://github.com/django/django',
             Repos.c.rating: 1800,
         }))
         conn.execute(Repos.insert().values({
             Repos.c.repo_id: 2,
+            Repos.c.github_id: 1002,
             Repos.c.name: 'flask',
             Repos.c.url: 'https://github.com/pallete/flask',
             Repos.c.rating: 1900,

@@ -34,6 +34,7 @@ async def find_repos_order_by_rating(engine) -> tp.List[models.Repo]:
 def _make_repo_from_db_row(row: dict) -> models.Repo:
     return models.Repo(
         repo_id=row[Repos.c.repo_id],
+        github_id=row[Repos.c.github_id],
         name=row[Repos.c.name],
         url=row[Repos.c.url],
         rating=row[Repos.c.rating])
@@ -101,16 +102,18 @@ def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
 def save_github_repo(engine, github_repo: models.GithubRepo) -> None:
     with engine.connect() as conn:
         insert_data = {
+            Repos.c.github_id: github_repo.github_id,
             Repos.c.name: github_repo.name,
             Repos.c.url: github_repo.url,
             Repos.c.rating: models.Repo.DEFAULT_RATING,
         }
         update_data = {
+            Repos.c.github_id.key: github_repo.github_id,
             Repos.c.name.key: github_repo.name,
             Repos.c.url.key: github_repo.url,
         }
         conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(
-            index_elements=[Repos.c.url],
+            index_elements=[Repos.c.github_id],
             set_=update_data))
 
 

@@ -8,6 +8,7 @@ from pymash.tables import *
 def test_load_most_popular(pymash_engine, monkeypatch):
     find_mock = mock.Mock(return_value=[
         models.GithubRepo(
+            github_id=1,
             name='django',
             url='https://github.com/django/django',
             zipball_url='https://api.github.com/repos/django/django/zipball',
