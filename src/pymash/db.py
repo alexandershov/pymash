@@ -40,6 +40,7 @@ def _make_repo_from_db_row(row: dict) -> models.Repo:
         rating=row[Repos.c.rating])
 
 
+# TODO: select only active functions
 async def try_to_find_two_random_functions(engine) -> tp.List[models.Function]:
     select_some_function = _make_find_random_function_query()
     select_another_function = _make_find_random_function_query()
