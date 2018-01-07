@@ -17,6 +17,8 @@ def load_most_popular(engine, language, limit):
     repos = find_most_popular_github_repos(language, limit)
     for a_repo in repos:
         load_github_repo(engine, a_repo)
+    # TODO: you need to deactivate all functions from repos that were in db but
+    # in most_popular_list
 
 
 def find_most_popular_github_repos(language: str, limit: int) -> tp.List[models.GithubRepo]:
