@@ -58,7 +58,7 @@ def add_functions_and_repos(pymash_engine):
             Repos.c.repo_id: 2,
             Repos.c.github_id: 1002,
             Repos.c.name: 'flask',
-            Repos.c.url: 'https://github.com/pallete/flask',
+            Repos.c.url: 'https://github.com/pallets/flask',
             Repos.c.rating: 1900,
         }))
         conn.execute(Functions.insert().values({
