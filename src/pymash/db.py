@@ -156,7 +156,7 @@ def _make_function_from_db_row(row: dict) -> models.Function:
     return models.Function(
         function_id=row[Functions.c.function_id],
         repo_id=row[Functions.c.repo_id],
-        # TODO: add is_active
+        is_active=row[Functions.c.is_active],
         text=row[Functions.c.text])
 
 

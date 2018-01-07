@@ -122,9 +122,10 @@ class Repo:
 
 
 class Function:
-    def __init__(self, function_id: int, repo_id: int, text: str) -> None:
+    def __init__(self, function_id: int, repo_id: int, is_active: bool, text: str) -> None:
         self.function_id = function_id
         self.repo_id = repo_id
+        self.is_active = is_active
         self.text = text
 
 
