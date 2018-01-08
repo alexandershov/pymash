@@ -22,7 +22,7 @@ class ConfigError(BaseError):
 
 _ENV_CONFIG_SCHEMA = vol.Schema(
     {
-        _EnvKey.DSN: str,
+        _EnvKey.DSN: vol.Url(),
         _EnvKey.GAME_HASH_SALT: str,
         _EnvKey.AWS_REGION_NAME: str,
         _EnvKey.AWS_ACCESS_KEY_ID: str,
