@@ -16,18 +16,12 @@ def main():
     web.run_app(app, host=args.host, port=args.port)
 
 
-# TODO: should we pass a loop here?
 def create_app() -> web.Application:
     app = web.Application()
     config = cfg.get_config()
     app['config'] = config
-    app['sqs_resource'] = aioboto3.resource(
-        'sqs',
-        loop=app.loop,
-        region_name=config.aws_region_name,
-        aws_access_key_id=config.aws_access_key_id,
-        aws_secret_access_key=config.aws_secret_access_key)
     app.on_startup.append(_create_engine)
+    app.on_startup.append(_create_sqs_resource)
     app.on_cleanup.append(_close_engine)
     app.on_cleanup.append(_close_sqs_resource)
     routes.setup_routes(app)
@@ -38,7 +32,17 @@ def create_app() -> web.Application:
 
 
 async def _create_engine(app):
-    app['db_engine'] = await sa.create_engine(app['config'].dsn)
+    app['db_engine'] = await sa.create_engine(app['config'].dsn, loop=app.loop)
+
+
+async def _create_sqs_resource(app):
+    config = app['config']
+    app['sqs_resource'] = aioboto3.resource(
+        'sqs',
+        loop=app.loop,
+        region_name=config.aws_region_name,
+        aws_access_key_id=config.aws_access_key_id,
+        aws_secret_access_key=config.aws_secret_access_key)
 
 
 async def _close_engine(app):

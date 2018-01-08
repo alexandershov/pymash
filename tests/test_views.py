@@ -108,7 +108,7 @@ async def test_post_game(data, is_success, test_client, monkeypatch):
     games_queue_mock.send_message.return_value = _make_future_with_result(None)
     sqs_resource_mock = mock.Mock()
     sqs_resource_mock.get_queue_by_name.return_value = _make_future_with_result(games_queue_mock)
-    monkeypatch.setitem(app, 'sqs_resource', sqs_resource_mock)
+    app.on_startup.append(lambda app_: monkeypatch.setitem(app_, 'sqs_resource', sqs_resource_mock))
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
                            data=data)
