@@ -2,9 +2,9 @@ import random
 import typing as tp
 
 import sqlalchemy as sa
+import sqlalchemy.dialects.postgresql as postgresql
 import sqlalchemy.exc as sa_exc
 from psycopg2 import errorcodes
-from sqlalchemy.dialects.postgresql import insert
 
 from pymash import models
 from pymash.tables import *
@@ -108,7 +108,7 @@ def save_github_repo(engine, github_repo: models.GithubRepo) -> models.Repo:
             Repos.c.name.key: github_repo.name,
             Repos.c.url.key: github_repo.url,
         }
-        rows = conn.execute(insert(Repos).values(insert_data).on_conflict_do_update(
+        rows = conn.execute(postgresql.insert(Repos).values(insert_data).on_conflict_do_update(
             index_elements=[Repos.c.github_id],
             set_=update_data).returning(*Repos.columns))
         rows = list(rows)
@@ -131,7 +131,7 @@ def update_functions(engine, repo: models.Repo, functions):
                 update_data = {
                     Functions.c.is_active.key: True,
                 }
-                statement = insert(Functions).values(insert_data).on_conflict_do_update(
+                statement = postgresql.insert(Functions).values(insert_data).on_conflict_do_update(
                     index_elements=[Functions.c.repo_id, Functions.c.text],
                     set_=update_data
                 )
