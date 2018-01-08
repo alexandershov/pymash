@@ -2,6 +2,8 @@ import os
 import typing as tp
 from unittest import mock
 
+import github
+
 from pymash import db
 from pymash import loader
 from pymash import models
@@ -9,20 +11,25 @@ from pymash.tables import *
 
 
 def test_load_most_popular(pymash_engine, monkeypatch):
-    find_mock = mock.Mock(return_value=[
-        models.GithubRepo(
-            github_id=1001,
-            name='django',
-            url='https://github.com/django/django',
-            zipball_url=_make_data_dir_path('file_with_two_functions.py.zip'),
-            num_stars=25000),
-        models.GithubRepo(
-            github_id=1002,
-            name='flask',
-            url='https://github.com/pallets/flask',
-            zipball_url=_make_data_dir_path('file_with_two_functions.py.zip'),
-            num_stars=26000)])
-    monkeypatch.setattr(loader, 'find_most_popular_github_repos', find_mock)
+    archive_link_mock = mock.Mock(return_value=_make_data_dir_path('file_with_two_functions.py.zip'))
+    github_client_repos = [
+        mock.Mock(
+            id=1001,
+            html_url='https://github.com/django/django',
+            get_archive_link=archive_link_mock,
+            stargazers_count=25000),
+        mock.Mock(
+            id=1002,
+            html_url='https://github.com/pallets/flask',
+            get_archive_link=archive_link_mock,
+            stargazers_count=26000),
+    ]
+    # TODO: is there a better way? (name kwarg conflicts with the Mock.name attribute for __repr__)
+    github_client_repos[0].name = 'django'
+    github_client_repos[1].name = 'flask'
+    github_mock = mock.Mock()
+    github_mock.return_value.search_repositories.return_value = github_client_repos
+    monkeypatch.setattr(github, 'Github', github_mock)
     _add_data(pymash_engine)
     loader.load_most_popular(pymash_engine, 'python', 1000)
     _assert_repo_was_loaded(pymash_engine)

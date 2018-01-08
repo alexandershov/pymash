@@ -17,9 +17,8 @@ _NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 
 def load_most_popular(engine, language, limit):
-    repos = find_most_popular_github_repos(language, limit)
-    for a_repo in repos:
-        load_github_repo(engine, a_repo)
+    github_repos = find_most_popular_github_repos(language, limit)
+    load_many_github_repos(engine, github_repos)
     # TODO: you need to deactivate all functions from repos that were in db but
     # in most_popular_list & probably deactivate these repos and don't show them in a /leaders list
 
@@ -43,6 +42,11 @@ def _parse_github_repo(github_repo) -> models.GithubRepo:
 def _unzip_file(path, output_dir):
     with zipfile.ZipFile(path) as z:
         z.extractall(path=output_dir)
+
+
+def load_many_github_repos(engine, github_repos: tp.List[models.GithubRepo]) -> None:
+    for a_github_repo in github_repos:
+        load_github_repo(engine, a_github_repo)
 
 
 def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
