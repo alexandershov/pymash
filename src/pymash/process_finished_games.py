@@ -20,6 +20,7 @@ def main(is_infinite=True):
     games_queue = sqs.get_queue_by_name(QueueName=config.sqs_games_queue_name)
     with _Disposing(sa.create_engine(config.dsn)) as engine:
         while True:
+            # TODO: do we need sleeping here?
             messages = games_queue.receive_messages(MaxNumberOfMessages=10)
             for a_message in messages:
                 try:
