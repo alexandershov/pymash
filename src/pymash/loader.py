@@ -16,18 +16,24 @@ from pymash import parser
 _NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 
-def load_most_popular(engine, language, limit):
-    github_repos = find_most_popular_github_repos(language, limit)
+def load_most_popular(engine, language, limit, extra_repos_full_names=()):
+    github_client = _get_github_client()
+    github_repos = find_most_popular_github_repos(github_client, language, limit)
+    for full_name in extra_repos_full_names:
+        github_repos.append(_parse_github_repo(github_client.get_repo(full_name)))
     load_many_github_repos(engine, github_repos)
     # TODO: you need to deactivate all functions from repos that were in db but
     # in most_popular_list & probably deactivate these repos and don't show them in a /leaders list
 
 
-def find_most_popular_github_repos(language: str, limit: int) -> tp.List[models.GithubRepo]:
-    config = cfg.get_config()
-    github_client = github.Github(config.github_token)
+def find_most_popular_github_repos(github_client, language: str, limit: int) -> tp.List[models.GithubRepo]:
     repositories = github_client.search_repositories(f'language:{language}', sort='stars')
     return list(map(_parse_github_repo, repositories[:limit]))
+
+
+def _get_github_client():
+    config = cfg.get_config()
+    return github.Github(config.github_token)
 
 
 def _parse_github_repo(github_repo) -> models.GithubRepo:

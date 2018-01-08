@@ -3,6 +3,7 @@ import typing as tp
 from unittest import mock
 
 import github
+import sqlalchemy as sa
 
 from pymash import db
 from pymash import loader
@@ -24,14 +25,21 @@ def test_load_most_popular(pymash_engine, monkeypatch):
             get_archive_link=archive_link_mock,
             stargazers_count=26000),
     ]
-    # TODO: is there a better way? (name kwarg conflicts with the Mock.name attribute for __repr__)
+    # TODO: is there a better way? (`name` kwarg conflicts with the Mock.name attribute for __repr__)
     github_client_repos[0].name = 'django'
     github_client_repos[1].name = 'flask'
+    pymash_mock = mock.Mock(
+        id=1003,
+        html_url='https://github.com/alexandershov/pymash',
+        get_archive_link=archive_link_mock,
+        stargazers_count=1)
+    pymash_mock.name = 'pymash'
     github_mock = mock.Mock()
     github_mock.return_value.search_repositories.return_value = github_client_repos
+    github_mock.return_value.get_repo.return_value = pymash_mock
     monkeypatch.setattr(github, 'Github', github_mock)
     _add_data(pymash_engine)
-    loader.load_most_popular(pymash_engine, 'python', 1000)
+    loader.load_most_popular(pymash_engine, 'python', 1000, extra_repos_full_names=['alexandershov/pymash'])
     _assert_repo_was_loaded(pymash_engine)
     _assert_functions_were_loaded(pymash_engine)
 
@@ -66,7 +74,8 @@ def _assert_repo_was_loaded(pymash_engine):
         rows = list(conn.execute(Repos.select()))
         django_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1001)))[0]
         flask_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1002)))[0]
-    assert len(rows) == 2
+        pymash_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1003)))[0]
+    assert len(rows) == 3
 
     django_repo = db.make_repo_from_db_row(django_row)
     assert django_repo.name == 'django'
@@ -78,17 +87,28 @@ def _assert_repo_was_loaded(pymash_engine):
     assert flask_repo.url == 'https://github.com/pallets/flask'
     assert flask_repo.rating == 1900
 
+    pymash_repo = db.make_repo_from_db_row(pymash_row)
+    assert pymash_repo.name == 'pymash'
+    assert pymash_repo.url == 'https://github.com/alexandershov/pymash'
+    assert pymash_repo.rating == 1800
+
 
 def _assert_functions_were_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         rows = list(conn.execute(Functions.select()))
-        django_rows = list(conn.execute(Functions.select(Functions.c.repo_id != 2)))
-        flask_rows = list(conn.execute(Functions.select(Functions.c.repo_id == 2)))
-    assert len(rows) == 5
+        django_rows = list(conn.execute(
+            Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == 'django')).select()))
+        flask_rows = list(conn.execute(
+            Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == 'flask')).select()))
+        pymash_rows = list(conn.execute(
+            Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == 'pymash')).select()))
+    assert len(rows) == 7
     assert len(django_rows) == 2
     assert len(flask_rows) == 3
+    assert len(pymash_rows) == 2
     django_functions = list(map(db.make_function_from_db_row, django_rows))
     flask_functions = list(map(db.make_function_from_db_row, flask_rows))
+    pymash_functions = list(map(db.make_function_from_db_row, pymash_rows))
     assert _group_by_text(django_functions) == {
         'def add(x, y):\n    return x + y': True,
         'def sub(x, y):\n    return x - y': True,
@@ -97,6 +117,10 @@ def _assert_functions_were_loaded(pymash_engine):
         'def add(x, y):\n    return x + y': True,
         'def sub(x, y):\n    return x - y': True,
         'def mul(x, y):\n    return x * y': False,
+    }
+    assert _group_by_text(pymash_functions) == {
+        'def add(x, y):\n    return x + y': True,
+        'def sub(x, y):\n    return x - y': True,
     }
 
 
