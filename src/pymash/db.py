@@ -53,8 +53,7 @@ def find_many_functions_by_ids(engine, function_ids) -> tp.List[models.Function]
     rows = _find_many_by_ids(
         engine=engine,
         ids=function_ids,
-        table=Functions,
-        id_column=Functions.c.function_id)
+        table=Functions)
     return list(map(make_function_from_db_row, rows))
 
 
@@ -62,8 +61,7 @@ def find_game_by_id(engine, game_id) -> models.Game:
     rows = _find_many_by_ids(
         engine=engine,
         ids=[game_id],
-        table=Games,
-        id_column=Games.c.game_id)
+        table=Games)
     assert len(rows) == 1
     return _make_game_from_db_row(rows[0])
 
@@ -72,8 +70,7 @@ def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
     rows = _find_many_by_ids(
         engine=engine,
         ids=repo_ids,
-        table=Repos,
-        id_column=Repos.c.repo_id)
+        table=Repos)
     return list(map(make_repo_from_db_row, rows))
 
 
@@ -141,8 +138,8 @@ def update_functions(engine, repo: models.Repo, functions):
                 conn.execute(statement)
 
 
-def _find_many_by_ids(engine, ids, table, id_column):
-    # TODO: is there a way to determine id_column automatically from table
+def _find_many_by_ids(engine, ids, table):
+    id_column = _get_id_column(table)
     with engine.connect() as conn:
         rows = list(conn.execute(table.select().where(id_column.in_(ids))))
     if len(rows) != len(ids):
@@ -151,6 +148,12 @@ def _find_many_by_ids(engine, ids, table, id_column):
         msg = f'ids {not_found_ids} does not exist in {table.name}'
         raise NotFound(msg)
     return rows
+
+
+def _get_id_column(table):
+    pkey_columns = list(table.primary_key.columns)
+    assert len(pkey_columns) == 1
+    return pkey_columns[0]
 
 
 def _make_update_rating_query(repo: models.Repo):
