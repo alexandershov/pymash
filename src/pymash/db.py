@@ -40,7 +40,6 @@ def make_repo_from_db_row(row: dict) -> models.Repo:
         rating=row[Repos.c.rating])
 
 
-# TODO: select only active functions
 async def try_to_find_two_random_functions(engine) -> tp.List[models.Function]:
     select_some_function = _make_find_random_function_query()
     select_another_function = _make_find_random_function_query()
@@ -163,8 +162,9 @@ def _make_find_random_function_query():
     x = random.random()
     select_max_random = Functions.select().with_only_columns(
         [sa.func.max(Functions.c.random)]).as_scalar()
-    gt_than_random = Functions.c.random >= sa.func.least(x, select_max_random)
-    result = Functions.select().where(gt_than_random).order_by(Functions.c.random).limit(1)
+    gte_than_random = Functions.c.random >= sa.func.least(x, select_max_random)
+    is_active = Functions.c.is_active.is_(True)
+    result = Functions.select().where(sa.and_(gte_than_random, is_active)).order_by(Functions.c.random).limit(1)
     return result
 
 
