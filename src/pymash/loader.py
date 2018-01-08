@@ -1,4 +1,5 @@
 import glob
+import random
 import tempfile
 import typing as tp
 import urllib.request as urllib_request
@@ -11,6 +12,8 @@ from pymash import cfg
 from pymash import db
 from pymash import models
 from pymash import parser
+
+_NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 
 def load_most_popular(engine, language, limit):
@@ -51,8 +54,9 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
             for a_file in _find_files(temp_dir, 'py'):
                 with open(a_file) as fileobj:
                     functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
-                    # TODO: set limit on a number of functions & pick the most suitable functions
-                    db.update_functions(engine, repo, functions)
+                    # TODO: pick the most suitable functions
+                    functions_to_update = random.sample(functions, min(_NUM_OF_FUNCTIONS_PER_REPO, len(functions)))
+                    db.update_functions(engine, repo, functions_to_update)
 
 
 def _find_files(directory, extension):
