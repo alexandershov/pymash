@@ -10,6 +10,7 @@ from aiopg.sa import result as aiopg_result
 from psycopg2 import errorcodes
 
 from pymash import models
+from pymash import parser
 from pymash.tables import *
 
 AsyncEngine = aiopg.sa.Engine
@@ -85,16 +86,7 @@ def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) 
     # TODO: check that doing execution_options doesn't permanently change connection when it will be returned to pool
     with engine.connect().execution_options(isolation_level='SERIALIZABLE') as conn:
         try:
-            with conn.begin():
-                conn.execute(Games.insert().values({
-                    Games.c.game_id: game.game_id,
-                    Games.c.white_id: game.white_id,
-                    Games.c.black_id: game.black_id,
-                    Games.c.white_score: game.result.white_score,
-                    Games.c.black_score: game.result.black_score,
-                }))
-                conn.execute(_make_update_rating_query(match.white))
-                conn.execute(_make_update_rating_query(match.black))
+            _insert_game_and_change_repo_ratings(conn, game, match)
         except sa_exc.IntegrityError as exc:
             assert Games.c.game_id.name in exc.params
             assert exc.orig.pgcode == errorcodes.UNIQUE_VIOLATION
@@ -103,7 +95,7 @@ def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) 
                 raise GameResultChanged
 
 
-def save_github_repo(engine, github_repo: models.GithubRepo) -> models.Repo:
+def save_github_repo(engine: Engine, github_repo: models.GithubRepo) -> models.Repo:
     with engine.connect() as conn:
         insert_data = {
             Repos.c.github_id: github_repo.github_id,
@@ -115,15 +107,14 @@ def save_github_repo(engine, github_repo: models.GithubRepo) -> models.Repo:
             Repos.c.name.key: github_repo.name,
             Repos.c.url.key: github_repo.url,
         }
-        rows = conn.execute(postgresql.insert(Repos).values(insert_data).on_conflict_do_update(
-            index_elements=[Repos.c.github_id],
-            set_=update_data).returning(*Repos.columns))
-        rows = list(rows)
+        query = postgresql.insert(Repos).values(insert_data).on_conflict_do_update(
+            index_elements=[Repos.c.github_id], set_=update_data).returning(*Repos.columns)
+        rows = list(conn.execute(query))
         assert len(rows) == 1
         return make_repo_from_db_row(rows[0])
 
 
-def update_functions(engine, repo: models.Repo, functions):
+def update_functions(engine: Engine, repo: models.Repo, functions: tp.List[parser.Function]) -> None:
     with engine.connect() as conn:
         with conn.begin():
             conn.execute(Functions.update().where(Functions.c.repo_id == repo.repo_id).values(
@@ -145,6 +136,19 @@ def update_functions(engine, repo: models.Repo, functions):
                 conn.execute(statement)
 
 
+def _insert_game_and_change_repo_ratings(conn, game: models.Game, match: models.Match) -> None:
+    with conn.begin():
+        conn.execute(Games.insert().values({
+            Games.c.game_id: game.game_id,
+            Games.c.white_id: game.white_id,
+            Games.c.black_id: game.black_id,
+            Games.c.white_score: game.result.white_score,
+            Games.c.black_score: game.result.black_score,
+        }))
+        conn.execute(_make_query_to_update_rating(match.white))
+        conn.execute(_make_query_to_update_rating(match.black))
+
+
 def _find_many_by_ids(engine, table, ids):
     id_column = _get_id_column(table)
     with engine.connect() as conn:
@@ -163,7 +167,7 @@ def _get_id_column(table):
     return pkey_columns[0]
 
 
-def _make_update_rating_query(repo: models.Repo):
+def _make_query_to_update_rating(repo: models.Repo):
     return Repos.update().where(Repos.c.repo_id == repo.repo_id).values(
         {Repos.c.rating: repo.rating})
 
