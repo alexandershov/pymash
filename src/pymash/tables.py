@@ -27,11 +27,11 @@ class _FunctionDbModel(Base):
 
 Functions = _FunctionDbModel.__table__
 # TODO: is there a better way?
-sa.Index('functions_unique_repo_id_text_idx',
+sa.Index('functions_repo_id_text_unique_idx',
          Functions.c.repo_id, Functions.c.text,
          unique=True)
 sa.Index(
-    'functions_is_active_random_idx',
+    'functions_is_active_random_partial_idx',
     Functions.c.is_active, Functions.c.random,
     postgresql_where=Functions.c.is_active.is_(True))
 
