@@ -130,7 +130,8 @@ def update_functions(engine: Engine, repo: models.Repo, functions: tp.List[parse
                     Functions.c.is_active.key: True,
                 }
                 statement = postgresql.insert(Functions).values(insert_data).on_conflict_do_update(
-                    index_elements=[Functions.c.repo_id, Functions.c.text],
+                    # TODO: DRY it up with the definition in tables.py
+                    index_elements=[Functions.c.repo_id, sa.func.md5(Functions.c.text)],
                     set_=update_data
                 )
                 conn.execute(statement)
