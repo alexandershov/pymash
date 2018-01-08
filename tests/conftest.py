@@ -75,6 +75,13 @@ def add_functions_and_repos(pymash_engine):
             Functions.c.is_active: True,
             Functions.c.random: 0.6,
         }))
+        conn.execute(Functions.insert().values({
+            Functions.c.function_id: 888,
+            Functions.c.repo_id: 2,
+            Functions.c.text: 'def not_active_flask(): return 2',
+            Functions.c.is_active: False,
+            Functions.c.random: 0.5,
+        }))
 
 
 def _run_system_commands(system_engine, *commands):

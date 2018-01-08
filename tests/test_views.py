@@ -16,6 +16,8 @@ from pymash.tables import *
 @pytest.mark.parametrize('random_values, is_success', [
     # normal case
     ([0.3, 0.6], True),
+    # we don't select deactivated functions (function_id=888)
+    ([0.3, 0.5], True),
     # if random value is too large, then we cut it to the largest possible value in the database
     # ([0.3, 0.7], True),
     # first game is with the same repo, second is ok

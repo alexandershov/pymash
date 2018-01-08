@@ -25,8 +25,8 @@ class _FunctionDbModel(Base):
     random = sa.Column(sa.Float, server_default=sa.func.random(), index=True, nullable=False)
 
 
-# TODO: is there a better way?
 Functions = _FunctionDbModel.__table__
+# TODO: is there a better way?
 sa.Index('functions_unique_repo_id_text_idx', Functions.c.repo_id, Functions.c.text, unique=True)
 
 
