@@ -33,6 +33,7 @@ def main(is_infinite=True):
                 break
 
 
+# TODO: make it public and move to a new file utils.py and use it in a scripts/create_db.py
 class _Disposing(contextlib.AbstractContextManager):
     def __init__(self, engine):
         self._engine = engine
