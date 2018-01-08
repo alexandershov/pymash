@@ -24,7 +24,7 @@ def create_app() -> web.Application:
     app['sqs_resource'] = aioboto3.resource(
         'sqs',
         loop=app.loop,
-        region_name=config.aws_region,
+        region_name=config.aws_region_name,
         aws_access_key_id=config.aws_access_key_id,
         aws_secret_access_key=config.aws_secret_access_key)
     app.on_startup.append(_create_engine)

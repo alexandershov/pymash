@@ -14,7 +14,7 @@ def main(is_infinite=True):
     config = cfg.get_config()
     sqs = boto3.resource(
         'sqs',
-        region_name=config.aws_region,
+        region_name=config.aws_region_name,
         aws_access_key_id=config.aws_access_key_id,
         aws_secret_access_key=config.aws_secret_access_key)
     games_queue = sqs.get_queue_by_name(QueueName=config.sqs_games_queue_name)
