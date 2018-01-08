@@ -9,13 +9,13 @@ from pymash import tables
 from pymash.tables import *
 
 
-@pytest.fixture(scope='session')
-def system_engine():
+@pytest.fixture(scope='session', name='system_engine')
+def fixture_system_engine():
     yield from _get_engine('postgres')
 
 
-@pytest.fixture(scope='session')
-def pymash_engine():
+@pytest.fixture(scope='session', name='pymash_engine')
+def fixture_pymash_engine():
     yield from _get_engine()
 
 
