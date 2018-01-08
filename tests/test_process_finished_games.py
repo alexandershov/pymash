@@ -11,14 +11,16 @@ from pymash import process_finished_games
 from pymash.tables import *
 
 
-def test_process_game_finished_event(pymash_engine, add_functions_and_repos, monkeypatch):
+@pytest.mark.usefixtures('add_functions_and_repos')
+def test_process_game_finished_event(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
     process_finished_games.main(is_infinite=False)
     _check_game_and_repos(pymash_engine, game)
 
 
-def test_process_game_finished_event_twice(pymash_engine, add_functions_and_repos, monkeypatch):
+@pytest.mark.usefixtures('add_functions_and_repos')
+def test_process_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
     process_finished_games.main(is_infinite=False)
@@ -27,7 +29,8 @@ def test_process_game_finished_event_twice(pymash_engine, add_functions_and_repo
     _check_game_and_repos(pymash_engine, game)
 
 
-def test_process_different_game_finished_event_twice(pymash_engine, add_functions_and_repos, monkeypatch):
+@pytest.mark.usefixtures('add_functions_and_repos')
+def test_process_different_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
     process_finished_games.main(is_infinite=False)
@@ -39,7 +42,8 @@ def test_process_different_game_finished_event_twice(pymash_engine, add_function
     _check_game_and_repos(pymash_engine, game)
 
 
-def test_process_game_finished_event_unknown_white_id(pymash_engine, add_functions_and_repos, monkeypatch):
+@pytest.mark.usefixtures('add_functions_and_repos')
+def test_process_game_finished_event_unknown_white_id(pymash_engine, monkeypatch):
     game = _get_game(white_id=1000000)
     _monkeypatch_boto3(monkeypatch, [game])
     process_finished_games.main(is_infinite=False)

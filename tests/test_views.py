@@ -27,7 +27,8 @@ from pymash.tables import *
     # (this has a change of happening ~ 1e-9 on production data)
     ([0.3, 0.3, 0.3, 0.3, 0.3, 0.3], False),
 ])
-async def test_show_game(random_values, is_success, test_client, monkeypatch, add_functions_and_repos):
+@pytest.mark.usefixtures('add_functions_and_repos')
+async def test_show_game(random_values, is_success, test_client, monkeypatch):
     values = collections.deque(random_values)
 
     def stateful_random():
