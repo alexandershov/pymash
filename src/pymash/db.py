@@ -1,9 +1,11 @@
 import random
 import typing as tp
 
+import aiopg.sa
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as postgresql
 import sqlalchemy.exc as sa_exc
+from aiopg.sa import result as aiopg_result
 from psycopg2 import errorcodes
 
 from pymash import models
@@ -22,16 +24,16 @@ class GameResultChanged(BaseError):
     pass
 
 
-async def find_repos_order_by_rating(engine) -> tp.List[models.Repo]:
+async def find_repos_order_by_rating(engine: aiopg.sa.Engine) -> tp.List[models.Repo]:
     repos = []
     async with engine.acquire() as conn:
         query = Repos.select().order_by(Repos.c.rating.desc())
         async for a_row in conn.execute(query):
-            repos.append(a_row)
+            repos.append(make_repo_from_db_row(a_row))
     return repos
 
 
-def make_repo_from_db_row(row: dict) -> models.Repo:
+def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
     return models.Repo(
         repo_id=row[Repos.c.repo_id],
         github_id=row[Repos.c.github_id],
