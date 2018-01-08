@@ -1,4 +1,4 @@
 import logging
 
 web = logging.getLogger('pymash.web')
-queue = logging.getLogger('pymash.queue')
+games_queue = logging.getLogger('pymash.games_queue')

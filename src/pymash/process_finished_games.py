@@ -27,7 +27,7 @@ def main(is_infinite=True):
                         engine,
                         _parse_message(json.loads(a_message.body)))
                 except events.NotFound:
-                    loggers.queue.error('skipping handling of message %r', exc_info=True)
+                    loggers.games_queue.error('skipping handling of message %r', exc_info=True)
                 a_message.delete()
             if not is_infinite:
                 break
