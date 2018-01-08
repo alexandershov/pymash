@@ -7,6 +7,7 @@ from aiohttp import web
 
 from pymash import db
 from pymash import events
+from pymash import loggers
 from pymash import models
 
 _DICT_OR_RESPONSE = tp.Union[dict, web.Response]
@@ -46,8 +47,8 @@ async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
     try:
         parsed_input = _PostGameInput.schema(dict(data))
-    except vol.Invalid as exc:
-        print(exc)
+    except vol.Invalid:
+        loggers.web.info('bad request for post_game', exc_info=True)
         return web.HTTPBadRequest()
     keys = _PostGameInput.Keys
     try:
@@ -59,8 +60,8 @@ async def post_game(request: web.Request) -> web.Response:
             white_id=parsed_input[keys.white_id],
             black_id=parsed_input[keys.black_id],
             result=result)
-    except (models.ResultError, models.GameError) as exc:
-        print(exc)
+    except (models.ResultError, models.GameError):
+        loggers.web.info('bad request for post_game', exc_info=True)
         return web.HTTPBadRequest()
     expected_hash = game.get_hash(request.app['config'].game_hash_salt)
     if expected_hash != data[keys.hash_]:

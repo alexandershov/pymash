@@ -6,6 +6,7 @@ import sqlalchemy as sa
 
 from pymash import cfg
 from pymash import events
+from pymash import loggers
 from pymash import models
 
 
@@ -25,8 +26,8 @@ def main(is_infinite=True):
                     events.process_game_finished_event(
                         engine,
                         _parse_message(json.loads(a_message.body)))
-                except events.NotFound as exc:
-                    print(f'skipping {a_message!r} because of {exc!r}')
+                except events.NotFound:
+                    loggers.queue.error('skipping handling of message %r', exc_info=True)
                 a_message.delete()
             if not is_infinite:
                 break
