@@ -2,6 +2,7 @@ import random
 import typing as tp
 
 import aiopg.sa
+import sqlalchemy.engine.base
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as postgresql
 import sqlalchemy.exc as sa_exc
@@ -10,6 +11,9 @@ from psycopg2 import errorcodes
 
 from pymash import models
 from pymash.tables import *
+
+AsyncEngine = aiopg.sa.Engine
+Engine = sqlalchemy.engine.base.Engine
 
 
 class BaseError(Exception):
@@ -24,7 +28,7 @@ class GameResultChanged(BaseError):
     pass
 
 
-async def find_repos_order_by_rating(engine: aiopg.sa.Engine) -> tp.List[models.Repo]:
+async def find_repos_order_by_rating(engine: AsyncEngine) -> tp.List[models.Repo]:
     repos = []
     async with engine.acquire() as conn:
         query = Repos.select().order_by(Repos.c.rating.desc())
@@ -42,41 +46,42 @@ def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
         rating=row[Repos.c.rating])
 
 
-async def try_to_find_two_random_functions(engine) -> tp.List[models.Function]:
-    select_some_function = _make_find_random_function_query()
-    select_another_function = _make_find_random_function_query()
+async def try_to_find_two_random_functions(engine: AsyncEngine) -> tp.List[models.Function]:
+    select_some_function = _make_query_to_find_random_function()
+    select_another_function = _make_query_to_find_random_function()
     select_two_functions = select_some_function.union_all(select_another_function)
     async with engine.acquire() as conn:
         rows = await conn.execute(select_two_functions)
     return list(map(make_function_from_db_row, rows))
 
 
-def find_many_functions_by_ids(engine, function_ids) -> tp.List[models.Function]:
+def find_many_functions_by_ids(engine: Engine, function_ids: tp.List[int]) -> tp.List[models.Function]:
     rows = _find_many_by_ids(
         engine=engine,
-        ids=function_ids,
-        table=Functions)
+        table=Functions,
+        ids=function_ids)
     return list(map(make_function_from_db_row, rows))
 
 
-def find_game_by_id(engine, game_id) -> models.Game:
+def find_many_repos_by_ids(engine: Engine, repo_ids) -> tp.List[models.Repo]:
     rows = _find_many_by_ids(
         engine=engine,
-        ids=[game_id],
-        table=Games)
-    assert len(rows) == 1
-    return _make_game_from_db_row(rows[0])
-
-
-def find_many_repos_by_ids(engine, repo_ids) -> tp.List[models.Repo]:
-    rows = _find_many_by_ids(
-        engine=engine,
-        ids=repo_ids,
-        table=Repos)
+        table=Repos,
+        ids=repo_ids)
     return list(map(make_repo_from_db_row, rows))
 
 
-def save_game_and_match(engine, game: models.Game, match: models.Match) -> None:
+def find_game_by_id(engine: Engine, game_id: str) -> models.Game:
+    rows = _find_many_by_ids(
+        engine=engine,
+        table=Games,
+        ids=[game_id])
+    if len(rows) != 1:
+        raise NotFound(f'game {game_id} not found')
+    return _make_game_from_db_row(rows[0])
+
+
+def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) -> None:
     # TODO: check that doing execution_options doesn't permanently change connection when it will be returned to pool
     with engine.connect().execution_options(isolation_level='SERIALIZABLE') as conn:
         try:
@@ -140,7 +145,7 @@ def update_functions(engine, repo: models.Repo, functions):
                 conn.execute(statement)
 
 
-def _find_many_by_ids(engine, ids, table):
+def _find_many_by_ids(engine, table, ids):
     id_column = _get_id_column(table)
     with engine.connect() as conn:
         rows = list(conn.execute(table.select().where(id_column.in_(ids))))
@@ -163,7 +168,7 @@ def _make_update_rating_query(repo: models.Repo):
         {Repos.c.rating: repo.rating})
 
 
-def _make_find_random_function_query():
+def _make_query_to_find_random_function():
     x = random.random()
     select_max_random = Functions.select().with_only_columns(
         [sa.func.max(Functions.c.random)]).as_scalar()
