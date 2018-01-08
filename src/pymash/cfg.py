@@ -55,13 +55,3 @@ def get_config() -> Config:
         aws_access_key_id=parsed_config[_EnvKey.AWS_ACCESS_KEY_ID],
         aws_secret_access_key=parsed_config[_EnvKey.AWS_SECRET_ACCESS_KEY],
         sqs_games_queue_name=parsed_config[_EnvKey.SQS_GAMES_QUEUE_NAME])
-
-
-def _get_env(name, parser):
-    if name not in os.environ:
-        raise ConfigError(f'environment variable {name} is not defined!')
-    str_value = os.environ[name]
-    try:
-        return parser(str_value)
-    except ValueError:
-        raise ConfigError(f'{name} is not a valid {parser.__name__}')
