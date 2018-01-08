@@ -18,7 +18,6 @@ class NotFound(BaseError):
 # TODO: add cron runner
 
 
-# TODO: mock it better!
 async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
     event = make_event_from_game(game)
     await _ensure_games_queue_is_ready(app)

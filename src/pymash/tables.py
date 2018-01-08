@@ -33,7 +33,7 @@ sa.Index('functions_unique_repo_id_text_idx',
 sa.Index(
     'functions_is_active_random_idx',
     Functions.c.is_active, Functions.c.random,
-    postresql_where=Functions.c.is_active.is_(True))
+    postgresql_where=Functions.c.is_active.is_(True))
 
 
 class _GameDbModel(Base):

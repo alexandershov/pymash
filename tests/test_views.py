@@ -7,7 +7,6 @@ import aiohttp
 import pytest
 
 from pymash import cfg
-from pymash import events
 from pymash import main
 from pymash import models
 from pymash.tables import *
@@ -103,20 +102,22 @@ def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black
      }, False),
 ])
 async def test_post_game(data, is_success, test_client, monkeypatch):
-    post_game_finished_event_mock = mock.Mock(return_value=_make_future_with_result(None))
-
-    monkeypatch.setattr(events, 'post_game_finished_event', post_game_finished_event_mock)
     app = _create_app()
+    games_queue_mock = mock.Mock()
+    games_queue_mock.send_message.return_value = _make_future_with_result(None)
+    sqs_resource_mock = mock.Mock()
+    sqs_resource_mock.get_queue_by_name.return_value = _make_future_with_result(games_queue_mock)
+    monkeypatch.setitem(app, 'sqs_resource', sqs_resource_mock)
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
                            data=data)
     if is_success:
         assert response.status == 302
         assert response.headers['Location'] == '/game'
-        post_game_finished_event_mock.assert_called_once()
+        games_queue_mock.send_message.assert_called_once()
     else:
         assert response.status == 400
-        post_game_finished_event_mock.assert_not_called()
+        games_queue_mock.send_message.assert_not_called()
 
 
 def _make_future_with_result(result):
