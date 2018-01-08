@@ -1,15 +1,13 @@
 import json
+import typing as tp
 from unittest import mock
 
-import typing as tp
-
 import boto3
-import datetime as dt
 import pytest
 
-from pymash import process_finished_games
 from pymash import events
 from pymash import models
+from pymash import process_finished_games
 from pymash.tables import *
 
 
@@ -65,9 +63,10 @@ def _get_game(white_id=666, black_id=777, result=models.BLACK_WINS_RESULT):
 
 
 def _monkeypatch_boto3(monkeypatch, games):
+    queue_mock = mock.Mock()
+    queue_mock.receive_messages.return_value = _convert_games_to_messages(games)
     resource_mock = mock.Mock()
-    resource_mock.return_value.get_queue_by_name.return_value.receive_messages.return_value = _convert_games_to_messages(
-        games)
+    resource_mock.return_value.get_queue_by_name.return_value = queue_mock
     monkeypatch.setattr(boto3, 'resource', resource_mock)
 
 
