@@ -22,12 +22,18 @@ class _FunctionDbModel(Base):
     repo_id = sa.Column(sa.ForeignKey(Repos.c.repo_id), nullable=False)
     text = sa.Column(sa.Text, nullable=False)
     is_active = sa.Column(sa.Boolean, nullable=False)
-    random = sa.Column(sa.Float, server_default=sa.func.random(), index=True, nullable=False)
+    random = sa.Column(sa.Float, server_default=sa.func.random(), nullable=False)
 
 
 Functions = _FunctionDbModel.__table__
 # TODO: is there a better way?
-sa.Index('functions_unique_repo_id_text_idx', Functions.c.repo_id, Functions.c.text, unique=True)
+sa.Index('functions_unique_repo_id_text_idx',
+         Functions.c.repo_id, Functions.c.text,
+         unique=True)
+sa.Index(
+    'functions_is_active_random_idx',
+    Functions.c.is_active, Functions.c.random,
+    postresql_where=Functions.c.is_active.is_(True))
 
 
 class _GameDbModel(Base):
