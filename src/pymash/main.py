@@ -35,6 +35,11 @@ async def _create_engine(app):
     app['db_engine'] = await sa.create_engine(app['config'].dsn, loop=app.loop)
 
 
+async def _close_engine(app):
+    app['db_engine'].close()
+    await app['db_engine'].wait_closed()
+
+
 async def _create_sqs_resource(app):
     config = app['config']
     app['sqs_resource'] = aioboto3.resource(
@@ -43,11 +48,6 @@ async def _create_sqs_resource(app):
         region_name=config.aws_region_name,
         aws_access_key_id=config.aws_access_key_id,
         aws_secret_access_key=config.aws_secret_access_key)
-
-
-async def _close_engine(app):
-    app['db_engine'].close()
-    await app['db_engine'].wait_closed()
 
 
 async def _close_sqs_resource(app):
