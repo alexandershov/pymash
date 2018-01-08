@@ -1,3 +1,4 @@
+import contextlib
 import json
 
 import boto3
@@ -16,21 +17,30 @@ def main(is_infinite=True):
         aws_access_key_id=config.aws_access_key_id,
         aws_secret_access_key=config.aws_secret_access_key)
     games_queue = sqs.get_queue_by_name(QueueName=config.sqs_games_queue_name)
-    engine = sa.create_engine(config.dsn)
-    while True:
-        messages = games_queue.receive_messages(MaxNumberOfMessages=10)
-        for a_message in messages:
-            try:
-                events.process_game_finished_event(
-                    engine,
-                    _parse_message(json.loads(a_message.body)))
-            except events.NotFound as exc:
-                print(f'skipping {a_message!r} because of {exc!r}')
-            a_message.delete()
-        if not is_infinite:
-            break
-    # TODO: call .dispose() under try/finally or context manager
-    engine.dispose()
+    with _Disposing(sa.create_engine(config.dsn)) as engine:
+        while True:
+            messages = games_queue.receive_messages(MaxNumberOfMessages=10)
+            for a_message in messages:
+                try:
+                    events.process_game_finished_event(
+                        engine,
+                        _parse_message(json.loads(a_message.body)))
+                except events.NotFound as exc:
+                    print(f'skipping {a_message!r} because of {exc!r}')
+                a_message.delete()
+            if not is_infinite:
+                break
+
+
+class _Disposing(contextlib.AbstractContextManager):
+    def __init__(self, engine):
+        self._engine = engine
+
+    def __enter__(self):
+        return self._engine
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self._engine.dispose()
 
 
 def _parse_message(data: dict) -> models.Game:
