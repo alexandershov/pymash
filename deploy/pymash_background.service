@@ -8,3 +8,6 @@ PIDFile=/run/pymash_background.pid
 EnvironmentFile=/etc/pymash.d/environment
 ExecStart=/usr/bin/python3 -m pymash.process_finished_games
 Restart=always
+
+[Install]
+WantedBy=multi-user.target

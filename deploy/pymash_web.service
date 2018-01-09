@@ -8,3 +8,6 @@ PIDFile=/run/pymash_web.pid
 EnvironmentFile=/etc/pymash.d/environment
 ExecStart=/usr/bin/python3 -m pymash.main
 Restart=always
+
+[Install]
+WantedBy=multi-user.target
