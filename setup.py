@@ -12,6 +12,7 @@ setuptools.setup(
         'aiopg==0.13.1',
         'cchardet==2.1.1',  # faster replacement for chardet, used by aiohttp
         'psycopg2==2.7.3.1',
+        'PyGithub==1.35',
         'SQLAlchemy==1.1.14',
         'voluptuous==0.10.5',
     ],
