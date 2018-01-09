@@ -20,5 +20,8 @@ setuptools.setup(
     tests_require=[
         'pytest==3.2.2',
         'pytest-aiohttp==0.1.3',
-    ]
+    ],
+    package_data={
+        '': ['templates/*.html'],
+    }
 )
