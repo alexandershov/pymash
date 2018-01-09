@@ -1,0 +1,10 @@
+[Unit]
+Description='pymash web application'
+
+[Service]
+User=ec2-user
+Type=simple
+PIDFile=/run/pymash_web.pid
+EnvironmentFile=/etc/pymash.d/environment
+ExecStart=/usr/bin/python3 -m pymash.main
+Restart=always
