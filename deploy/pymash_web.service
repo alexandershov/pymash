@@ -6,7 +6,7 @@ User=ec2-user
 Type=simple
 PIDFile=/run/pymash_web.pid
 EnvironmentFile=/etc/pymash.d/environment
-ExecStart=/usr/bin/python3 -m pymash.main
+ExecStart=/usr/local/bin/python3.6 -m pymash.main
 Restart=always
 
 [Install]

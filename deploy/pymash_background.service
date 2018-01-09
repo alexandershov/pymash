@@ -6,7 +6,7 @@ User=ec2-user
 Type=simple
 PIDFile=/run/pymash_background.pid
 EnvironmentFile=/etc/pymash.d/environment
-ExecStart=/usr/bin/python3 -m pymash.process_finished_games
+ExecStart=/usr/local/bin/python3.6 -m pymash.process_finished_games
 Restart=always
 
 [Install]
