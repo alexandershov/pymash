@@ -8,7 +8,7 @@ def main():
     config = cfg.get_config()
     engine = sa.create_engine(config.dsn)
     loader.load_most_popular(
-        engine, 'python', 5,
+        engine, 'python', 10,
         extra_repos_full_names=['alexandershov/pymash'])
     engine.dispose()
 

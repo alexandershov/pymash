@@ -2,7 +2,7 @@ import setuptools
 
 setuptools.setup(
     name='pymash',
-    version='0.1.0',
+    version='0.1.1',
     packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
     install_requires=[
