@@ -22,7 +22,7 @@ class _FunctionDbModel(Base):
     repo_id = sa.Column(sa.ForeignKey(Repos.c.repo_id), nullable=False)
     text = sa.Column(sa.Text, nullable=False)
     is_active = sa.Column(sa.Boolean, nullable=False)
-    random = sa.Column(sa.Float, server_default=sa.func.random(), nullable=False)
+    random = sa.Column(sa.Float, server_default=sa.func.random(), nullable=False, index=True)
 
 
 Functions = _FunctionDbModel.__table__
