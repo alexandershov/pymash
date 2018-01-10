@@ -6,8 +6,8 @@
 </head>
 <body>
 {% block breadcrumbs %}
-    <a href="/game">Pymash</a>
-    <a href="/leaders">Leaders</a>
+    <a href="{{ url('new_game') }}">Pymash</a>
+    <a href="{{ url('show_leaders') }}">Leaders</a>
 {% endblock %}
 {% block body %}{% endblock %}
 </body>
