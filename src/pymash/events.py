@@ -6,6 +6,7 @@ from aiohttp import web
 from pymash import db
 from pymash import loggers
 from pymash import models
+from pymash import utils
 
 
 class BaseError(Exception):
@@ -18,7 +19,7 @@ class NotFound(BaseError):
 
 # TODO: add cron runner
 
-
+@utils.log_time(loggers.web)
 async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
     event = make_event_from_game(game)
     await _ensure_games_queue_is_ready(app)
@@ -36,12 +37,14 @@ def make_event_from_game(game: models.Game) -> dict:
     }
 
 
+@utils.log_time(loggers.web)
 async def _ensure_games_queue_is_ready(app):
     if 'games_queue' in app:
         return
     app['games_queue'] = await app['sqs_resource'].get_queue_by_name(QueueName=app['config'].sqs_games_queue_name)
 
 
+@utils.log_time(loggers.games_queue)
 def process_game_finished_event(engine, game: models.Game) -> None:
     try:
         white_fn, black_fn = db.find_many_functions_by_ids(engine, [game.white_id, game.black_id])

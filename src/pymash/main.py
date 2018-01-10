@@ -7,7 +7,9 @@ import aiohttp_jinja2
 import jinja2
 
 from pymash import cfg
+from pymash import loggers
 from pymash import routes
+from pymash import utils
 
 
 def main():
@@ -17,6 +19,7 @@ def main():
 
 
 def create_app() -> web.Application:
+    loggers.setup_logging()
     app = web.Application()
     config = cfg.get_config()
     app['config'] = config
@@ -31,15 +34,18 @@ def create_app() -> web.Application:
     return app
 
 
+@utils.log_time(loggers.web)
 async def _create_engine(app):
     app['db_engine'] = await sa.create_engine(app['config'].dsn, loop=app.loop)
 
 
+@utils.log_time(loggers.web)
 async def _close_engine(app):
     app['db_engine'].close()
     await app['db_engine'].wait_closed()
 
 
+@utils.log_time(loggers.web)
 async def _create_sqs_resource(app):
     config = app['config']
     app['sqs_resource'] = aioboto3.resource(
@@ -50,6 +56,7 @@ async def _create_sqs_resource(app):
         aws_secret_access_key=config.aws_secret_access_key)
 
 
+@utils.log_time(loggers.web)
 async def _close_sqs_resource(app):
     await app['sqs_resource'].close()
 

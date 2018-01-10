@@ -11,6 +11,7 @@ from pymash import models
 
 
 def main(is_infinite=True):
+    loggers.setup_logging()
     config = cfg.get_config()
     sqs = boto3.resource(
         'sqs',
