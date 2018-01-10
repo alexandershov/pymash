@@ -4,9 +4,11 @@ import sqlalchemy as sa
 
 from pymash import cfg
 from pymash import loader
+from pymash import loggers
 
 
 def main():
+    loggers.setup_logging()
     # TODO: dry it up with create_db.py
     args = _parse_args()
     config = cfg.get_config()
