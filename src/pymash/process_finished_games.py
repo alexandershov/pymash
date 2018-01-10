@@ -1,5 +1,6 @@
 import contextlib
 import json
+import time
 
 import boto3
 import sqlalchemy as sa
@@ -10,7 +11,7 @@ from pymash import loggers
 from pymash import models
 
 
-def main(is_infinite=True):
+def main(is_infinite=True, sleep_duration=0):
     loggers.setup_logging()
     config = cfg.get_config()
     sqs = boto3.resource(
@@ -22,6 +23,7 @@ def main(is_infinite=True):
     with _Disposing(sa.create_engine(config.dsn)) as engine:
         while True:
             # TODO: do we need sleeping here?
+            time.sleep(sleep_duration)
             messages = games_queue.receive_messages(MaxNumberOfMessages=10)
             for a_message in messages:
                 try:
@@ -57,4 +59,4 @@ def _parse_message(data: dict) -> models.Game:
 
 
 if __name__ == '__main__':
-    main()
+    main(sleep_duration=10)
