@@ -9,8 +9,10 @@ import sqlalchemy.exc as sa_exc
 from aiopg.sa import result as aiopg_result
 from psycopg2 import errorcodes
 
+from pymash import loggers
 from pymash import models
 from pymash import parser
+from pymash import utils
 from pymash.tables import *
 
 AsyncEngine = aiopg.sa.Engine
@@ -29,6 +31,7 @@ class GameResultChanged(BaseError):
     pass
 
 
+@utils.log_time(loggers.web)
 async def find_repos_order_by_rating(engine: AsyncEngine) -> tp.List[models.Repo]:
     repos = []
     async with engine.acquire() as conn:
@@ -47,6 +50,7 @@ def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
         rating=row[Repos.c.rating])
 
 
+@utils.log_time(loggers.web)
 async def try_to_find_two_random_functions(engine: AsyncEngine) -> tp.List[models.Function]:
     select_some_function = _make_query_to_find_random_function()
     select_another_function = _make_query_to_find_random_function()
@@ -56,6 +60,7 @@ async def try_to_find_two_random_functions(engine: AsyncEngine) -> tp.List[model
     return list(map(make_function_from_db_row, rows))
 
 
+@utils.log_time(loggers.games_queue)
 def find_many_functions_by_ids(engine: Engine, function_ids: tp.List[int]) -> tp.List[models.Function]:
     rows = _find_many_by_ids(
         engine=engine,
@@ -64,6 +69,7 @@ def find_many_functions_by_ids(engine: Engine, function_ids: tp.List[int]) -> tp
     return list(map(make_function_from_db_row, rows))
 
 
+@utils.log_time(loggers.games_queue)
 def find_many_repos_by_ids(engine: Engine, repo_ids) -> tp.List[models.Repo]:
     rows = _find_many_by_ids(
         engine=engine,
@@ -72,6 +78,7 @@ def find_many_repos_by_ids(engine: Engine, repo_ids) -> tp.List[models.Repo]:
     return list(map(make_repo_from_db_row, rows))
 
 
+@utils.log_time(loggers.games_queue)
 def find_game_by_id(engine: Engine, game_id: str) -> models.Game:
     rows = _find_many_by_ids(
         engine=engine,
@@ -82,6 +89,7 @@ def find_game_by_id(engine: Engine, game_id: str) -> models.Game:
     return _make_game_from_db_row(rows[0])
 
 
+@utils.log_time(loggers.games_queue)
 def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) -> None:
     # TODO: check that doing execution_options doesn't permanently change connection when it will be returned to pool
     with engine.connect().execution_options(isolation_level='SERIALIZABLE') as conn:
@@ -137,6 +145,7 @@ def update_functions(engine: Engine, repo: models.Repo, functions: tp.List[parse
                 conn.execute(statement)
 
 
+@utils.log_time(loggers.games_queue)
 def _insert_game_and_change_repo_ratings(conn, game: models.Game, match: models.Match) -> None:
     with conn.begin():
         conn.execute(Games.insert().values({
