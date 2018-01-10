@@ -9,10 +9,12 @@ from pymash import db
 from pymash import events
 from pymash import loggers
 from pymash import models
+from pymash import utils
 
 _DICT_OR_RESPONSE = tp.Union[dict, web.Response]
 
 
+@utils.log_time(loggers.web)
 @aiohttp_jinja2.template('leaders.html')
 async def show_leaders(request: web.Request) -> _DICT_OR_RESPONSE:
     repos = await db.find_repos_order_by_rating(request.app['db_engine'])
@@ -43,6 +45,7 @@ class _PostGameInput:
         required=True, extra=vol.ALLOW_EXTRA)
 
 
+@utils.log_time(loggers.web)
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
     try:
@@ -71,6 +74,7 @@ async def post_game(request: web.Request) -> web.Response:
     return web.HTTPFound(redirect_url)
 
 
+@utils.log_time(loggers.web)
 @aiohttp_jinja2.template('game.html')
 async def show_game(request: web.Request) -> _DICT_OR_RESPONSE:
     num_tries = 3
