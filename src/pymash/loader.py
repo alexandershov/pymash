@@ -76,8 +76,8 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
                 with open(a_file) as fileobj:
                     with utils.log_time(loggers.loader, f'parsing {a_file}'):
                         functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
-                    # TODO: pick the most suitable functions
                     with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
+                        # TODO: pick the most suitable functions
                         functions_to_update = random.sample(functions, min(_NUM_OF_FUNCTIONS_PER_REPO, len(functions)))
                     db.update_functions(engine, repo, functions_to_update)
 
