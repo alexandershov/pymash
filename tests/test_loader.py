@@ -14,26 +14,25 @@ from pymash.tables import *
 def test_load_most_popular(pymash_engine, monkeypatch):
     archive_link_mock = mock.Mock(return_value=_make_data_dir_path('file_with_two_functions.py.zip'))
     github_client_repos = [
-        mock.Mock(
+        _make_mock(
             id=1001,
+            name='django',
             html_url='https://github.com/django/django',
             get_archive_link=archive_link_mock,
             stargazers_count=25000),
-        mock.Mock(
+        _make_mock(
             id=1002,
+            name='flask',
             html_url='https://github.com/pallets/flask',
             get_archive_link=archive_link_mock,
             stargazers_count=26000),
     ]
-    # TODO: is there a better way? (`name` kwarg conflicts with the Mock.name attribute for __repr__)
-    github_client_repos[0].name = 'django'
-    github_client_repos[1].name = 'flask'
-    pymash_mock = mock.Mock(
+    pymash_mock = _make_mock(
         id=1003,
+        name='pymash',
         html_url='https://github.com/alexandershov/pymash',
         get_archive_link=archive_link_mock,
         stargazers_count=1)
-    pymash_mock.name = 'pymash'
     github_mock = mock.Mock()
     github_mock.return_value.search_repositories.return_value = github_client_repos
     github_mock.return_value.get_repo.return_value = pymash_mock
@@ -134,3 +133,9 @@ def _group_by_text(functions: tp.List[models.Function]):
 
 def _make_data_dir_path(relative_name):
     return 'file://' + os.path.join(os.path.dirname(__file__), 'data', relative_name)
+
+
+def _make_mock(**kwargs):
+    m = mock.Mock()
+    m.configure_mock(**kwargs)
+    return m
