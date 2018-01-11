@@ -73,11 +73,16 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
         with tempfile.TemporaryDirectory() as temp_dir:
             with utils.log_time(loggers.loader, f'unzipping {temp_file.name}'):
                 _unzip_file(temp_file.name, temp_dir)
-            for a_file in _find_files(temp_dir, 'py'):
-                with open(a_file) as fileobj:
-                    with utils.log_time(loggers.loader, f'parsing {a_file}'):
-                        file_functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
-                        functions.extend(file_functions)
+            with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
+                for a_file in _find_files(temp_dir, 'py'):
+                    with open(a_file) as fileobj:
+                        try:
+                            file_functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
+                        except SyntaxError:
+                            # TODO: test SyntaxError
+                            loggers.loader.error('could not parse %s', a_file, exc_info=True)
+                        else:
+                            functions.extend(file_functions)
     with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
         # TODO: pick the most suitable functions
         # TODO: test that random.sample applies only to all function (not file_functions)
