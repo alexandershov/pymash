@@ -22,8 +22,10 @@ _NUM_OF_FUNCTIONS_PER_REPO = 1000
 def load_most_popular(engine, language, limit, extra_repos_full_names=()):
     github_client = _get_github_client()
     github_repos = find_most_popular_github_repos(github_client, language, limit)
-    for full_name in extra_repos_full_names:
-        github_repos.append(_parse_github_repo(github_client.get_repo(full_name)))
+    with utils.log_time(loggers.loader, f'loading {len(extra_repos_full_names)} extra repos'):
+        for full_name in extra_repos_full_names:
+            # TODO: maybe pass lazy=False to the github_client.get_repo
+            github_repos.append(_parse_github_repo(github_client.get_repo(full_name)))
     load_many_github_repos(engine, github_repos)
     # TODO: you need to deactivate all functions from repos that were in db but
     # in most_popular_list & probably deactivate these repos and don't show them in a /leaders list

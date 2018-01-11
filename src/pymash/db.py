@@ -103,6 +103,7 @@ def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) 
                 raise GameResultChanged
 
 
+@utils.log_time(loggers.loader, lambda engine, github_repo: f'{github_repo.url}')
 def save_github_repo(engine: Engine, github_repo: models.GithubRepo) -> models.Repo:
     with engine.connect() as conn:
         insert_data = {
