@@ -64,7 +64,6 @@ class Function:
         return f'{self.__class__.__name__}(name={self.name!r}, text={self.text!r})'
 
 
-@utils.log_time(loggers.loader)
 def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
     nodes = _get_ast_nodes(source_code, source_lines)

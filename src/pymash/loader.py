@@ -65,6 +65,7 @@ def load_many_github_repos(engine, github_repos: tp.List[models.GithubRepo]) -> 
 
 @utils.log_time(loggers.loader)
 def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
+    functions = []
     with tempfile.NamedTemporaryFile() as temp_file:
         repo = db.save_github_repo(engine, github_repo)
         with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
@@ -75,11 +76,13 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
             for a_file in _find_files(temp_dir, 'py'):
                 with open(a_file) as fileobj:
                     with utils.log_time(loggers.loader, f'parsing {a_file}'):
-                        functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
-                    with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
-                        # TODO: pick the most suitable functions
-                        functions_to_update = random.sample(functions, min(_NUM_OF_FUNCTIONS_PER_REPO, len(functions)))
-                    db.update_functions(engine, repo, functions_to_update)
+                        file_functions = parser.get_functions(fileobj.read(), catch_exceptions=True)
+                        functions.extend(file_functions)
+    with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
+        # TODO: pick the most suitable functions
+        # TODO: test that random.sample applies only to all function (not file_functions)
+        functions_to_update = random.sample(functions, min(_NUM_OF_FUNCTIONS_PER_REPO, len(functions)))
+    db.update_functions(engine, repo, functions_to_update)
 
 
 def _find_files(directory, extension):
