@@ -8,7 +8,8 @@ import textwrap
 import typing as tp
 
 # TODO(aershov182): add more useful logs in a whole project
-
+from pymash import loggers
+from pymash import utils
 
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
@@ -63,6 +64,7 @@ class Function:
         return f'{self.__class__.__name__}(name={self.name!r}, text={self.text!r})'
 
 
+@utils.log_time(loggers.loader)
 def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
     nodes = _get_ast_nodes(source_code, source_lines)

@@ -122,6 +122,7 @@ def save_github_repo(engine: Engine, github_repo: models.GithubRepo) -> models.R
         return make_repo_from_db_row(rows[0])
 
 
+@utils.log_time(loggers.loader, lambda engine, repo, functions: f'{len(functions)} from {repo.url}')
 def update_functions(engine: Engine, repo: models.Repo, functions: tp.List[parser.Function]) -> None:
     with engine.connect() as conn:
         with conn.begin():

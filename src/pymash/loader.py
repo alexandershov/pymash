@@ -55,7 +55,7 @@ def _unzip_file(path, output_dir):
         z.extractall(path=output_dir)
 
 
-@utils.log_time(loggers.loader)
+@utils.log_time(loggers.loader, lambda engine, github_repos: f'{len(github_repos)} github repos')
 def load_many_github_repos(engine, github_repos: tp.List[models.GithubRepo]) -> None:
     for a_github_repo in github_repos:
         load_github_repo(engine, a_github_repo)
