@@ -87,6 +87,7 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
                         # TODO: test SyntaxError
                         loggers.loader.error('could not parse %s', a_file, exc_info=True)
                     else:
+                        # TODO: add only unique functions
                         functions.extend(file_functions)
     with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
         # TODO: pick the most suitable functions
