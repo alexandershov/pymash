@@ -54,7 +54,7 @@ def _set_loader_selector_params():
 @pytest.fixture(autouse=True)
 def clean_tables(pymash_engine):
     with pymash_engine.connect() as conn:
-        for table in [Games, Functions, Repos]:
+        for table in reversed(tables.Base.metadata.sorted_tables):
             conn.execute(table.delete())
 
 
