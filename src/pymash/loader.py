@@ -17,7 +17,10 @@ from pymash import parser
 from pymash import utils
 
 _NUM_OF_FUNCTIONS_PER_REPO = 1000
-_BAD_FUNCTION_NAME_RE = re.compile('test|assert', re.IGNORECASE)
+
+
+class Selector:
+    BAD_FUNCTION_NAME_RE = re.compile('test|assert', re.IGNORECASE)
 
 
 @utils.log_time(loggers.loader)
@@ -118,6 +121,6 @@ def select_good_functions(functions: tp.List[parser.Function]) -> tp.List[parser
 
 
 def _is_bad_function(fn: parser.Function) -> bool:
-    if _BAD_FUNCTION_NAME_RE.search(fn.name) is not None:
+    if Selector.BAD_FUNCTION_NAME_RE.search(fn.name) is not None:
         return True
     return False
