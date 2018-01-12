@@ -22,6 +22,8 @@ _NUM_OF_FUNCTIONS_PER_REPO = 1000
 class Selector:
     BAD_FUNCTION_NAME_RE = re.compile('test|assert', re.IGNORECASE)
     MAX_LINE_LENGTH = 120
+    MAX_NUM_COMMENT_LINES = 5
+    COMMENT_LINE_RE = re.compile('^\s*#')
 
 
 @utils.log_time(loggers.loader)
@@ -127,5 +129,14 @@ def _is_bad_function(fn: parser.Function) -> bool:
     lines = fn.text.splitlines()
     has_too_long_line = any(len(a_line) > Selector.MAX_LINE_LENGTH for a_line in lines)
     if has_too_long_line:
+        return True
+    num_comment_lines = sum(1 for a_line in lines if _is_comment_line(a_line))
+    if num_comment_lines > Selector.MAX_NUM_COMMENT_LINES:
+        return True
+    return False
+
+
+def _is_comment_line(line: str) -> bool:
+    if Selector.COMMENT_LINE_RE.match(line) is not None:
         return True
     return False

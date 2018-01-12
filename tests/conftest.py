@@ -5,6 +5,7 @@ import pytest
 import sqlalchemy as sa
 
 from pymash import cfg
+from pymash import loader
 from pymash import tables
 from pymash.tables import *
 
@@ -35,6 +36,17 @@ def _create_database(system_engine, pymash_engine):
 
 def _create_tables(pymash_engine):
     tables.Base.metadata.create_all(pymash_engine)
+
+
+@pytest.fixture(autouse=True, scope='session')
+def _set_loader_selector_params():
+    loader.Selector.MAX_NUM_COMMENT_LINES = 2
+
+
+# TODO: why it doesn't work?
+# @pytest.fixture(autouse=True)
+# def _set_loader_selector_params(monkeypatch):
+#     monkeypatch.setattr(loader.Selector, 'MAX_NUM_COMMENT_LINES', 2)
 
 
 @pytest.fixture(autouse=True)
