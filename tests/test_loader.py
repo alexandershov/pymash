@@ -58,6 +58,15 @@ def test_load_most_popular(pymash_engine, monkeypatch):
             ''',
             [],
     ),
+    # we ignore functions with too long lines
+    (
+            f'''
+            def add(x, y):
+                s = {'x' * 200} 
+                return x + y
+            ''',
+            [],
+    ),
 ])
 def test_select_good_functions(source_code, expected_names):
     functions = parser.get_functions(textwrap.dedent(source_code))

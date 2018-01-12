@@ -21,6 +21,7 @@ _NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 class Selector:
     BAD_FUNCTION_NAME_RE = re.compile('test|assert', re.IGNORECASE)
+    MAX_LINE_LENGTH = 120
 
 
 @utils.log_time(loggers.loader)
@@ -122,5 +123,9 @@ def select_good_functions(functions: tp.List[parser.Function]) -> tp.List[parser
 
 def _is_bad_function(fn: parser.Function) -> bool:
     if Selector.BAD_FUNCTION_NAME_RE.search(fn.name) is not None:
+        return True
+    lines = fn.text.splitlines()
+    has_too_long_line = any(len(a_line) > Selector.MAX_LINE_LENGTH for a_line in lines)
+    if has_too_long_line:
         return True
     return False
