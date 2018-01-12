@@ -30,6 +30,7 @@ _EXPECTED_RESULT = [
             '''\
             def add(x, y):
                 return x + y
+                # some useless comment
                 
             # z is equal to nine
             z = 9
