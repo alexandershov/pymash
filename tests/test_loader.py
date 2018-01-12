@@ -1,13 +1,16 @@
 import os
+import textwrap
 import typing as tp
 from unittest import mock
 
 import github
+import pytest
 import sqlalchemy as sa
 
 from pymash import db
 from pymash import loader
 from pymash import models
+from pymash import parser
 from pymash.tables import *
 
 
@@ -41,6 +44,26 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     loader.load_most_popular(pymash_engine, 'python', 1000, extra_repos_full_names=['alexandershov/pymash'])
     _assert_repo_was_loaded(pymash_engine)
     _assert_functions_were_loaded(pymash_engine)
+
+
+@pytest.mark.parametrize('source_code, expected_names', [
+    # we ignore functions with bad names
+    (
+            '''
+            def teSt_add(x, y):
+                assert x == y
+                
+            def assErt_equal(x, y):
+                assert_equal(x, y)
+            ''',
+            [],
+    ),
+])
+def test_select_good_functions(source_code, expected_names):
+    functions = parser.get_functions(textwrap.dedent(source_code))
+    good_functions = loader.select_good_functions(functions)
+    actual_names = {a_function.name for a_function in good_functions}
+    assert actual_names == set(expected_names)
 
 
 def _add_data(pymash_engine):

@@ -1,12 +1,13 @@
 import glob
+import os
 import random
+import re
 import tempfile
 import typing as tp
 import urllib.request as urllib_request
 import zipfile
 
 import github
-import os
 
 from pymash import cfg
 from pymash import db
@@ -16,6 +17,7 @@ from pymash import parser
 from pymash import utils
 
 _NUM_OF_FUNCTIONS_PER_REPO = 1000
+_BAD_FUNCTION_NAME_RE = re.compile('test|assert', re.IGNORECASE)
 
 
 @utils.log_time(loggers.loader)
@@ -103,3 +105,17 @@ def _find_files(directory, extension):
         full_path = os.path.join(directory, path)
         files.append(full_path)
     return files
+
+
+def select_good_functions(functions: tp.List[parser.Function]) -> tp.List[parser.Function]:
+    return [
+        a_function
+        for a_function in functions
+        if not _is_bad_function(a_function)
+    ]
+
+
+def _is_bad_function(fn: parser.Function) -> bool:
+    if _BAD_FUNCTION_NAME_RE.search(fn.name) is not None:
+        return True
+    return False
