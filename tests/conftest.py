@@ -42,6 +42,7 @@ def _create_tables(pymash_engine):
 def _set_loader_selector_params():
     loader.Selector.MAX_NUM_COMMENT_LINES = 2
     loader.Selector.MAX_NUM_LINES = 7
+    loader.Selector.MIN_NUM_LINES = 2
 
 
 # TODO: why it doesn't work?

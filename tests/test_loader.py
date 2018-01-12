@@ -80,7 +80,7 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     ),
     # we ignore functions with too many lines
     (
-            f'''def add(x, y):
+            '''def add(x, y):
                     2
                     3
                     4
@@ -89,6 +89,11 @@ def test_load_most_popular(pymash_engine, monkeypatch):
                     7
                     8
             ''',
+            [],
+    ),
+    # we ignore functions with too few lines
+    (
+            '''def add(x, y): return x + y''',
             [],
     ),
 ])

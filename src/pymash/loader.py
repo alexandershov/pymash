@@ -24,6 +24,7 @@ class Selector:
     MAX_LINE_LENGTH = 120
     MAX_NUM_COMMENT_LINES = 5
     COMMENT_LINE_RE = re.compile('^\s*#')
+    MIN_NUM_LINES = 3
     MAX_NUM_LINES = 20
 
 
@@ -128,6 +129,8 @@ def _is_bad_function(fn: parser.Function) -> bool:
     if Selector.BAD_FUNCTION_NAME_RE.search(fn.name) is not None:
         return True
     lines = fn.text.splitlines()
+    if len(lines) < Selector.MIN_NUM_LINES:
+        return True
     if len(lines) > Selector.MAX_NUM_LINES:
         return True
     has_too_long_line = any(len(a_line) > Selector.MAX_LINE_LENGTH for a_line in lines)
