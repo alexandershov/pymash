@@ -16,8 +16,6 @@ from pymash import models
 from pymash import parser
 from pymash import utils
 
-_NUM_OF_FUNCTIONS_PER_REPO = 1000
-
 
 class Selector:
     BAD_FUNCTION_NAME_RE = re.compile('test|assert', re.IGNORECASE)
@@ -26,6 +24,7 @@ class Selector:
     COMMENT_LINE_RE = re.compile('^\s*#')
     MIN_NUM_LINES = 3
     MAX_NUM_LINES = 20
+    NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 
 @utils.log_time(loggers.loader)
@@ -75,7 +74,7 @@ def load_many_github_repos(engine, github_repos: tp.List[models.GithubRepo]) -> 
 
 @utils.log_time(loggers.loader)
 def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
-    functions = []
+    functions = set()
     with tempfile.NamedTemporaryFile() as temp_file:
         repo = db.save_github_repo(engine, github_repo)
         with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
@@ -97,14 +96,13 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
                         # TODO: test SyntaxError
                         loggers.loader.error('could not parse %s', a_file, exc_info=True)
                     else:
-                        # TODO: add only unique functions
-                        functions.extend(file_functions)
+                        functions.update(file_functions)
     with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
         # TODO: pick the most suitable functions
         # TODO: test that random.sample applies only to all function (not file_functions)
         good_functions = select_good_functions(functions)
         functions_to_update = random.sample(
-            good_functions, min(_NUM_OF_FUNCTIONS_PER_REPO, len(good_functions)))
+            good_functions, min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(good_functions)))
     db.update_functions(engine, repo, functions_to_update)
 
 
@@ -117,7 +115,7 @@ def _find_files(directory, extension):
     return files
 
 
-def select_good_functions(functions: tp.List[parser.Function]) -> tp.List[parser.Function]:
+def select_good_functions(functions: tp.Iterable[parser.Function]) -> tp.List[parser.Function]:
     return [
         a_function
         for a_function in functions

@@ -8,8 +8,6 @@ import textwrap
 import typing as tp
 
 # TODO(aershov182): add more useful logs in a whole project
-from pymash import loggers
-from pymash import utils
 
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)

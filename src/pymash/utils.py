@@ -4,6 +4,7 @@ import time
 import asyncio
 
 
+# noinspection PyUnusedLocal
 def _get_args_str(*args, **kwargs):
     return ''
 

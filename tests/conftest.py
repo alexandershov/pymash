@@ -43,6 +43,7 @@ def _set_loader_selector_params():
     loader.Selector.MAX_NUM_COMMENT_LINES = 2
     loader.Selector.MAX_NUM_LINES = 7
     loader.Selector.MIN_NUM_LINES = 2
+    loader.Selector.NUM_OF_FUNCTIONS_PER_REPO = 2
 
 
 # TODO: why it doesn't work?
