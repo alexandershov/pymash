@@ -94,7 +94,9 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
     with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
         # TODO: pick the most suitable functions
         # TODO: test that random.sample applies only to all function (not file_functions)
-        functions_to_update = random.sample(functions, min(_NUM_OF_FUNCTIONS_PER_REPO, len(functions)))
+        good_functions = select_good_functions(functions)
+        functions_to_update = random.sample(
+            good_functions, min(_NUM_OF_FUNCTIONS_PER_REPO, len(good_functions)))
     db.update_functions(engine, repo, functions_to_update)
 
 
