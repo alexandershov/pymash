@@ -69,12 +69,25 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     ),
     # we ignore functions with too many comments
     (
-            f'''
+            '''
             def add(x, y):
                 # 1
                 # 2
                 # 3
                 return x + y
+            ''',
+            [],
+    ),
+    # we ignore functions with too many lines
+    (
+            f'''def add(x, y):
+                    2
+                    3
+                    4
+                    5
+                    6
+                    7
+                    8
             ''',
             [],
     ),

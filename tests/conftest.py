@@ -41,6 +41,7 @@ def _create_tables(pymash_engine):
 @pytest.fixture(autouse=True, scope='session')
 def _set_loader_selector_params():
     loader.Selector.MAX_NUM_COMMENT_LINES = 2
+    loader.Selector.MAX_NUM_LINES = 7
 
 
 # TODO: why it doesn't work?
