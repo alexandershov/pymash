@@ -25,6 +25,17 @@ _EXPECTED_RESULT = [
             ''',
             _EXPECTED_RESULT
     ),
+    # ignore comments after a function
+    (
+            '''\
+            def add(x, y):
+                return x + y
+                
+            # z is equal to nine
+            z = 9
+            ''',
+            _EXPECTED_RESULT
+    ),
     # # method
     (
             '''\

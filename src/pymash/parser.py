@@ -12,6 +12,8 @@ import typing as tp
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
 
+COMMENT_LINE_RE = re.compile('^\s*#')
+
 
 class BaseError(Exception):
     pass
@@ -186,7 +188,7 @@ def _get_docstring_node_or_none(fn_node):
 
 def _exclude_meaningless_lines(lines):
     result = list(itertools.dropwhile(_is_empty_line, lines))
-    result = list(reversed(list(itertools.dropwhile(_is_empty_line, reversed(result)))))
+    result = list(reversed(list(itertools.dropwhile(_is_empty_or_comment_line, reversed(result)))))
     if result:
         result[-1] = result[-1].rstrip('\r\n')
     return result
@@ -196,6 +198,16 @@ def _is_empty_line(s: str) -> bool:
     if s.strip():
         return False
     return True
+
+
+def is_comment_line(s: str) -> bool:
+    if COMMENT_LINE_RE.match(s) is not None:
+        return True
+    return False
+
+
+def _is_empty_or_comment_line(s: str) -> bool:
+    return _is_empty_line(s) or is_comment_line(s)
 
 
 def _hacky_cut_multiline_docstring(text: str) -> str:
