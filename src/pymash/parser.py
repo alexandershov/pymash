@@ -64,7 +64,13 @@ class Function:
         return f'{self.__class__.__name__}(name={self.name!r}, text={self.text!r})'
 
 
-def get_functions(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
+def get_functions(fileobj, *, catch_exceptions: bool = False) -> tp.List[Function]:
+    # TODO: catch & test UnicodeDecodeError on read
+    source_code = fileobj.read()
+    return _get_functions_from_str(source_code, catch_exceptions=catch_exceptions)
+
+
+def _get_functions_from_str(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
     nodes = _get_ast_nodes(source_code, source_lines)
     functions = []

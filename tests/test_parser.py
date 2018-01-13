@@ -1,3 +1,4 @@
+import io
 import textwrap
 
 import pytest
@@ -184,7 +185,7 @@ _EXPECTED_RESULT = [
 
 ])
 def test_get_functions(source_code, expected_functions):
-    actual_functions = parser.get_functions(textwrap.dedent(source_code), catch_exceptions=True)
+    actual_functions = parser.get_functions(io.StringIO(textwrap.dedent(source_code)), catch_exceptions=True)
     assert actual_functions == expected_functions
 
 
@@ -248,4 +249,4 @@ def test_get_functions(source_code, expected_functions):
 ])
 def test_get_functions_failure(source_code, expected_exception):
     with pytest.raises(expected_exception):
-        parser.get_functions(textwrap.dedent(source_code))
+        parser.get_functions(io.StringIO(textwrap.dedent(source_code)))

@@ -1,3 +1,4 @@
+import io
 import os
 import textwrap
 import typing as tp
@@ -112,7 +113,7 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     ),
 ])
 def test_select_good_functions(source_code, expected_names):
-    functions = parser.get_functions(textwrap.dedent(source_code))
+    functions = parser.get_functions(io.StringIO(textwrap.dedent(source_code)))
     good_functions = loader.select_good_functions(functions)
     actual_names = {a_function.name for a_function in good_functions}
     assert actual_names == set(expected_names)

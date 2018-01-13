@@ -95,17 +95,12 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
                 for a_file in _find_files(temp_dir, 'py'):
                     with open(a_file, encoding='utf-8') as fileobj:
                         try:
-                            source = fileobj.read()
-                        # TODO: test this
-                        except UnicodeDecodeError:
-                            continue
-                    try:
-                        file_functions = parser.get_functions(source, catch_exceptions=True)
-                    except SyntaxError:
-                        # TODO: test SyntaxError
-                        loggers.loader.error('could not parse %s', a_file, exc_info=True)
-                    else:
-                        functions.update(file_functions)
+                            file_functions = parser.get_functions(fileobj, catch_exceptions=True)
+                        except SyntaxError:
+                            # TODO: test SyntaxError
+                            loggers.loader.error('could not parse %s', a_file, exc_info=True)
+                        else:
+                            functions.update(file_functions)
     with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
         # TODO: pick the most suitable functions
         # TODO: test that random.sample applies only to all function (not file_functions)
