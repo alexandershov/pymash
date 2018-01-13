@@ -257,5 +257,6 @@ def test_get_functions_failure(source_code, expected_exception):
 
 
 def test_get_functions_decode_failure():
+    # noinspection PyTypeChecker
     fileobj = io.TextIOWrapper(io.BytesIO('тест'.encode('cp1251')), encoding='utf-8')
     assert parser.get_functions(fileobj, catch_exceptions=True) == []
