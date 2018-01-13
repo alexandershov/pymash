@@ -23,6 +23,6 @@ setuptools.setup(
         'pytest-aiohttp==0.1.3',
     ],
     package_data={
-        '': ['templates/*.html'],
+        '': ['templates/*.html', 'templates/static/*.css'],
     }
 )
