@@ -1,24 +1,17 @@
 import argparse
 
-import sqlalchemy as sa
-
-from pymash import cfg
 from pymash import loader
-from pymash import loggers
+from pymash.scripts import base
 
 
 def main():
-    loggers.setup_logging()
-    # TODO: dry it up with create_db.py
     args = _parse_args()
-    config = cfg.get_config()
-    engine = sa.create_engine(config.dsn)
-    loader.load_most_popular(
-        engine,
-        language=args.language,
-        limit=args.limit,
-        extra_repos_full_names=['alexandershov/pymash'])
-    engine.dispose()
+    with base.ScriptContext() as context:
+        loader.load_most_popular(
+            context.engine,
+            language=args.language,
+            limit=args.limit,
+            extra_repos_full_names=['alexandershov/pymash'])
 
 
 def _parse_args():

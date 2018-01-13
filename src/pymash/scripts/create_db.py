@@ -1,14 +1,10 @@
-import sqlalchemy as sa
-
-from pymash import cfg
 from pymash import tables
+from pymash.scripts import base
 
 
 def main():
-    config = cfg.get_config()
-    engine = sa.create_engine(config.dsn)
-    tables.Base.metadata.create_all(engine)
-    engine.dispose()
+    with base.ScriptContext() as context:
+        tables.Base.metadata.create_all(context.engine)
 
 
 if __name__ == '__main__':
