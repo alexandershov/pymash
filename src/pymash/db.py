@@ -33,10 +33,10 @@ class GameResultChanged(BaseError):
 
 
 @utils.log_time(loggers.web)
-async def find_repos_order_by_rating(engine: AsyncEngine) -> tp.List[models.Repo]:
+async def find_active_repos_order_by_rating(engine: AsyncEngine) -> tp.List[models.Repo]:
     repos = []
     async with engine.acquire() as conn:
-        query = Repos.select().order_by(Repos.c.rating.desc())
+        query = Repos.select().where(Repos.c.is_active.is_(True)).order_by(Repos.c.rating.desc())
         async for a_row in conn.execute(query):
             repos.append(make_repo_from_db_row(a_row))
     return repos

@@ -11,10 +11,15 @@ class _RepoDbModel(Base):
     name = sa.Column(sa.Text, nullable=False)
     url = sa.Column(sa.Text, nullable=False)
     is_active = sa.Column(sa.Boolean, nullable=False)
-    rating = sa.Column(sa.Float, nullable=False, index=True)
+    rating = sa.Column(sa.Float, nullable=False)
 
 
 Repos = _RepoDbModel.__table__
+
+sa.Index(
+    'repos_is_active_rating_partial_idx',
+    Repos.c.rating,
+    postgresql_where=Repos.c.is_active.is_(True))
 
 
 class _FunctionDbModel(Base):
@@ -35,7 +40,7 @@ repo_id_md5_text_unique_idx = sa.Index(
 
 sa.Index(
     'functions_is_active_random_partial_idx',
-    Functions.c.is_active, Functions.c.random,
+    Functions.c.random,
     postgresql_where=Functions.c.is_active.is_(True))
 
 

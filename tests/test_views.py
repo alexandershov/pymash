@@ -54,6 +54,7 @@ async def test_show_leaders(pymash_engine, test_client):
     flask_index = text.index('1901')
     django_index = text.index('1801')
     assert flask_index < django_index
+    assert text.find('2001') == -1
 
 
 def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black_score='0',
@@ -129,8 +130,9 @@ def _make_future_with_result(result):
 
 
 def _add_repos_for_test_show_leaders(pymash_engine):
-    _add_some_repo_with_rating(pymash_engine, 1001, 1801, True)
-    _add_some_repo_with_rating(pymash_engine, 1002, 1901, True)
+    _add_some_repo_with_rating(pymash_engine, 1001, 1801, is_active=True)
+    _add_some_repo_with_rating(pymash_engine, 1002, 1901, is_active=True)
+    _add_some_repo_with_rating(pymash_engine, 1003, 2001, is_active=False)
 
 
 async def _get_text(app, test_client, path) -> str:

@@ -17,7 +17,7 @@ _DICT_OR_RESPONSE = tp.Union[dict, web.Response]
 @utils.log_time(loggers.web)
 @aiohttp_jinja2.template('leaders.html')
 async def show_leaders(request: web.Request) -> _DICT_OR_RESPONSE:
-    repos = await db.find_repos_order_by_rating(request.app['db_engine'])
+    repos = await db.find_active_repos_order_by_rating(request.app['db_engine'])
     return {
         'repos': repos,
     }
