@@ -156,10 +156,10 @@ def _add_data(pymash_engine):
 def _assert_repo_was_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         rows = list(conn.execute(Repos.select()))
-        django_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1001)))[0]
-        flask_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1002)))[0]
-        pymash_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1003)))[0]
-        requests_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1005)))[0]
+        django_row = conn.execute(Repos.select().where(Repos.c.github_id == 1001)).first()
+        flask_row = conn.execute(Repos.select().where(Repos.c.github_id == 1002)).first()
+        pymash_row = conn.execute(Repos.select().where(Repos.c.github_id == 1003)).first()
+        requests_row = conn.execute(Repos.select().where(Repos.c.github_id == 1005)).first()
     assert len(rows) == 4
 
     django_repo = db.make_repo_from_db_row(django_row)
