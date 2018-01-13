@@ -19,12 +19,12 @@ class NotFound(BaseError):
 
 @utils.log_time(loggers.web)
 async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
-    event = make_event_from_game(game)
+    event = make_game_finished_event_from_game(game)
     await _ensure_games_queue_is_ready(app)
     await app['games_queue'].send_message(MessageBody=json.dumps(event))
 
 
-def make_event_from_game(game: models.Game) -> dict:
+def make_game_finished_event_from_game(game: models.Game) -> dict:
     return {
         'game_id': game.game_id,
         'white_id': game.white_id,
@@ -33,6 +33,15 @@ def make_event_from_game(game: models.Game) -> dict:
         'black_score': game.result.black_score,
         'occurred_at': dt.datetime.utcnow().isoformat(),
     }
+
+
+def parse_game_finished_event(data: dict) -> models.Game:
+    result = models.GameResult(data['white_score'], data['black_score'])
+    return models.Game(
+        game_id=data['game_id'],
+        white_id=data['white_id'],
+        black_id=data['black_id'],
+        result=result)
 
 
 @utils.log_time(loggers.web)

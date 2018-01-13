@@ -99,6 +99,6 @@ def _assert_game_not_saved(pymash_engine, game):
 def _convert_games_to_messages(games: tp.List[models.Game]):
     result = []
     for a_game in games:
-        body = json.dumps(events.make_event_from_game(a_game))
+        body = json.dumps(events.make_game_finished_event_from_game(a_game))
         result.append(mock.Mock(body=body))
     return result
