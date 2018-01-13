@@ -93,9 +93,10 @@ UNKNOWN_RESULT = UnknownResult()
 
 
 class GithubRepo:
-    def __init__(self, github_id: int, name: str, url: str, zipball_url: str, num_stars: int) -> None:
+    def __init__(self, github_id: int, name: str, full_name: str, url: str, zipball_url: str, num_stars: int) -> None:
         self.github_id = github_id
         self.name = name
+        self.full_name = full_name
         self.url = url
         self.zipball_url = zipball_url
         self.num_stars = num_stars

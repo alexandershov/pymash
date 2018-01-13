@@ -20,19 +20,29 @@ def test_load_most_popular(pymash_engine, monkeypatch):
         _make_mock(
             id=1001,
             name='django',
+            full_name='django/django',
             html_url='https://github.com/django/django',
             get_archive_link=archive_link_mock,
             stargazers_count=25000),
         _make_mock(
             id=1002,
             name='flask',
+            full_name='pallets/flask',
             html_url='https://github.com/pallets/flask',
             get_archive_link=archive_link_mock,
             stargazers_count=26000),
+        _make_mock(
+            id=1004,
+            name='CppCoreGuideLines',
+            full_name='isocpp/CppCoreGuidelines',
+            html_url='https://github.com/isocpp/CppCoreGuidelines',
+            get_archive_link=archive_link_mock,
+            stargazers_count=33000)
     ]
     pymash_mock = _make_mock(
         id=1003,
         name='pymash',
+        full_name='alexandershov/pymash',
         html_url='https://github.com/alexandershov/pymash',
         get_archive_link=archive_link_mock,
         stargazers_count=1)
@@ -41,7 +51,11 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     github_mock.return_value.get_repo.return_value = pymash_mock
     monkeypatch.setattr(github, 'Github', github_mock)
     _add_data(pymash_engine)
-    loader.load_most_popular(pymash_engine, 'python', 1000, extra_repos_full_names=['alexandershov/pymash'])
+    loader.load_most_popular(
+        pymash_engine, 'python', 1000,
+        extra_repos_full_names=['alexandershov/pymash'],
+        blacklisted_repos_full_names=['isocpp/CppCoreGuidelines'],
+    )
     _assert_repo_was_loaded(pymash_engine)
     _assert_functions_were_loaded(pymash_engine)
 

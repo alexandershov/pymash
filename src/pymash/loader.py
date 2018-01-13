@@ -27,9 +27,10 @@ class Selector:
 
 
 @utils.log_time(loggers.loader)
-def load_most_popular(engine, language, limit, extra_repos_full_names=()):
+def load_most_popular(engine, language, limit, extra_repos_full_names=(), blacklisted_repos_full_names=()):
     github_client = _get_github_client()
     github_repos = find_most_popular_github_repos(github_client, language, limit)
+    github_repos = _exclude_blacklisted(github_repos, blacklisted_repos_full_names)
     with utils.log_time(loggers.loader, f'loading {len(extra_repos_full_names)} extra repos'):
         for full_name in extra_repos_full_names:
             # TODO: maybe pass lazy=False to the github_client.get_repo
@@ -37,6 +38,15 @@ def load_most_popular(engine, language, limit, extra_repos_full_names=()):
     load_many_github_repos(engine, github_repos)
     # TODO: you need to deactivate all functions from repos that were in db but
     # in most_popular_list & probably deactivate these repos and don't show them in a /leaders list
+
+
+def _exclude_blacklisted(
+        github_repos: tp.List[models.GithubRepo], blacklisted_repos_full_names) -> tp.List[models.GithubRepo]:
+    return [
+        a_github_repo
+        for a_github_repo in github_repos
+        if a_github_repo.full_name not in blacklisted_repos_full_names
+    ]
 
 
 @utils.log_time(loggers.loader)
@@ -54,6 +64,7 @@ def _parse_github_repo(github_repo) -> models.GithubRepo:
     return models.GithubRepo(
         github_id=github_repo.id,
         name=github_repo.name,
+        full_name=github_repo.full_name,
         url=github_repo.html_url,
         zipball_url=github_repo.get_archive_link('zipball'),
         num_stars=github_repo.stargazers_count)
