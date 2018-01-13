@@ -69,8 +69,12 @@ class Function:
 
 
 def get_functions(fileobj, *, catch_exceptions: bool = False) -> tp.List[Function]:
-    # TODO: catch & test UnicodeDecodeError on read
-    source_code = fileobj.read()
+    try:
+        source_code = fileobj.read()
+    except UnicodeDecodeError:
+        if not catch_exceptions:
+            raise
+        return []
     return _get_functions_from_str(source_code, catch_exceptions=catch_exceptions)
 
 

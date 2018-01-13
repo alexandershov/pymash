@@ -254,3 +254,8 @@ def test_get_functions(source_code, expected_functions):
 def test_get_functions_failure(source_code, expected_exception):
     with pytest.raises(expected_exception):
         parser.get_functions(io.StringIO(textwrap.dedent(source_code)))
+
+
+def test_get_functions_decode_failure():
+    fileobj = io.TextIOWrapper(io.BytesIO('тест'.encode('cp1251')), encoding='utf-8')
+    assert parser.get_functions(fileobj, catch_exceptions=True) == []
