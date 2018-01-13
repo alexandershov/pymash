@@ -10,6 +10,7 @@ class _RepoDbModel(Base):
     github_id = sa.Column(sa.BigInteger, unique=True, index=True, nullable=False)
     name = sa.Column(sa.Text, nullable=False)
     url = sa.Column(sa.Text, nullable=False)
+    is_active = sa.Column(sa.Boolean, nullable=False)
     rating = sa.Column(sa.Float, nullable=False, index=True)
 
 

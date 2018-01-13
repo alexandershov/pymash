@@ -126,6 +126,7 @@ def _add_data(pymash_engine):
             Repos.c.github_id: 1002,
             Repos.c.name: 'flask',
             Repos.c.url: 'https://github.com/pallets/flask',
+            Repos.c.is_active: True,
             Repos.c.rating: 1900,
         }))
         conn.execute(Functions.insert().values({
