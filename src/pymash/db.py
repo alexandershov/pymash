@@ -56,10 +56,14 @@ def deactivate_repos(engine: Engine, repos: tp.List[models.Repo]) -> None:
             a_repo.repo_id
             for a_repo in repos
         ]
-        update = {
-            Repos.c.is_active.key: False
+        repos_update = {
+            Repos.c.is_active.key: False,
         }
-        conn.execute(Repos.update().where(Repos.c.repo_id.in_(repo_ids)).values(update))
+        functions_update = {
+            Functions.c.is_active.key: False,
+        }
+        conn.execute(Repos.update().where(Repos.c.repo_id.in_(repo_ids)).values(repos_update))
+        conn.execute(Functions.update().where(Functions.c.repo_id.in_(repo_ids)).values(functions_update))
 
 
 def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:

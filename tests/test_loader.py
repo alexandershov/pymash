@@ -151,6 +151,13 @@ def _add_data(pymash_engine):
             Repos.c.is_active: True,
             Repos.c.rating: 2000,
         }))
+        conn.execute(Functions.insert().values({
+            Functions.c.function_id: 999,
+            Functions.c.repo_id: 5,
+            Functions.c.text: 'def add(x, y):\n    return x + y',
+            Functions.c.is_active: True,
+            Functions.c.random: 0.8,
+        }))
 
 
 def _assert_repo_was_loaded(pymash_engine):
@@ -190,19 +197,18 @@ def _assert_repo_was_loaded(pymash_engine):
 def _assert_functions_were_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         rows = list(conn.execute(Functions.select()))
-        django_rows = list(conn.execute(
-            Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == 'django')).select()))
-        flask_rows = list(conn.execute(
-            Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == 'flask')).select()))
-        pymash_rows = list(conn.execute(
-            Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == 'pymash')).select()))
-    assert len(rows) == 7
+        django_rows = _find_functions_with_repo_name(conn, 'django')
+        flask_rows = _find_functions_with_repo_name(conn, 'flask')
+        pymash_rows = _find_functions_with_repo_name(conn, 'pymash')
+        requests_rows = _find_functions_with_repo_name(conn, 'requests')
+    assert len(rows) == 8
     assert len(django_rows) == 2
     assert len(flask_rows) == 3
-    assert len(pymash_rows) == 2
+    assert len(requests_rows) == 1
     django_functions = list(map(db.make_function_from_db_row, django_rows))
     flask_functions = list(map(db.make_function_from_db_row, flask_rows))
     pymash_functions = list(map(db.make_function_from_db_row, pymash_rows))
+    requests_functions = list(map(db.make_function_from_db_row, requests_rows))
     assert _group_by_text(django_functions) == {
         'def add(x, y):\n    return x + y': True,
         'def sub(x, y):\n    return x - y': True,
@@ -216,6 +222,14 @@ def _assert_functions_were_loaded(pymash_engine):
         'def add(x, y):\n    return x + y': True,
         'def sub(x, y):\n    return x - y': True,
     }
+    assert _group_by_text(requests_functions) == {
+        'def add(x, y):\n    return x + y': False,
+    }
+
+
+def _find_functions_with_repo_name(conn, repo_name):
+    return list(conn.execute(
+        Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == repo_name)).select()))
 
 
 def _group_by_text(functions: tp.List[models.Function]):

@@ -37,8 +37,6 @@ def load_most_popular(engine, language, limit, extra_repos_full_names=(), blackl
             github_repos.append(_parse_github_repo(github_client.get_repo(full_name, lazy=False)))
     loaded_repos = load_many_github_repos(engine, github_repos)
     _deactivate_not_loaded_repos(engine, loaded_repos)
-    # TODO: you need to deactivate all functions from repos that were in db but not
-    # in most_popular_list & probably deactivate these repos and don't show them in a /leaders list
 
 
 def _deactivate_not_loaded_repos(engine, loaded_repos: tp.List[models.Repo]):
