@@ -33,8 +33,7 @@ def load_most_popular(engine, language, limit, extra_repos_full_names=(), blackl
     github_repos = _exclude_blacklisted(github_repos, blacklisted_repos_full_names)
     with utils.log_time(loggers.loader, f'loading {len(extra_repos_full_names)} extra repos'):
         for full_name in extra_repos_full_names:
-            # TODO: maybe pass lazy=False to the github_client.get_repo
-            github_repos.append(_parse_github_repo(github_client.get_repo(full_name)))
+            github_repos.append(_parse_github_repo(github_client.get_repo(full_name, lazy=False)))
     load_many_github_repos(engine, github_repos)
     # TODO: you need to deactivate all functions from repos that were in db but
     # in most_popular_list & probably deactivate these repos and don't show them in a /leaders list
