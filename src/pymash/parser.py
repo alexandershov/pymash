@@ -31,6 +31,10 @@ class EmptyFunctionError(UnknownFunctionText):
     pass
 
 
+class AstSyntaxError(BaseError):
+    pass
+
+
 class _SentinelNode:
     def __init__(self, source_lines):
         self.lineno = len(source_lines) + 1
@@ -72,7 +76,12 @@ def get_functions(fileobj, *, catch_exceptions: bool = False) -> tp.List[Functio
 
 def _get_functions_from_str(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
-    nodes = _get_ast_nodes(source_code, source_lines)
+    try:
+        nodes = _get_ast_nodes(source_code, source_lines)
+    except AstSyntaxError:
+        if not catch_exceptions:
+            raise
+        return []
     functions = []
     for fn_node, next_node in _iter_function_nodes_with_next(nodes):
         try:
@@ -90,7 +99,10 @@ def _get_functions_from_str(source_code: str, *, catch_exceptions: bool = False)
 
 
 def _get_ast_nodes(source_code: str, source_lines: tp.List[str]):
-    parsed = ast.parse(source_code)
+    try:
+        parsed = ast.parse(source_code)
+    except SyntaxError:
+        raise AstSyntaxError
     nodes = copy.copy(parsed.body)
     nodes.append(_SentinelNode(source_lines))
     return nodes

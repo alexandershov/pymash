@@ -182,7 +182,11 @@ _EXPECTED_RESULT = [
             '',
             [],
     ),
-
+    # we catch SyntaxError
+    (
+            'print "test"',
+            [],
+    ),
 ])
 def test_get_functions(source_code, expected_functions):
     actual_functions = parser.get_functions(io.StringIO(textwrap.dedent(source_code)), catch_exceptions=True)
