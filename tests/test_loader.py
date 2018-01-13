@@ -56,6 +56,7 @@ def test_load_most_popular(pymash_engine, monkeypatch):
         pymash_engine, 'python', 1000,
         extra_repos_full_names=['alexandershov/pymash'],
         blacklisted_repos_full_names=['isocpp/CppCoreGuidelines'],
+        concurrency=2,
     )
     _assert_repo_was_loaded(pymash_engine)
     _assert_functions_were_loaded(pymash_engine)
@@ -122,7 +123,7 @@ def test_select_good_functions(source_code, expected_names):
 def _add_data(pymash_engine):
     with pymash_engine.connect() as conn:
         conn.execute(Repos.insert().values({
-            Repos.c.repo_id: 2,
+            Repos.c.repo_id: -2,
             Repos.c.github_id: 1002,
             Repos.c.name: 'flask',
             Repos.c.url: 'https://github.com/pallets/flask',
@@ -131,20 +132,20 @@ def _add_data(pymash_engine):
         }))
         conn.execute(Functions.insert().values({
             Functions.c.function_id: 777,
-            Functions.c.repo_id: 2,
+            Functions.c.repo_id: -2,
             Functions.c.text: 'def add(x, y):\n    return x + y',
             Functions.c.is_active: True,
             Functions.c.random: 0.6,
         }))
         conn.execute(Functions.insert().values({
             Functions.c.function_id: 888,
-            Functions.c.repo_id: 2,
+            Functions.c.repo_id: -2,
             Functions.c.text: 'def mul(x, y):\n    return x * y',
             Functions.c.is_active: True,
             Functions.c.random: 0.7,
         }))
         conn.execute(Repos.insert().values({
-            Repos.c.repo_id: 5,
+            Repos.c.repo_id: -5,
             Repos.c.github_id: 1005,
             Repos.c.name: 'requests',
             Repos.c.url: 'https://github.com/requests/requests',
@@ -153,7 +154,7 @@ def _add_data(pymash_engine):
         }))
         conn.execute(Functions.insert().values({
             Functions.c.function_id: 999,
-            Functions.c.repo_id: 5,
+            Functions.c.repo_id: -5,
             Functions.c.text: 'def add(x, y):\n    return x + y',
             Functions.c.is_active: True,
             Functions.c.random: 0.8,

@@ -1,4 +1,5 @@
 import glob
+import multiprocessing
 import os
 import random
 import re
@@ -15,6 +16,7 @@ from pymash import loggers
 from pymash import models
 from pymash import parser
 from pymash import utils
+from pymash.scripts import base
 
 
 class Selector:
@@ -28,14 +30,15 @@ class Selector:
 
 # TODO: should it run in a transaction?
 @utils.log_time(loggers.loader)
-def load_most_popular(engine, language, limit, extra_repos_full_names=(), blacklisted_repos_full_names=()):
+def load_most_popular(
+        engine, language, limit, extra_repos_full_names=(), blacklisted_repos_full_names=(), concurrency=1):
     github_client = _get_github_client()
     github_repos = find_most_popular_github_repos(github_client, language, limit)
     github_repos = _exclude_blacklisted(github_repos, blacklisted_repos_full_names)
     with utils.log_time(loggers.loader, f'loading {len(extra_repos_full_names)} extra repos'):
         for full_name in extra_repos_full_names:
             github_repos.append(_parse_github_repo(github_client.get_repo(full_name, lazy=False)))
-    loaded_repos = load_many_github_repos(engine, github_repos)
+    loaded_repos = load_many_github_repos(github_repos, concurrency=concurrency)
     _deactivate_not_loaded_repos(engine, loaded_repos)
 
 
@@ -89,36 +92,38 @@ def _unzip_file(path, output_dir):
         z.extractall(path=output_dir)
 
 
-@utils.log_time(loggers.loader, lambda engine, github_repos: f'{len(github_repos)} github repos')
-def load_many_github_repos(engine, github_repos: tp.List[models.GithubRepo]) -> tp.List[models.Repo]:
-    repos = []
-    for a_github_repo in github_repos:
-        repos.append(load_github_repo(engine, a_github_repo))
-    return repos
+@utils.log_time(
+    loggers.loader,
+    lambda github_repos, concurrency: f'{len(github_repos)} github repos with concurrency {concurrency}')
+def load_many_github_repos(github_repos: tp.List[models.GithubRepo], concurrency: int) -> tp.List[models.Repo]:
+    pool = multiprocessing.Pool(concurrency)
+    return pool.map(load_github_repo, github_repos)
 
 
+# TODO: maybe separate parsing & saving to database
 @utils.log_time(loggers.loader)
-def load_github_repo(engine, github_repo: models.GithubRepo) -> models.Repo:
-    functions = set()
-    with tempfile.NamedTemporaryFile() as temp_file:
-        repo = db.save_github_repo(engine, github_repo)
-        with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
-            urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with utils.log_time(loggers.loader, f'unzipping {temp_file.name}'):
-                _unzip_file(temp_file.name, temp_dir)
-            with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
-                for a_file in _find_files(temp_dir, 'py'):
-                    with open(a_file, encoding='utf-8') as fileobj:
-                        file_functions = parser.get_functions(fileobj, catch_exceptions=True)
-                        functions.update(file_functions)
-    with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
-        # TODO: test that random.sample is applied to all functions (not file_functions)
-        good_functions = select_good_functions(functions)
-        functions_to_update = random.sample(
-            good_functions, min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(good_functions)))
-    db.update_functions(engine, repo, functions_to_update)
-    return repo
+def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
+    with base.ScriptContext() as context:
+        functions = set()
+        with tempfile.NamedTemporaryFile() as temp_file:
+            repo = db.save_github_repo(context.engine, github_repo)
+            with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
+                urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
+            with tempfile.TemporaryDirectory() as temp_dir:
+                with utils.log_time(loggers.loader, f'unzipping {temp_file.name}'):
+                    _unzip_file(temp_file.name, temp_dir)
+                with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
+                    for a_file in _find_files(temp_dir, 'py'):
+                        with open(a_file, encoding='utf-8') as fileobj:
+                            file_functions = parser.get_functions(fileobj, catch_exceptions=True)
+                            functions.update(file_functions)
+        with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
+            # TODO: test that random.sample is applied to all functions (not file_functions)
+            good_functions = select_good_functions(functions)
+            functions_to_update = random.sample(
+                good_functions, min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(good_functions)))
+        db.update_functions(context.engine, repo, functions_to_update)
+        return repo
 
 
 def _find_files(directory, extension):
