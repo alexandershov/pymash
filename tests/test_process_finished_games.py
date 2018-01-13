@@ -76,16 +76,13 @@ def _monkeypatch_boto3(monkeypatch, games):
 
 def _assert_repo_has_rating(pymash_engine, repo_id, expected_rating):
     with pymash_engine.connect() as conn:
-        # TODO: is there select_one?
-        rows = conn.execute(Repos.select().where(Repos.c.repo_id == repo_id))
-
-    assert list(rows)[0][Repos.c.rating] == pytest.approx(expected_rating, abs=0.01)
+        row = conn.execute(Repos.select().where(Repos.c.repo_id == repo_id)).first()
+        assert row[Repos.c.rating] == pytest.approx(expected_rating, abs=0.01)
 
 
 def _assert_game_saved(pymash_engine, game):
     with pymash_engine.connect() as conn:
-        rows = list(conn.execute(Games.select().where(Games.c.game_id == game.game_id)))
-    row = rows[0]
+        row = conn.execute(Games.select().where(Games.c.game_id == game.game_id)).first()
     assert row[Games.c.game_id] == game.game_id
     assert row[Games.c.white_id] == game.white_id
     assert row[Games.c.black_id] == game.black_id
@@ -95,8 +92,8 @@ def _assert_game_saved(pymash_engine, game):
 
 def _assert_game_not_saved(pymash_engine, game):
     with pymash_engine.connect() as conn:
-        rows = list(conn.execute(Games.select().where(Games.c.game_id == game.game_id)))
-    assert len(rows) == 0
+        num_rows = conn.execute(Games.count().where(Games.c.game_id == game.game_id)).scalar()
+        assert num_rows == 0
 
 
 def _convert_games_to_messages(games: tp.List[models.Game]):

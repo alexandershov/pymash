@@ -118,9 +118,7 @@ def save_github_repo(engine: Engine, github_repo: models.GithubRepo) -> models.R
         }
         query = postgresql.insert(Repos).values(insert_data).on_conflict_do_update(
             index_elements=[Repos.c.github_id], set_=update_data).returning(*Repos.columns)
-        rows = list(conn.execute(query))
-        assert len(rows) == 1
-        return make_repo_from_db_row(rows[0])
+        return make_repo_from_db_row(conn.execute(query).first())
 
 
 @utils.log_time(loggers.loader, lambda engine, repo, functions: f'{len(functions)} from {repo.url}')
