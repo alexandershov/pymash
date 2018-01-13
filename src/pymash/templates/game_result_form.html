@@ -1,5 +1,5 @@
 <div>
-    <pre>{{ text }}</pre>
+    <pre>{{ text|highlight }}</pre>
     <form action="/game/{{ game.game_id }}" method="POST">
         <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
         <input type="hidden" name="black_id" value="{{ game.black_id }}"/>

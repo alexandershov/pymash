@@ -1,10 +1,13 @@
 import argparse
 
 import aioboto3
-from aiohttp import web
-from aiopg import sa
 import aiohttp_jinja2
 import jinja2
+import pygments
+import pygments.lexers
+from aiohttp import web
+from aiopg import sa
+from pygments.formatters import html as pygments_html
 
 from pymash import cfg
 from pymash import loggers
@@ -29,8 +32,9 @@ def create_app() -> web.Application:
     app.on_cleanup.append(_close_sqs_resource)
     routes.setup_routes(app)
     aiohttp_jinja2.setup(
-        app, loader=jinja2.PackageLoader('pymash', 'templates')
-    )
+        app,
+        loader=jinja2.PackageLoader('pymash', 'templates'),
+        filters={'highlight': highlight})
     return app
 
 
@@ -59,6 +63,18 @@ async def _create_sqs_resource(app):
 @utils.log_time(loggers.web)
 async def _close_sqs_resource(app):
     await app['sqs_resource'].close()
+
+
+def highlight_with_css_class(text, language, css_class):
+    formatter = pygments_html.HtmlFormatter(cssclass=css_class)
+    # TODO: can we do without strip?
+    return pygments.highlight(text,
+                              pygments.lexers.get_lexer_by_name(language),
+                              formatter).strip()
+
+
+def highlight(s, language='python'):
+    return highlight_with_css_class(s, language, 'highlight')
 
 
 def _parse_args():
