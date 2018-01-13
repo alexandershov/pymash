@@ -17,8 +17,6 @@ class NotFound(BaseError):
     pass
 
 
-# TODO: add cron runner
-
 @utils.log_time(loggers.web)
 async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
     event = make_event_from_game(game)
