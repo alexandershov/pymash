@@ -165,21 +165,25 @@ def _assert_repo_was_loaded(pymash_engine):
     django_repo = db.make_repo_from_db_row(django_row)
     assert django_repo.name == 'django'
     assert django_repo.url == 'https://github.com/django/django'
+    assert django_repo.is_active
     assert django_repo.rating == models.Repo.DEFAULT_RATING
 
     flask_repo = db.make_repo_from_db_row(flask_row)
     assert flask_repo.name == 'flask'
     assert flask_repo.url == 'https://github.com/pallets/flask'
+    assert flask_repo.is_active
     assert flask_repo.rating == 1900
 
     pymash_repo = db.make_repo_from_db_row(pymash_row)
     assert pymash_repo.name == 'pymash'
     assert pymash_repo.url == 'https://github.com/alexandershov/pymash'
+    assert pymash_repo.is_active
     assert pymash_repo.rating == 1800
 
     requests_repo = db.make_repo_from_db_row(requests_row)
     assert requests_repo.name == 'requests'
     assert requests_repo.url == 'https://github.com/requests/requests'
+    assert not requests_repo.is_active
     assert requests_repo.rating == 2000
 
 

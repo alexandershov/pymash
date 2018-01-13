@@ -105,11 +105,12 @@ class GithubRepo:
 class Repo:
     DEFAULT_RATING = 1800
 
-    def __init__(self, repo_id: int, github_id: int, name: str, url: str, rating: float):
+    def __init__(self, repo_id: int, github_id: int, name: str, url: str, is_active: bool, rating: float):
         self.repo_id = repo_id
         self.github_id = github_id
         self.name = name
         self.url = url
+        self.is_active = is_active
         self.rating = rating
 
     def add_rating(self, delta):

@@ -42,12 +42,33 @@ async def find_repos_order_by_rating(engine: AsyncEngine) -> tp.List[models.Repo
     return repos
 
 
+@utils.log_time(loggers.loader)
+def find_all_repos(engine: Engine) -> tp.List[models.Repo]:
+    with engine.connect() as conn:
+        rows = conn.execute(Repos.select())
+        return list(map(make_repo_from_db_row, rows))
+
+
+@utils.log_time(loggers.loader)
+def deactivate_repos(engine: Engine, repos: tp.List[models.Repo]) -> None:
+    with engine.connect() as conn:
+        repo_ids = [
+            a_repo.repo_id
+            for a_repo in repos
+        ]
+        update = {
+            Repos.c.is_active.key: False
+        }
+        conn.execute(Repos.update().where(Repos.c.repo_id.in_(repo_ids)).values(update))
+
+
 def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
     return models.Repo(
         repo_id=row[Repos.c.repo_id],
         github_id=row[Repos.c.github_id],
         name=row[Repos.c.name],
         url=row[Repos.c.url],
+        is_active=row[Repos.c.is_active],
         rating=row[Repos.c.rating])
 
 

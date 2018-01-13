@@ -44,6 +44,7 @@ def _make_repo(repo_id, rating):
         github_id=1000,
         name='some_repo_name',
         url='http://some.repo.url',
+        is_active=True,
         rating=rating)
 
 

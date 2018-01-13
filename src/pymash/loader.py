@@ -26,6 +26,7 @@ class Selector:
     NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 
+# TODO: should it run in a transaction?
 @utils.log_time(loggers.loader)
 def load_most_popular(engine, language, limit, extra_repos_full_names=(), blacklisted_repos_full_names=()):
     github_client = _get_github_client()
@@ -34,9 +35,24 @@ def load_most_popular(engine, language, limit, extra_repos_full_names=(), blackl
     with utils.log_time(loggers.loader, f'loading {len(extra_repos_full_names)} extra repos'):
         for full_name in extra_repos_full_names:
             github_repos.append(_parse_github_repo(github_client.get_repo(full_name, lazy=False)))
-    load_many_github_repos(engine, github_repos)
+    loaded_repos = load_many_github_repos(engine, github_repos)
+    _deactivate_not_loaded_repos(engine, loaded_repos)
     # TODO: you need to deactivate all functions from repos that were in db but not
     # in most_popular_list & probably deactivate these repos and don't show them in a /leaders list
+
+
+def _deactivate_not_loaded_repos(engine, loaded_repos: tp.List[models.Repo]):
+    all_repos = db.find_all_repos(engine)
+    loaded_repos_ids = {
+        repo.repo_id
+        for repo in loaded_repos
+    }
+    not_loaded_repos = [
+        repo
+        for repo in all_repos
+        if repo.repo_id not in loaded_repos_ids
+    ]
+    db.deactivate_repos(engine, not_loaded_repos)
 
 
 def _exclude_blacklisted(
@@ -76,13 +92,15 @@ def _unzip_file(path, output_dir):
 
 
 @utils.log_time(loggers.loader, lambda engine, github_repos: f'{len(github_repos)} github repos')
-def load_many_github_repos(engine, github_repos: tp.List[models.GithubRepo]) -> None:
+def load_many_github_repos(engine, github_repos: tp.List[models.GithubRepo]) -> tp.List[models.Repo]:
+    repos = []
     for a_github_repo in github_repos:
-        load_github_repo(engine, a_github_repo)
+        repos.append(load_github_repo(engine, a_github_repo))
+    return repos
 
 
 @utils.log_time(loggers.loader)
-def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
+def load_github_repo(engine, github_repo: models.GithubRepo) -> models.Repo:
     functions = set()
     with tempfile.NamedTemporaryFile() as temp_file:
         repo = db.save_github_repo(engine, github_repo)
@@ -102,6 +120,7 @@ def load_github_repo(engine, github_repo: models.GithubRepo) -> None:
         functions_to_update = random.sample(
             good_functions, min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(good_functions)))
     db.update_functions(engine, repo, functions_to_update)
+    return repo
 
 
 def _find_files(directory, extension):
