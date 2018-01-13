@@ -139,7 +139,7 @@ def update_functions(engine: Engine, repo: models.Repo, functions: tp.List[parse
                     Functions.c.is_active.key: True,
                 }
                 statement = postgresql.insert(Functions).values(insert_data).on_conflict_do_update(
-                    index_elements=tables.repo_id_text_unique_idx.expressions,
+                    index_elements=tables.repo_id_md5_text_unique_idx.expressions,
                     set_=update_data
                 )
                 conn.execute(statement)
