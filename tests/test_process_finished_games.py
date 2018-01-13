@@ -7,7 +7,7 @@ import pytest
 
 from pymash import events
 from pymash import models
-from pymash import process_finished_games
+from pymash.scripts import process_finished_games
 from pymash.tables import *
 
 
