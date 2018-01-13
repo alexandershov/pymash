@@ -38,18 +38,12 @@ def _create_tables(pymash_engine):
     tables.Base.metadata.create_all(pymash_engine)
 
 
-@pytest.fixture(autouse=True, scope='session')
-def _set_loader_selector_params():
-    loader.Selector.MAX_NUM_COMMENT_LINES = 2
-    loader.Selector.MAX_NUM_LINES = 7
-    loader.Selector.MIN_NUM_LINES = 2
-    loader.Selector.NUM_OF_FUNCTIONS_PER_REPO = 2
-
-
-# TODO: why it doesn't work?
-# @pytest.fixture(autouse=True)
-# def _set_loader_selector_params(monkeypatch):
-#     monkeypatch.setattr(loader.Selector, 'MAX_NUM_COMMENT_LINES', 2)
+@pytest.fixture(autouse=True)
+def _set_loader_selector_params(monkeypatch):
+    monkeypatch.setattr(loader.Selector, 'MAX_NUM_COMMENT_LINES', 2)
+    monkeypatch.setattr(loader.Selector, 'MAX_NUM_LINES', 7)
+    monkeypatch.setattr(loader.Selector, 'MIN_NUM_LINES', 2)
+    monkeypatch.setattr(loader.Selector, 'NUM_OF_FUNCTIONS_PER_REPO', 2)
 
 
 @pytest.fixture(autouse=True)
