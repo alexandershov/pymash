@@ -2,9 +2,9 @@ import random
 import typing as tp
 
 import aiopg.sa
-import sqlalchemy.engine.base
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as postgresql
+import sqlalchemy.engine.base
 import sqlalchemy.exc as sa_exc
 from aiopg.sa import result as aiopg_result
 from psycopg2 import errorcodes
@@ -12,6 +12,7 @@ from psycopg2 import errorcodes
 from pymash import loggers
 from pymash import models
 from pymash import parser
+from pymash import tables
 from pymash import utils
 from pymash.tables import *
 
@@ -138,8 +139,7 @@ def update_functions(engine: Engine, repo: models.Repo, functions: tp.List[parse
                     Functions.c.is_active.key: True,
                 }
                 statement = postgresql.insert(Functions).values(insert_data).on_conflict_do_update(
-                    # TODO: DRY it up with the definition in tables.py
-                    index_elements=[Functions.c.repo_id, sa.func.md5(Functions.c.text)],
+                    index_elements=tables.repo_id_text_unique_idx.expressions,
                     set_=update_data
                 )
                 conn.execute(statement)

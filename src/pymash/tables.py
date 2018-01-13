@@ -27,9 +27,9 @@ class _FunctionDbModel(Base):
 
 Functions = _FunctionDbModel.__table__
 # TODO: is there a better way?
-sa.Index('functions_repo_id_text_unique_idx',
-         Functions.c.repo_id, sa.func.md5(Functions.c.text),
-         unique=True)
+repo_id_text_unique_idx = sa.Index('functions_repo_id_text_unique_idx',
+                                   Functions.c.repo_id, sa.func.md5(Functions.c.text),
+                                   unique=True)
 sa.Index(
     'functions_is_active_random_partial_idx',
     Functions.c.is_active, Functions.c.random,
