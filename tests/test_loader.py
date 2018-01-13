@@ -143,6 +143,14 @@ def _add_data(pymash_engine):
             Functions.c.is_active: True,
             Functions.c.random: 0.7,
         }))
+        conn.execute(Repos.insert().values({
+            Repos.c.repo_id: 5,
+            Repos.c.github_id: 1005,
+            Repos.c.name: 'requests',
+            Repos.c.url: 'https://github.com/requests/requests',
+            Repos.c.is_active: True,
+            Repos.c.rating: 2000,
+        }))
 
 
 def _assert_repo_was_loaded(pymash_engine):
@@ -151,7 +159,8 @@ def _assert_repo_was_loaded(pymash_engine):
         django_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1001)))[0]
         flask_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1002)))[0]
         pymash_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1003)))[0]
-    assert len(rows) == 3
+        requests_row = list(conn.execute(Repos.select().where(Repos.c.github_id == 1005)))[0]
+    assert len(rows) == 4
 
     django_repo = db.make_repo_from_db_row(django_row)
     assert django_repo.name == 'django'
@@ -167,6 +176,11 @@ def _assert_repo_was_loaded(pymash_engine):
     assert pymash_repo.name == 'pymash'
     assert pymash_repo.url == 'https://github.com/alexandershov/pymash'
     assert pymash_repo.rating == 1800
+
+    requests_repo = db.make_repo_from_db_row(requests_row)
+    assert requests_repo.name == 'requests'
+    assert requests_repo.url == 'https://github.com/requests/requests'
+    assert requests_repo.rating == 2000
 
 
 def _assert_functions_were_loaded(pymash_engine):
