@@ -1,13 +1,17 @@
 import json
 
+import itertools
+
 from pymash import events
 from pymash import loggers
 from pymash.scripts import base
 
 
-def main(is_infinite=True, wait_time_seconds=10):
+def main(wait_time_seconds=10, iterations=None):
+    if iterations is None:
+        iterations = itertools.count()
     with base.ScriptContext() as context:
-        while True:
+        for _ in iterations:
             messages = context.games_queue.receive_messages(
                 MaxNumberOfMessages=10, WaitTimeSeconds=wait_time_seconds)
             loggers.games_queue.info('will handle %d messages', len(messages))
@@ -19,8 +23,6 @@ def main(is_infinite=True, wait_time_seconds=10):
                 except events.NotFound:
                     loggers.games_queue.error('skipping handling of message %r', exc_info=True)
                 a_message.delete()
-            if not is_infinite:
-                break
 
 
 if __name__ == '__main__':
