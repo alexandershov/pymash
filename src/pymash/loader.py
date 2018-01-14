@@ -118,12 +118,14 @@ def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
                             file_functions = parser.get_functions(fileobj, catch_exceptions=True)
                             functions.update(file_functions)
         with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
-            # TODO: test that random.sample is applied to all functions (not file_functions)
             good_functions = select_good_functions(functions)
-            functions_to_update = random.sample(
-                good_functions, min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(good_functions)))
+            functions_to_update = _select_random_functions(good_functions)
         db.update_functions(context.engine, repo, functions_to_update)
         return repo
+
+
+def _select_random_functions(functions: tp.List[parser.Function]) -> tp.List[parser.Function]:
+    return random.sample(functions, min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(functions)))
 
 
 def _find_files(directory, extension):
