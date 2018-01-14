@@ -9,6 +9,7 @@ def main(is_infinite=True, wait_duration=10):
     with base.ScriptContext() as context:
         while True:
             messages = context.games_queue.receive_messages(MaxNumberOfMessages=10, WaitTimeSeconds=wait_duration)
+            loggers.games_queue.info('will handle %d messages', len(messages))
             for a_message in messages:
                 try:
                     events.process_game_finished_event(

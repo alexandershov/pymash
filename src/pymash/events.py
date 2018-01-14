@@ -53,13 +53,24 @@ async def _ensure_games_queue_is_ready(app):
 
 @utils.log_time(loggers.games_queue)
 def process_game_finished_event(engine, game: models.Game) -> None:
+    loggers.games_queue.info(
+        'processing game between %s and %s, result (%s - %s)',
+        game.white_id, game.black_id, game.result.white_score, game.result.black_score)
     try:
         white_fn, black_fn = db.find_many_functions_by_ids(engine, [game.white_id, game.black_id])
         white_repo, black_repo = db.find_many_repos_by_ids(engine, [white_fn.repo_id, black_fn.repo_id])
     except db.NotFound as exc:
         raise NotFound(str(exc)) from exc
     match = models.Match(white_repo, black_repo, game.result)
+    loggers.games_queue.info(
+        'before: %s has rating %s, %s has rating %s',
+        white_repo.name, white_repo.rating,
+        black_repo.name, black_repo.rating)
     match.change_ratings()
+    loggers.games_queue.info(
+        'after: %s has rating %s, %s has rating %s',
+        white_repo.name, white_repo.rating,
+        black_repo.name, black_repo.rating)
     try:
         db.save_game_and_match(engine, game, match)
     except db.GameResultChanged:
