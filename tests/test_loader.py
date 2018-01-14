@@ -1,5 +1,6 @@
 import io
 import os
+import random
 import textwrap
 import typing as tp
 from unittest import mock
@@ -51,6 +52,17 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     github_mock.return_value.search_repositories.return_value = github_client_repos
     github_mock.return_value.get_repo.return_value = pymash_mock
     monkeypatch.setattr(github, 'Github', github_mock)
+    orig_random_sample = random.sample
+
+    def _mock_random_sample(population, k):
+        if len(population) == k:
+            return orig_random_sample(population, k)
+        assert len(population) == k + 1
+        result = [a_function for a_function in population if a_function.name != 'zzz']
+        assert len(result) == len(population) - 1
+        return result
+    monkeypatch.setattr(random, 'sample', _mock_random_sample)
+
     _add_data(pymash_engine)
     loader.load_most_popular(
         pymash_engine, 'python', 1000,
