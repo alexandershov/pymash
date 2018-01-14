@@ -17,7 +17,7 @@ from pymash.tables import *
 
 
 def test_load_most_popular(pymash_engine, monkeypatch):
-    archive_link_mock = mock.Mock(return_value=_make_data_dir_path('file_with_two_functions.py.zip'))
+    archive_link_mock = mock.Mock(return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
     github_client_repos = [
         _make_mock(
             id=1001,
