@@ -31,9 +31,9 @@ class GameResultChanged(BaseError):
 @utils.log_time(loggers.web)
 async def find_active_repos_order_by_rating(engine: ta.AsyncEngine) -> tp.List[models.Repo]:
     repos = []
+    repo_is_active = Repos.c.is_active.is_(True)
+    query = Repos.select().where(repo_is_active).order_by(Repos.c.rating.desc())
     async with engine.acquire() as conn:
-        repo_is_active = Repos.c.is_active.is_(True)
-        query = Repos.select().where(repo_is_active).order_by(Repos.c.rating.desc())
         async for a_row in conn.execute(query):
             repos.append(make_repo_from_db_row(a_row))
     return repos
@@ -41,21 +41,13 @@ async def find_active_repos_order_by_rating(engine: ta.AsyncEngine) -> tp.List[m
 
 @utils.log_time(loggers.loader)
 def deactivate_all_other_repos(engine: ta.Engine, repos: tp.List[models.Repo]) -> None:
+    repo_ids = [a_repo.repo_id for a_repo in repos]
+
     with engine.connect() as conn:
-        repo_ids = [
-            a_repo.repo_id
-            for a_repo in repos
-        ]
-        repos_update = {
-            Repos.c.is_active.key: False,
-        }
-        functions_update = {
-            Functions.c.is_active.key: False,
-        }
-        repos_result = conn.execute(Repos.update().where(sa.not_(Repos.c.repo_id.in_(repo_ids))).values(repos_update))
-        functions_result = conn.execute(
-            Functions.update().where(sa.not_(Functions.c.repo_id.in_(repo_ids))).values(functions_update))
-        loggers.loader.info('deactivated %d repos and %d functions', repos_result.rowcount, functions_result.rowcount)
+        repos_result = _deactivate_other_only_repos(conn, repo_ids)
+        functions_result = _deactivate_other_only_functions(conn, repo_ids)
+    loggers.loader.info('deactivated %d repos and %d functions',
+                        repos_result.rowcount, functions_result.rowcount)
 
 
 def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
@@ -161,6 +153,22 @@ def update_functions(engine: ta.Engine, repo: models.Repo, functions: tp.List[pa
                     set_=update_data
                 )
                 conn.execute(statement)
+
+
+def _deactivate_other_only_repos(conn, repo_ids):
+    is_other_repo = sa.not_(Repos.c.repo_id.in_(repo_ids))
+    repos_update = {
+        Repos.c.is_active.key: False,
+    }
+    return conn.execute(Repos.update().where(is_other_repo).values(repos_update))
+
+
+def _deactivate_other_only_functions(conn, repo_ids):
+    functions_update = {
+        Functions.c.is_active.key: False,
+    }
+    is_other_function = sa.not_(Functions.c.repo_id.in_(repo_ids))
+    return conn.execute(Functions.update().where(is_other_function).values(functions_update))
 
 
 @utils.log_time(loggers.games_queue)
