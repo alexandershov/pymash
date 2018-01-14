@@ -28,7 +28,6 @@ class Selector:
     NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 
-# TODO: should it run in a transaction?
 @utils.log_time(loggers.loader)
 def load_most_popular(
         engine, language, limit, extra_repos_full_names=(), blacklisted_repos_full_names=(), concurrency=1):
