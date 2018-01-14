@@ -13,7 +13,7 @@ class BaseError(Exception):
     pass
 
 
-class NotFound(BaseError):
+class DeletedFromDb(BaseError):
     pass
 
 
@@ -60,7 +60,7 @@ def process_game_finished_event(engine, game: models.Game) -> None:
         white_fn, black_fn = db.find_many_functions_by_ids(engine, [game.white_id, game.black_id])
         white_repo, black_repo = db.find_many_repos_by_ids(engine, [white_fn.repo_id, black_fn.repo_id])
     except db.NotFound as exc:
-        raise NotFound(str(exc)) from exc
+        raise DeletedFromDb(str(exc)) from exc
     match = models.Match(white_repo, black_repo, game.result)
     loggers.games_queue.info(
         'before: %s has rating %s, %s has rating %s',
