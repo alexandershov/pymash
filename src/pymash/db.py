@@ -41,10 +41,9 @@ async def find_active_repos_order_by_rating(engine: ta.AsyncEngine) -> ta.Repos:
 def deactivate_all_other_repos(engine: ta.Engine, repos: ta.Repos) -> None:
     repo_ids = [a_repo.repo_id for a_repo in repos]
 
-    with engine.connect() as conn:
-        with conn.begin():
-            repos_result = _deactivate_other_only_repos(conn, repo_ids)
-            functions_result = _deactivate_other_only_functions(conn, repo_ids)
+    with engine.begin() as conn:
+        repos_result = _deactivate_other_only_repos(conn, repo_ids)
+        functions_result = _deactivate_other_only_functions(conn, repo_ids)
     loggers.loader.info('deactivated %d repos and %d functions',
                         repos_result.rowcount, functions_result.rowcount)
 
@@ -142,10 +141,9 @@ def upsert_repo(engine: ta.Engine, github_repo: models.GithubRepo) -> models.Rep
 @utils.log_time(loggers.loader,
                 lambda engine, repo, functions: f'{len(functions)} from {repo.url}')
 def update_functions(engine: ta.Engine, repo: models.Repo, functions: ta.ParserFunctions) -> None:
-    with engine.connect() as conn:
-        with conn.begin():
-            _deactivate_functions(conn, repo)
-            _upsert_active_functions(conn, repo, functions)
+    with engine.begin() as conn:
+        _deactivate_functions(conn, repo)
+        _upsert_active_functions(conn, repo, functions)
 
 
 def _upsert_active_functions(conn, repo: models.Repo, functions: ta.ParserFunctions):
