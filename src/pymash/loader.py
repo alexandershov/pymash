@@ -30,23 +30,23 @@ class Selector:
 
 @utils.log_time(loggers.loader)
 def load_most_popular(
-        engine, language, limit, extra_repos_full_names=(), blacklisted_repos_full_names=(), concurrency=1):
+        engine, language, limit, whitelisted_full_names=(), blacklisted_full_names=(), concurrency=1):
     github_client = _get_github_client()
     github_repos = find_most_popular_github_repos(github_client, language, limit)
-    github_repos = _exclude_blacklisted(github_repos, blacklisted_repos_full_names)
-    with utils.log_time(loggers.loader, f'loading {len(extra_repos_full_names)} extra repos'):
-        for full_name in extra_repos_full_names:
+    github_repos = _exclude_blacklisted(github_repos, blacklisted_full_names)
+    with utils.log_time(loggers.loader, f'loading {len(whitelisted_full_names)} whitelisted repos'):
+        for full_name in whitelisted_full_names:
             github_repos.append(_parse_github_repo(github_client.get_repo(full_name, lazy=False)))
     loaded_repos = load_many_github_repos(github_repos, concurrency=concurrency)
     db.deactivate_all_other_repos(engine, loaded_repos)
 
 
 def _exclude_blacklisted(
-        github_repos: tp.List[models.GithubRepo], blacklisted_repos_full_names) -> tp.List[models.GithubRepo]:
+        github_repos: tp.List[models.GithubRepo], blacklisted_full_names) -> tp.List[models.GithubRepo]:
     return [
         a_github_repo
         for a_github_repo in github_repos
-        if a_github_repo.full_name not in blacklisted_repos_full_names
+        if a_github_repo.full_name not in blacklisted_full_names
     ]
 
 

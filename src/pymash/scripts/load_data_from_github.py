@@ -3,15 +3,23 @@ import argparse
 from pymash import loader
 from pymash.scripts import base
 
+_WHITELISTED_FULL_NAMES = (
+    'alexandershov/pymash',
+)
+_BLACKLISTED_FULL_NAMES = (
+    'isocpp/CppCoreGuidelines',
+)
+
 
 def main():
     args = _parse_args()
     with base.ScriptContext() as context:
         loader.load_most_popular(
-            context.engine,
+            engine=context.engine,
             language=args.language,
             limit=args.limit,
-            extra_repos_full_names=['alexandershov/pymash'])
+            whitelisted_full_names=_WHITELISTED_FULL_NAMES,
+            blacklisted_full_names=_BLACKLISTED_FULL_NAMES)
 
 
 def _parse_args():

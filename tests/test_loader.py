@@ -68,8 +68,8 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     _add_data(pymash_engine)
     loader.load_most_popular(
         pymash_engine, 'python', 1000,
-        extra_repos_full_names=['alexandershov/pymash'],
-        blacklisted_repos_full_names=['isocpp/CppCoreGuidelines'],
+        whitelisted_full_names=['alexandershov/pymash'],
+        blacklisted_full_names=['isocpp/CppCoreGuidelines'],
         concurrency=2,
     )
     _assert_repo_was_loaded(pymash_engine)
