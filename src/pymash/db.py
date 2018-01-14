@@ -117,7 +117,6 @@ def find_game_by_id(engine: Engine, game_id: str) -> models.Game:
 
 @utils.log_time(loggers.games_queue)
 def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) -> None:
-    # TODO: check that doing execution_options doesn't permanently change connection when it will be returned to pool
     with engine.connect().execution_options(isolation_level='SERIALIZABLE') as conn:
         try:
             _insert_game_and_change_repo_ratings(conn, game, match)
