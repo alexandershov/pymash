@@ -62,8 +62,10 @@ def deactivate_all_other_repos(engine: Engine, repos: tp.List[models.Repo]) -> N
         functions_update = {
             Functions.c.is_active.key: False,
         }
-        conn.execute(Repos.update().where(sa.not_(Repos.c.repo_id.in_(repo_ids))).values(repos_update))
-        conn.execute(Functions.update().where(sa.not_(Functions.c.repo_id.in_(repo_ids))).values(functions_update))
+        repos_result = conn.execute(Repos.update().where(sa.not_(Repos.c.repo_id.in_(repo_ids))).values(repos_update))
+        functions_result = conn.execute(
+            Functions.update().where(sa.not_(Functions.c.repo_id.in_(repo_ids))).values(functions_update))
+        loggers.loader.info('deactivated %d repos and %d functions', repos_result.rowcount, functions_result.rowcount)
 
 
 def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:

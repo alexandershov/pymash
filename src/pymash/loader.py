@@ -39,10 +39,6 @@ def load_most_popular(
         for full_name in extra_repos_full_names:
             github_repos.append(_parse_github_repo(github_client.get_repo(full_name, lazy=False)))
     loaded_repos = load_many_github_repos(github_repos, concurrency=concurrency)
-    _deactivate_not_loaded_repos(engine, loaded_repos)
-
-
-def _deactivate_not_loaded_repos(engine, loaded_repos: tp.List[models.Repo]):
     db.deactivate_all_other_repos(engine, loaded_repos)
 
 
