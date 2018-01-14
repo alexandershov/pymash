@@ -1,17 +1,14 @@
 import json
-import time
 
 from pymash import events
 from pymash import loggers
 from pymash.scripts import base
 
 
-def main(is_infinite=True, sleep_duration=0):
+def main(is_infinite=True, wait_duration=10):
     with base.ScriptContext() as context:
         while True:
-            # TODO: do we need sleeping here?
-            time.sleep(sleep_duration)
-            messages = context.games_queue.receive_messages(MaxNumberOfMessages=10)
+            messages = context.games_queue.receive_messages(MaxNumberOfMessages=10, WaitTimeSeconds=wait_duration)
             for a_message in messages:
                 try:
                     events.process_game_finished_event(
@@ -25,4 +22,4 @@ def main(is_infinite=True, sleep_duration=0):
 
 
 if __name__ == '__main__':
-    main(sleep_duration=10)
+    main()
