@@ -17,28 +17,29 @@ from pymash.tables import *
 
 
 def test_load_most_popular(pymash_engine, monkeypatch):
-    archive_link_mock = mock.Mock(return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
+    archive_with_two_functions = mock.Mock(return_value=_make_data_dir_path('repo_with_three_functions.py.zip'))
+    archive_with_three_functions = mock.Mock(return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
     github_client_repos = [
         _make_mock(
             id=1001,
             name='django',
             full_name='django/django',
             html_url='https://github.com/django/django',
-            get_archive_link=archive_link_mock,
+            get_archive_link=archive_with_three_functions,
             stargazers_count=25000),
         _make_mock(
             id=1002,
             name='flask',
             full_name='pallets/flask',
             html_url='https://github.com/pallets/flask',
-            get_archive_link=archive_link_mock,
+            get_archive_link=archive_with_two_functions,
             stargazers_count=26000),
         _make_mock(
             id=1004,
             name='CppCoreGuideLines',
             full_name='isocpp/CppCoreGuidelines',
             html_url='https://github.com/isocpp/CppCoreGuidelines',
-            get_archive_link=archive_link_mock,
+            get_archive_link=archive_with_two_functions,
             stargazers_count=33000)
     ]
     pymash_mock = _make_mock(
@@ -46,7 +47,7 @@ def test_load_most_popular(pymash_engine, monkeypatch):
         name='pymash',
         full_name='alexandershov/pymash',
         html_url='https://github.com/alexandershov/pymash',
-        get_archive_link=archive_link_mock,
+        get_archive_link=archive_with_two_functions,
         stargazers_count=1)
     github_mock = mock.Mock()
     github_mock.return_value.search_repositories.return_value = github_client_repos
@@ -61,6 +62,7 @@ def test_load_most_popular(pymash_engine, monkeypatch):
         result = [a_function for a_function in population if a_function.name != 'zzz']
         assert len(result) == len(population) - 1
         return result
+
     monkeypatch.setattr(random, 'sample', _mock_random_sample)
 
     _add_data(pymash_engine)
