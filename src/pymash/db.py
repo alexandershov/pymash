@@ -44,8 +44,9 @@ def deactivate_all_other_repos(engine: ta.Engine, repos: ta.Repos) -> None:
     repo_ids = [a_repo.repo_id for a_repo in repos]
 
     with engine.connect() as conn:
-        repos_result = _deactivate_other_only_repos(conn, repo_ids)
-        functions_result = _deactivate_other_only_functions(conn, repo_ids)
+        with conn.begin():
+            repos_result = _deactivate_other_only_repos(conn, repo_ids)
+            functions_result = _deactivate_other_only_functions(conn, repo_ids)
     loggers.loader.info('deactivated %d repos and %d functions',
                         repos_result.rowcount, functions_result.rowcount)
 
@@ -132,27 +133,41 @@ def upsert_repo(engine: ta.Engine, github_repo: models.GithubRepo) -> models.Rep
         return make_repo_from_db_row(conn.execute(query).first())
 
 
-@utils.log_time(loggers.loader, lambda engine, repo, functions: f'{len(functions)} from {repo.url}')
-def update_functions(engine: ta.Engine, repo: models.Repo, functions: tp.List[parser.Function]) -> None:
+@utils.log_time(loggers.loader,
+                lambda engine, repo, functions: f'{len(functions)} from {repo.url}')
+def update_functions(engine: ta.Engine, repo: models.Repo, functions: ta.ParserFunctions) -> None:
     with engine.connect() as conn:
         with conn.begin():
-            conn.execute(Functions.update().where(Functions.c.repo_id == repo.repo_id).values(
-                {Functions.c.is_active.key: False}
-            ))
-            for a_function in functions:
-                insert_data = {
-                    Functions.c.repo_id: repo.repo_id,
-                    Functions.c.text: a_function.text,
-                    Functions.c.is_active: True,
-                }
-                update_data = {
-                    Functions.c.is_active.key: True,
-                }
-                statement = postgresql.insert(Functions).values(insert_data).on_conflict_do_update(
-                    index_elements=tables.repo_id_md5_text_unique_idx.expressions,
-                    set_=update_data
-                )
-                conn.execute(statement)
+            _deactivate_functions(conn, repo)
+            _upsert_active_functions(conn, repo, functions)
+
+
+def _upsert_active_functions(conn, repo: models.Repo, functions: ta.ParserFunctions):
+    for fn in functions:
+        _upsert_one_active_function(conn, repo, fn)
+
+
+def _upsert_one_active_function(conn, repo, fn: parser.Function):
+    insert_data = {
+        Functions.c.repo_id: repo.repo_id,
+        Functions.c.text: fn.text,
+        Functions.c.is_active: True,
+    }
+    update_data = {
+        Functions.c.is_active.key: True,
+    }
+    statement = postgresql.insert(Functions).values(insert_data).on_conflict_do_update(
+        index_elements=tables.repo_id_md5_text_unique_idx.expressions,
+        set_=update_data)
+    conn.execute(statement)
+
+
+def _deactivate_functions(conn, repo):
+    update_data = {
+        Functions.c.is_active.key: False,
+    }
+    query = Functions.update().where(Functions.c.repo_id == repo.repo_id).values(update_data)
+    conn.execute(query)
 
 
 def _deactivate_other_only_repos(conn, repo_ids):
@@ -173,14 +188,15 @@ def _deactivate_other_only_functions(conn, repo_ids):
 
 @utils.log_time(loggers.games_queue)
 def _insert_game_and_change_repo_ratings(conn, game: models.Game, match: models.Match) -> None:
+    insert_game = Games.insert().values({
+        Games.c.game_id: game.game_id,
+        Games.c.white_id: game.white_id,
+        Games.c.black_id: game.black_id,
+        Games.c.white_score: game.result.white_score,
+        Games.c.black_score: game.result.black_score,
+    })
     with conn.begin():
-        conn.execute(Games.insert().values({
-            Games.c.game_id: game.game_id,
-            Games.c.white_id: game.white_id,
-            Games.c.black_id: game.black_id,
-            Games.c.white_score: game.result.white_score,
-            Games.c.black_score: game.result.black_score,
-        }))
+        conn.execute(insert_game)
         conn.execute(_make_query_to_update_rating(match.white))
         conn.execute(_make_query_to_update_rating(match.black))
 
