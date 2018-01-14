@@ -1,5 +1,4 @@
 import random
-import typing as tp
 
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as postgresql
