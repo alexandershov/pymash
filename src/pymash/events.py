@@ -1,6 +1,6 @@
+import datetime as dt
 import json
 
-import datetime as dt
 from aiohttp import web
 
 from pymash import db
