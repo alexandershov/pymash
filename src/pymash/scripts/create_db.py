@@ -4,6 +4,7 @@ from pymash.scripts import base
 
 def main():
     with base.ScriptContext() as context:
+        tables.Base.metadata.drop_all(context.engine)
         tables.Base.metadata.create_all(context.engine)
 
 
