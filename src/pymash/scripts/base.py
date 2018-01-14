@@ -3,6 +3,7 @@ import sqlalchemy as sa
 
 from pymash import cfg
 from pymash import loggers
+from pymash import type_aliases as ta
 
 
 class ScriptContext:
@@ -23,12 +24,12 @@ class ScriptContext:
         self._engine.dispose()
 
     @property
-    def engine(self):
+    def engine(self) -> ta.Engine:
         _assert_is_set(self._engine)
         return self._engine
 
     @property
-    def config(self):
+    def config(self) -> cfg.Config:
         _assert_is_set(self._config)
         return self._config
 

@@ -5,10 +5,11 @@ from pymash import loggers
 from pymash.scripts import base
 
 
-def main(is_infinite=True, wait_duration=10):
+def main(is_infinite=True, wait_time_seconds=10):
     with base.ScriptContext() as context:
         while True:
-            messages = context.games_queue.receive_messages(MaxNumberOfMessages=10, WaitTimeSeconds=wait_duration)
+            messages = context.games_queue.receive_messages(
+                MaxNumberOfMessages=10, WaitTimeSeconds=wait_time_seconds)
             loggers.games_queue.info('will handle %d messages', len(messages))
             for a_message in messages:
                 try:

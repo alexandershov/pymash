@@ -15,7 +15,7 @@ from pymash.tables import *
 def test_process_game_finished_event(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(is_infinite=False, wait_duration=0)
+    process_finished_games.main(is_infinite=False, wait_time_seconds=0)
     _check_game_and_repos(pymash_engine, game)
 
 
@@ -23,9 +23,9 @@ def test_process_game_finished_event(pymash_engine, monkeypatch):
 def test_process_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(is_infinite=False, wait_duration=0)
+    process_finished_games.main(is_infinite=False, wait_time_seconds=0)
     _check_game_and_repos(pymash_engine, game)
-    process_finished_games.main(is_infinite=False, wait_duration=0)
+    process_finished_games.main(is_infinite=False, wait_time_seconds=0)
     _check_game_and_repos(pymash_engine, game)
 
 
@@ -33,12 +33,12 @@ def test_process_game_finished_event_twice(pymash_engine, monkeypatch):
 def test_process_different_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(is_infinite=False, wait_duration=0)
+    process_finished_games.main(is_infinite=False, wait_time_seconds=0)
     _check_game_and_repos(pymash_engine, game)
 
     changed_game = _get_game(result=models.WHITE_WINS_RESULT)
     _monkeypatch_boto3(monkeypatch, [changed_game])
-    process_finished_games.main(is_infinite=False, wait_duration=0)
+    process_finished_games.main(is_infinite=False, wait_time_seconds=0)
     _check_game_and_repos(pymash_engine, game)
 
 
@@ -46,7 +46,7 @@ def test_process_different_game_finished_event_twice(pymash_engine, monkeypatch)
 def test_process_game_finished_event_unknown_white_id(pymash_engine, monkeypatch):
     game = _get_game(white_id=1000000)
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(is_infinite=False, wait_duration=0)
+    process_finished_games.main(is_infinite=False, wait_time_seconds=0)
     _assert_game_not_saved(pymash_engine, game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1800)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)

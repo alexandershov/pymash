@@ -1,10 +1,8 @@
 import random
 import typing as tp
 
-import aiopg.sa
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as postgresql
-import sqlalchemy.engine.base
 import sqlalchemy.exc as sa_exc
 from aiopg.sa import result as aiopg_result
 from psycopg2 import errorcodes
@@ -13,11 +11,9 @@ from pymash import loggers
 from pymash import models
 from pymash import parser
 from pymash import tables
+from pymash import type_aliases as ta
 from pymash import utils
 from pymash.tables import *
-
-AsyncEngine = aiopg.sa.Engine
-Engine = sqlalchemy.engine.base.Engine
 
 
 class BaseError(Exception):
@@ -33,7 +29,7 @@ class GameResultChanged(BaseError):
 
 
 @utils.log_time(loggers.web)
-async def find_active_repos_order_by_rating(engine: AsyncEngine) -> tp.List[models.Repo]:
+async def find_active_repos_order_by_rating(engine: ta.AsyncEngine) -> tp.List[models.Repo]:
     repos = []
     async with engine.acquire() as conn:
         query = Repos.select().where(Repos.c.is_active.is_(True)).order_by(Repos.c.rating.desc())
@@ -43,14 +39,14 @@ async def find_active_repos_order_by_rating(engine: AsyncEngine) -> tp.List[mode
 
 
 @utils.log_time(loggers.loader)
-def find_all_repos(engine: Engine) -> tp.List[models.Repo]:
+def find_all_repos(engine: ta.Engine) -> tp.List[models.Repo]:
     with engine.connect() as conn:
         rows = conn.execute(Repos.select())
         return list(map(make_repo_from_db_row, rows))
 
 
 @utils.log_time(loggers.loader)
-def deactivate_all_other_repos(engine: Engine, repos: tp.List[models.Repo]) -> None:
+def deactivate_all_other_repos(engine: ta.Engine, repos: tp.List[models.Repo]) -> None:
     with engine.connect() as conn:
         repo_ids = [
             a_repo.repo_id
@@ -79,7 +75,7 @@ def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
 
 
 @utils.log_time(loggers.web)
-async def try_to_find_two_random_functions(engine: AsyncEngine) -> tp.List[models.Function]:
+async def try_to_find_two_random_functions(engine: ta.AsyncEngine) -> tp.List[models.Function]:
     select_some_function = _make_query_to_find_random_function()
     select_another_function = _make_query_to_find_random_function()
     select_two_functions = select_some_function.union_all(select_another_function)
@@ -89,7 +85,7 @@ async def try_to_find_two_random_functions(engine: AsyncEngine) -> tp.List[model
 
 
 @utils.log_time(loggers.games_queue)
-def find_many_functions_by_ids(engine: Engine, function_ids: tp.List[int]) -> tp.List[models.Function]:
+def find_many_functions_by_ids(engine: ta.Engine, function_ids: tp.List[int]) -> tp.List[models.Function]:
     rows = _find_many_by_ids(
         engine=engine,
         table=Functions,
@@ -98,7 +94,7 @@ def find_many_functions_by_ids(engine: Engine, function_ids: tp.List[int]) -> tp
 
 
 @utils.log_time(loggers.games_queue)
-def find_many_repos_by_ids(engine: Engine, repo_ids) -> tp.List[models.Repo]:
+def find_many_repos_by_ids(engine: ta.Engine, repo_ids) -> tp.List[models.Repo]:
     rows = _find_many_by_ids(
         engine=engine,
         table=Repos,
@@ -107,7 +103,7 @@ def find_many_repos_by_ids(engine: Engine, repo_ids) -> tp.List[models.Repo]:
 
 
 @utils.log_time(loggers.games_queue)
-def find_game_by_id(engine: Engine, game_id: str) -> models.Game:
+def find_game_by_id(engine: ta.Engine, game_id: str) -> models.Game:
     rows = _find_many_by_ids(
         engine=engine,
         table=Games,
@@ -118,7 +114,7 @@ def find_game_by_id(engine: Engine, game_id: str) -> models.Game:
 
 
 @utils.log_time(loggers.games_queue)
-def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) -> None:
+def save_game_and_match(engine: ta.Engine, game: models.Game, match: models.Match) -> None:
     with engine.connect().execution_options(isolation_level='SERIALIZABLE') as conn:
         try:
             _insert_game_and_change_repo_ratings(conn, game, match)
@@ -131,7 +127,7 @@ def save_game_and_match(engine: Engine, game: models.Game, match: models.Match) 
 
 
 @utils.log_time(loggers.loader, lambda engine, github_repo: f'{github_repo.url}')
-def save_github_repo(engine: Engine, github_repo: models.GithubRepo) -> models.Repo:
+def save_github_repo(engine: ta.Engine, github_repo: models.GithubRepo) -> models.Repo:
     with engine.connect() as conn:
         insert_data = {
             Repos.c.github_id: github_repo.github_id,
@@ -151,7 +147,7 @@ def save_github_repo(engine: Engine, github_repo: models.GithubRepo) -> models.R
 
 
 @utils.log_time(loggers.loader, lambda engine, repo, functions: f'{len(functions)} from {repo.url}')
-def update_functions(engine: Engine, repo: models.Repo, functions: tp.List[parser.Function]) -> None:
+def update_functions(engine: ta.Engine, repo: models.Repo, functions: tp.List[parser.Function]) -> None:
     with engine.connect() as conn:
         with conn.begin():
             conn.execute(Functions.update().where(Functions.c.repo_id == repo.repo_id).values(
