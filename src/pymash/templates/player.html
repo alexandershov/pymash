@@ -1,6 +1,6 @@
 <div>
     <pre>{{ text|highlight }}</pre>
-    <form action="/game/{{ game.game_id }}" method="POST">
+    <form action="{{ url('post_game', game_id=game.game_id) }}" method="POST">
         <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
         <input type="hidden" name="black_id" value="{{ game.black_id }}"/>
         <input type="hidden" name="hash"
