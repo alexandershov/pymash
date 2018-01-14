@@ -94,7 +94,7 @@ def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
     with base.ScriptContext() as context:
         functions = set()
         with tempfile.NamedTemporaryFile() as temp_file:
-            repo = db.save_github_repo(context.engine, github_repo)
+            repo = db.upsert_repo(context.engine, github_repo)
             with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
                 urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
             with tempfile.TemporaryDirectory() as temp_dir:

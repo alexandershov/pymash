@@ -75,3 +75,5 @@ def process_game_finished_event(engine, game: models.Game) -> None:
         db.save_game_and_match(engine, game, match)
     except db.GameResultChanged:
         loggers.games_queue.info('someone is trying to change results of finished game %s', game.game_id, exc_info=True)
+    except db.NotFound as exc:
+        raise DeletedFromDb(str(exc)) from exc
