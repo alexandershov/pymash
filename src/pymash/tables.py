@@ -4,6 +4,7 @@ from sqlalchemy.ext import declarative
 Base = declarative.declarative_base()
 
 
+# TODO: add created/updated attributes to all tables
 class _RepoDbModel(Base):
     __tablename__ = 'repos'
     repo_id = sa.Column(sa.BigInteger, primary_key=True, nullable=False)
