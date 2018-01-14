@@ -99,6 +99,7 @@ def _unzip_file(path, output_dir):
     loggers.loader,
     lambda github_repos, concurrency: f'{len(github_repos)} github repos with concurrency {concurrency}')
 def load_many_github_repos(github_repos: tp.List[models.GithubRepo], concurrency: int) -> tp.List[models.Repo]:
+    loggers.loader.info('will load %d repos with concurrency %d', len(github_repos), concurrency)
     pool = multiprocessing.Pool(concurrency)
     return pool.map(load_github_repo, github_repos)
 
@@ -106,6 +107,7 @@ def load_many_github_repos(github_repos: tp.List[models.GithubRepo], concurrency
 # TODO: maybe separate parsing & saving to database
 @utils.log_time(loggers.loader)
 def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
+    loggers.loader.info('loading repo %s', github_repo.full_name)
     with base.ScriptContext() as context:
         functions = set()
         with tempfile.NamedTemporaryFile() as temp_file:
@@ -116,13 +118,24 @@ def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
                 with utils.log_time(loggers.loader, f'unzipping {temp_file.name}'):
                     _unzip_file(temp_file.name, temp_dir)
                 with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
-                    for a_file in _find_files(temp_dir, 'py'):
+                    py_files = list(_find_files(temp_dir, 'py'))
+                    for a_file in py_files:
                         with open(a_file, encoding='utf-8') as fileobj:
                             file_functions = parser.get_functions(fileobj, catch_exceptions=True)
                             functions.update(file_functions)
+        loggers.loader.info(
+            'found %d distinct functions in %d files',
+            len(functions), len(py_files))
         with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
             good_functions = select_good_functions(functions)
+            loggers.loader.info(
+                'selected %d/%d good functions',
+                len(good_functions), len(functions))
             functions_to_update = _select_random_functions(good_functions)
+            loggers.loader.info(
+                'selected %d/%d random functions',
+                len(functions_to_update), len(good_functions))
+
         db.update_functions(context.engine, repo, functions_to_update)
         return repo
 
