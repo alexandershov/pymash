@@ -7,9 +7,7 @@ from pymash import loggers
 from pymash.scripts import base
 
 
-def main(wait_time_seconds=10, iterations=None):
-    if iterations is None:
-        iterations = itertools.count()
+def main(iterations, wait_time_seconds=10):
     with base.ScriptContext() as context:
         for _ in iterations:
             messages = context.games_queue.receive_messages(
@@ -26,4 +24,4 @@ def main(wait_time_seconds=10, iterations=None):
 
 
 if __name__ == '__main__':
-    main()
+    main(iterations=itertools.count())

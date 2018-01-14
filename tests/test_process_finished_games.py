@@ -15,7 +15,7 @@ from pymash.tables import *
 def test_process_game_finished_event(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(wait_time_seconds=0, iterations=range(1))
+    _call_process_finished_games()
     _check_game_and_repos(pymash_engine, game)
 
 
@@ -23,9 +23,9 @@ def test_process_game_finished_event(pymash_engine, monkeypatch):
 def test_process_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(wait_time_seconds=0, iterations=range(1))
+    _call_process_finished_games()
     _check_game_and_repos(pymash_engine, game)
-    process_finished_games.main(wait_time_seconds=0, iterations=range(1))
+    _call_process_finished_games()
     _check_game_and_repos(pymash_engine, game)
 
 
@@ -33,20 +33,24 @@ def test_process_game_finished_event_twice(pymash_engine, monkeypatch):
 def test_process_different_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(wait_time_seconds=0, iterations=range(1))
+    _call_process_finished_games()
     _check_game_and_repos(pymash_engine, game)
 
     changed_game = _get_game(result=models.WHITE_WINS_RESULT)
     _monkeypatch_boto3(monkeypatch, [changed_game])
-    process_finished_games.main(wait_time_seconds=0, iterations=range(1))
+    _call_process_finished_games()
     _check_game_and_repos(pymash_engine, game)
+
+
+def _call_process_finished_games():
+    process_finished_games.main(iterations=range(1))
 
 
 @pytest.mark.usefixtures('add_functions_and_repos')
 def test_process_game_finished_event_unknown_white_id(pymash_engine, monkeypatch):
     game = _get_game(white_id=1000000)
     _monkeypatch_boto3(monkeypatch, [game])
-    process_finished_games.main(wait_time_seconds=0, iterations=range(1))
+    _call_process_finished_games()
     _assert_game_not_saved(pymash_engine, game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1800)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)
