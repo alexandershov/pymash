@@ -53,6 +53,8 @@ def _deactivate_not_loaded_repos(engine, loaded_repos: tp.List[models.Repo]):
         for repo in all_repos
         if repo.repo_id not in loaded_repos_ids
     ]
+    loggers.loader.info('loaded %d repos, will deactivate %d repos',
+                        len(loaded_repos), len(not_loaded_repos))
     db.deactivate_repos(engine, not_loaded_repos)
 
 
@@ -67,6 +69,7 @@ def _exclude_blacklisted(
 
 @utils.log_time(loggers.loader)
 def find_most_popular_github_repos(github_client, language: str, limit: int) -> tp.List[models.GithubRepo]:
+    loggers.loader.info('finding %d most popular %s repos', limit, language)
     repositories = github_client.search_repositories(f'language:{language}', sort='stars')
     return list(map(_parse_github_repo, repositories[:limit]))
 
