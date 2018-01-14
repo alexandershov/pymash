@@ -50,7 +50,7 @@ def find_all_repos(engine: Engine) -> tp.List[models.Repo]:
 
 
 @utils.log_time(loggers.loader)
-def deactivate_repos(engine: Engine, repos: tp.List[models.Repo]) -> None:
+def deactivate_all_other_repos(engine: Engine, repos: tp.List[models.Repo]) -> None:
     with engine.connect() as conn:
         repo_ids = [
             a_repo.repo_id
@@ -62,8 +62,8 @@ def deactivate_repos(engine: Engine, repos: tp.List[models.Repo]) -> None:
         functions_update = {
             Functions.c.is_active.key: False,
         }
-        conn.execute(Repos.update().where(Repos.c.repo_id.in_(repo_ids)).values(repos_update))
-        conn.execute(Functions.update().where(Functions.c.repo_id.in_(repo_ids)).values(functions_update))
+        conn.execute(Repos.update().where(sa.not_(Repos.c.repo_id.in_(repo_ids))).values(repos_update))
+        conn.execute(Functions.update().where(sa.not_(Functions.c.repo_id.in_(repo_ids))).values(functions_update))
 
 
 def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:

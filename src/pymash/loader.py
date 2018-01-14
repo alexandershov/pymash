@@ -43,19 +43,7 @@ def load_most_popular(
 
 
 def _deactivate_not_loaded_repos(engine, loaded_repos: tp.List[models.Repo]):
-    all_repos = db.find_all_repos(engine)
-    loaded_repos_ids = {
-        repo.repo_id
-        for repo in loaded_repos
-    }
-    not_loaded_repos = [
-        repo
-        for repo in all_repos
-        if repo.repo_id not in loaded_repos_ids
-    ]
-    loggers.loader.info('loaded %d repos, will deactivate %d repos',
-                        len(loaded_repos), len(not_loaded_repos))
-    db.deactivate_repos(engine, not_loaded_repos)
+    db.deactivate_all_other_repos(engine, loaded_repos)
 
 
 def _exclude_blacklisted(
