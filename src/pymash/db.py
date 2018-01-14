@@ -32,17 +32,11 @@ class GameResultChanged(BaseError):
 async def find_active_repos_order_by_rating(engine: ta.AsyncEngine) -> tp.List[models.Repo]:
     repos = []
     async with engine.acquire() as conn:
-        query = Repos.select().where(Repos.c.is_active.is_(True)).order_by(Repos.c.rating.desc())
+        repo_is_active = Repos.c.is_active.is_(True)
+        query = Repos.select().where(repo_is_active).order_by(Repos.c.rating.desc())
         async for a_row in conn.execute(query):
             repos.append(make_repo_from_db_row(a_row))
     return repos
-
-
-@utils.log_time(loggers.loader)
-def find_all_repos(engine: ta.Engine) -> tp.List[models.Repo]:
-    with engine.connect() as conn:
-        rows = conn.execute(Repos.select())
-        return list(map(make_repo_from_db_row, rows))
 
 
 @utils.log_time(loggers.loader)
