@@ -46,7 +46,8 @@ class ScriptContext:
     @property
     def games_queue(self):
         if self._games_queue is None:
-            self._games_queue = self.sqs.get_queue_by_name(QueueName=self.config.sqs_games_queue_name)
+            self._games_queue = self.sqs.get_queue_by_name(
+                QueueName=self.config.sqs_games_queue_name)
         return self._games_queue
 
 
