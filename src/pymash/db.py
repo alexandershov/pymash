@@ -3,7 +3,6 @@ import random
 import sqlalchemy as sa
 import sqlalchemy.dialects.postgresql as postgresql
 import sqlalchemy.exc as sa_exc
-from aiopg.sa import result as aiopg_result
 from psycopg2 import errorcodes
 
 from pymash import loggers
@@ -50,7 +49,7 @@ def deactivate_all_other_repos(engine: ta.Engine, repos: ta.Repos) -> None:
                         repos_result.rowcount, functions_result.rowcount)
 
 
-def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
+def make_repo_from_db_row(row: dict) -> models.Repo:
     return models.Repo(
         repo_id=row[Repos.c.repo_id],
         github_id=row[Repos.c.github_id],
@@ -58,6 +57,14 @@ def make_repo_from_db_row(row: aiopg_result.RowProxy) -> models.Repo:
         url=row[Repos.c.url],
         is_active=row[Repos.c.is_active],
         rating=row[Repos.c.rating])
+
+
+def make_function_from_db_row(row: dict) -> models.Function:
+    return models.Function(
+        function_id=row[Functions.c.function_id],
+        repo_id=row[Functions.c.repo_id],
+        is_active=row[Functions.c.is_active],
+        text=row[Functions.c.text])
 
 
 @utils.log_time(loggers.web)
@@ -200,15 +207,15 @@ def _insert_game_and_change_repo_ratings(conn, game: models.Game, match: models.
         conn.execute(_make_query_to_update_rating(match.black))
 
 
-def _find_many_by_ids(engine, table, ids):
+def _find_many_by_ids(engine: ta.Engine, table, ids):
     id_column = _get_id_column(table)
+    query = table.select().where(id_column.in_(ids))
     with engine.connect() as conn:
-        rows = list(conn.execute(table.select().where(id_column.in_(ids))))
+        rows = list(conn.execute(query))
     if len(rows) != len(ids):
-        row_ids = [a_row[id_column] for a_row in rows]
-        not_found_ids = set(ids) - set(row_ids)
-        msg = f'ids {not_found_ids} does not exist in {table.name}'
-        raise NotFound(msg)
+        found_ids = [a_row[id_column] for a_row in rows]
+        not_found_ids = set(ids) - set(found_ids)
+        raise NotFound(f'ids {not_found_ids} do not exist in {table.name}')
     return rows
 
 
@@ -229,16 +236,9 @@ def _make_query_to_find_random_function():
         [sa.func.max(Functions.c.random)]).as_scalar()
     gte_than_random = Functions.c.random >= sa.func.least(x, select_max_random)
     is_active = Functions.c.is_active.is_(True)
-    result = Functions.select().where(sa.and_(gte_than_random, is_active)).order_by(Functions.c.random).limit(1)
+    result = Functions.select().where(
+        sa.and_(gte_than_random, is_active)).order_by(Functions.c.random).limit(1)
     return result
-
-
-def make_function_from_db_row(row: dict) -> models.Function:
-    return models.Function(
-        function_id=row[Functions.c.function_id],
-        repo_id=row[Functions.c.repo_id],
-        is_active=row[Functions.c.is_active],
-        text=row[Functions.c.text])
 
 
 def _make_game_from_db_row(row: dict) -> models.Game:
