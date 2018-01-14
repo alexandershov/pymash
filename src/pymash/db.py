@@ -114,21 +114,21 @@ def save_game_and_match(engine: ta.Engine, game: models.Game, match: models.Matc
 
 @utils.log_time(loggers.loader, lambda engine, github_repo: f'{github_repo.url}')
 def upsert_repo(engine: ta.Engine, github_repo: models.GithubRepo) -> models.Repo:
+    insert_data = {
+        Repos.c.github_id: github_repo.github_id,
+        Repos.c.name: github_repo.name,
+        Repos.c.url: github_repo.url,
+        Repos.c.is_active: True,
+        Repos.c.rating: models.Repo.DEFAULT_RATING,
+    }
+    update_data = {
+        Repos.c.name.key: github_repo.name,
+        Repos.c.url.key: github_repo.url,
+        Repos.c.is_active.key: True,
+    }
+    query = postgresql.insert(Repos).values(insert_data).on_conflict_do_update(
+        index_elements=[Repos.c.github_id], set_=update_data).returning(*Repos.columns)
     with engine.connect() as conn:
-        insert_data = {
-            Repos.c.github_id: github_repo.github_id,
-            Repos.c.name: github_repo.name,
-            Repos.c.url: github_repo.url,
-            Repos.c.is_active: True,
-            Repos.c.rating: models.Repo.DEFAULT_RATING,
-        }
-        update_data = {
-            Repos.c.name.key: github_repo.name,
-            Repos.c.url.key: github_repo.url,
-            Repos.c.is_active.key: True,
-        }
-        query = postgresql.insert(Repos).values(insert_data).on_conflict_do_update(
-            index_elements=[Repos.c.github_id], set_=update_data).returning(*Repos.columns)
         return make_repo_from_db_row(conn.execute(query).first())
 
 
