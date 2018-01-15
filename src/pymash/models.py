@@ -48,7 +48,8 @@ class BaseResult:
         return (self.white_score, self.black_score) == (other.white_score, other.black_score)
 
     def __repr__(self):
-        return f'{self.__class__.__name__}({self.white_score}, {self.black_score})'
+        cls_name = self.__class__.__name__
+        return f'{cls_name}({self.white_score}, {self.black_score})'
 
 
 class UnknownResult(BaseResult):
@@ -124,6 +125,10 @@ class Repo:
 
     def __eq__(self, other):
         return self.repo_id == other.repo_id
+
+    def __repr__(self):
+        cls_name = self.__class__.__name__
+        return f'{cls_name}(repo_id={self.repo_id!r}, name={self.name!r}, rating={self.rating!r})'
 
 
 class Function:
