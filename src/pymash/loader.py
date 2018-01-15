@@ -124,18 +124,19 @@ def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
         loggers.loader.info(
             'found %d distinct functions in %d files',
             len(functions), len(py_files))
-        with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
-            good_functions = select_good_functions(functions)
-            loggers.loader.info(
-                'selected %d/%d good functions',
-                len(good_functions), len(functions))
-            functions_to_update = _select_random_functions(good_functions)
-            loggers.loader.info(
-                'selected %d/%d random functions',
-                len(functions_to_update), len(good_functions))
 
+        functions_to_update = _select_functions_to_update(functions)
         db.update_functions(context.engine, repo, functions_to_update)
         return repo
+
+
+def _select_functions_to_update(functions: tp.Set[parser.Function]) -> ta.ParserFunctions:
+    with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
+        good_functions = select_good_functions(functions)
+        loggers.loader.info('selected %d/%d good functions', len(good_functions), len(functions))
+        result = _select_random_functions(good_functions)
+        loggers.loader.info('selected %d/%d random functions', len(result), len(good_functions))
+    return result
 
 
 def _select_random_functions(functions: tp.List[parser.Function]) -> tp.List[parser.Function]:
