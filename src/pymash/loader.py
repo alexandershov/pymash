@@ -161,18 +161,34 @@ def select_good_functions(functions: tp.Iterable[parser.Function]) -> ta.ParserF
 
 
 def _is_bad_function(fn: parser.Function) -> bool:
-    if _has_bad_name(fn):
-        return True
-    if not (Selector.MIN_NUM_LINES <= len(fn.lines) <= Selector.MAX_NUM_LINES):
-        return True
-    has_too_long_line = any(len(a_line) > Selector.MAX_LINE_LENGTH for a_line in fn.lines)
-    if has_too_long_line:
-        return True
-    num_comment_lines = sum(1 for a_line in fn.lines if parser.is_comment_line(a_line))
-    if num_comment_lines > Selector.MAX_NUM_COMMENT_LINES:
+    checks = [
+        _has_bad_name,
+        _is_too_short,
+        _is_too_long,
+        _has_too_long_line,
+        _has_too_many_comment_lines,
+    ]
+    if any(a_check(fn) for a_check in checks):
         return True
     return False
 
 
 def _has_bad_name(fn: parser.Function) -> bool:
     return Selector.BAD_FUNCTION_NAME_RE.search(fn.name) is not None
+
+
+def _is_too_short(fn: parser.Function) -> bool:
+    return len(fn.lines) < Selector.MIN_NUM_LINES
+
+
+def _is_too_long(fn: parser.Function) -> bool:
+    return len(fn.lines) > Selector.MAX_NUM_LINES
+
+
+def _has_too_long_line(fn: parser.Function) -> bool:
+    return any(len(a_line) > Selector.MAX_LINE_LENGTH for a_line in fn.lines)
+
+
+def _has_too_many_comment_lines(fn: parser.Function) -> bool:
+    num_comment_lines = sum(1 for a_line in fn.lines if parser.is_comment_line(a_line))
+    return num_comment_lines > Selector.MAX_NUM_COMMENT_LINES
