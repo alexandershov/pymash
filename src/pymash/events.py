@@ -6,6 +6,7 @@ from aiohttp import web
 from pymash import db
 from pymash import loggers
 from pymash import models
+from pymash import type_aliases as ta
 from pymash import utils
 
 
@@ -48,14 +49,13 @@ def parse_game_finished_event(data: dict) -> models.Game:
 async def _ensure_games_queue_is_ready(app):
     if 'games_queue' in app:
         return
-    app['games_queue'] = await app['sqs_resource'].get_queue_by_name(QueueName=app['config'].sqs_games_queue_name)
+    queue_name = app['config'].sqs_games_queue_name
+    app['games_queue'] = await app['sqs_resource'].get_queue_by_name(QueueName=queue_name)
 
 
 @utils.log_time(loggers.games_queue)
-def process_game_finished_event(engine, game: models.Game) -> None:
-    loggers.games_queue.info(
-        'processing game between %s and %s, result (%s - %s)',
-        game.white_id, game.black_id, game.result.white_score, game.result.black_score)
+def process_game_finished_event(engine: ta.Engine, game: models.Game) -> None:
+    loggers.games_queue.info('processing game %s', game)
     try:
         white_fn, black_fn = db.find_many_functions_by_ids(engine, [game.white_id, game.black_id])
         white_repo, black_repo = db.find_many_repos_by_ids(engine, [white_fn.repo_id, black_fn.repo_id])

@@ -47,6 +47,9 @@ class BaseResult:
     def __eq__(self, other: 'BaseResult') -> bool:
         return (self.white_score, self.black_score) == (other.white_score, other.black_score)
 
+    def __repr__(self):
+        return f'{self.__class__.__name__}({self.white_score}, {self.black_score})'
+
 
 class UnknownResult(BaseResult):
     @property
@@ -169,3 +172,9 @@ class Game:
     def get_hash(self, salt):
         s = ':'.join([self.game_id, str(self.white_id), str(self.black_id), salt])
         return hashlib.sha1(s.encode('utf-8')).hexdigest()
+
+    def __repr__(self):
+        cls_name = self.__class__.__name__
+        return (
+            f'{cls_name}(game_id={self.game_id!r}, white_id={self.white_id!r}, '
+            f'black_id={self.black_id!r}, result={self.result!r})')
