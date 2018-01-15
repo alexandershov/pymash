@@ -36,11 +36,11 @@ def load_most_popular(
         blacklisted_full_names: ta.SetOfStrings = (),
         concurrency: int = 1) -> None:
     github_client = _get_github_client()
-    github_repos = find_most_popular_github_repos(github_client, language, limit)
+    github_repos = _find_most_popular_github_repos(github_client, language, limit)
     github_repos.extend(_find_github_repos(github_client, whitelisted_full_names))
     github_repos = _exclude_blacklisted(github_repos, blacklisted_full_names)
 
-    loaded_repos = load_many_github_repos(github_repos, concurrency=concurrency)
+    loaded_repos = _load_many_github_repos(github_repos, concurrency=concurrency)
     db.deactivate_all_other_repos(engine, loaded_repos)
 
 
@@ -49,13 +49,13 @@ def _find_github_repos(github_client, full_names) -> ta.GithubRepos:
     log_msg = f'loading {len(full_names)} github repos'
     with utils.log_time(loggers.loader, log_msg):
         for a_full_name in full_names:
-            a_github_repo = github_client.get_repo(a_full_name, lazy=False)
-            github_repos.append(_parse_github_repo(a_github_repo))
+            repository = github_client.get_repo(a_full_name, lazy=False)
+            github_repos.append(_parse_repository(repository))
     return github_repos
 
 
 def _exclude_blacklisted(
-        github_repos: tp.List[models.GithubRepo], blacklisted_full_names) -> tp.List[models.GithubRepo]:
+        github_repos: ta.GithubRepos, blacklisted_full_names) -> ta.GithubRepos:
     return [
         a_github_repo
         for a_github_repo in github_repos
@@ -64,10 +64,11 @@ def _exclude_blacklisted(
 
 
 @utils.log_time(loggers.loader)
-def find_most_popular_github_repos(github_client, language: str, limit: int) -> tp.List[models.GithubRepo]:
+def _find_most_popular_github_repos(
+        github_client, language: str, limit: int) -> ta.GithubRepos:
     loggers.loader.info('finding %d most popular %s repos', limit, language)
     repositories = github_client.search_repositories(f'language:{language}', sort='stars')
-    return list(map(_parse_github_repo, repositories[:limit]))
+    return list(map(_parse_repository, repositories[:limit]))
 
 
 def _get_github_client():
@@ -75,18 +76,18 @@ def _get_github_client():
     return github.Github(config.github_token)
 
 
-def _parse_github_repo(github_repo) -> models.GithubRepo:
+def _parse_repository(repository: ta.Repository) -> models.GithubRepo:
     return models.GithubRepo(
-        github_id=github_repo.id,
-        name=github_repo.name,
-        full_name=github_repo.full_name,
-        url=github_repo.html_url,
-        zipball_url=github_repo.get_archive_link('zipball'),
-        num_stars=github_repo.stargazers_count)
+        github_id=repository.id,
+        name=repository.name,
+        full_name=repository.full_name,
+        url=repository.html_url,
+        zipball_url=repository.get_archive_link('zipball'),
+        num_stars=repository.stargazers_count)
 
 
 @utils.log_time(loggers.loader)
-def _unzip_file(path, output_dir):
+def _unzip_file(path: str, output_dir: str) -> None:
     with zipfile.ZipFile(path) as z:
         z.extractall(path=output_dir)
 
@@ -94,7 +95,7 @@ def _unzip_file(path, output_dir):
 @utils.log_time(
     loggers.loader,
     lambda github_repos, concurrency: f'{len(github_repos)} github repos with concurrency {concurrency}')
-def load_many_github_repos(github_repos: tp.List[models.GithubRepo], concurrency: int) -> tp.List[models.Repo]:
+def _load_many_github_repos(github_repos: tp.List[models.GithubRepo], concurrency: int) -> tp.List[models.Repo]:
     loggers.loader.info('will load %d repos with concurrency %d', len(github_repos), concurrency)
     pool = multiprocessing.Pool(concurrency)
     return pool.map(load_github_repo, github_repos)
