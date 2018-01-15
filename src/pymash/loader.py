@@ -94,9 +94,10 @@ def _unzip_file(path: str, output_dir: str) -> None:
 
 @utils.log_time(
     loggers.loader,
-    lambda github_repos, concurrency: f'{len(github_repos)} github repos with concurrency {concurrency}')
-def _load_many_github_repos(github_repos: tp.List[models.GithubRepo], concurrency: int) -> tp.List[models.Repo]:
-    loggers.loader.info('will load %d repos with concurrency %d', len(github_repos), concurrency)
+    lambda github_repos, concurrency: f'{len(github_repos)} github repos, concurrency {concurrency}')
+def _load_many_github_repos(github_repos: ta.GithubRepos, concurrency: int) -> ta.Repos:
+    loggers.loader.info(
+        'will load %d github repos, concurrency %d', len(github_repos), concurrency)
     pool = multiprocessing.Pool(concurrency)
     return pool.map(load_github_repo, github_repos)
 
