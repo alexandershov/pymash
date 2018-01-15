@@ -77,18 +77,28 @@ async def try_to_find_two_random_functions(engine: ta.AsyncEngine) -> ta.Functio
 
 
 @utils.log_time(loggers.games_queue)
-def find_many_functions_by_ids(engine: ta.Engine, function_ids: ta.Integers) -> ta.Functions:
+def find_many_repos_by_function_ids(engine, white_fn_id: int, black_fn_id: int) -> ta.Repos:
+    with engine.connect() as conn:
+        white_fn, black_fn = _find_many_functions_by_ids(
+            conn, [white_fn_id, black_fn_id])
+        white_repo, black_repo = _find_many_repos_by_ids(
+            conn, [white_fn.repo_id, black_fn.repo_id])
+    return [white_repo, black_repo]
+
+
+@utils.log_time(loggers.games_queue)
+def _find_many_functions_by_ids(conn, function_ids: ta.Integers) -> ta.Functions:
     rows = _find_many_by_ids(
-        engine=engine,
+        conn=conn,
         table=Functions,
         ids=function_ids)
     return list(map(make_function_from_db_row, rows))
 
 
 @utils.log_time(loggers.games_queue)
-def find_many_repos_by_ids(engine: ta.Engine, repo_ids: ta.Integers) -> ta.Repos:
+def _find_many_repos_by_ids(conn, repo_ids: ta.Integers) -> ta.Repos:
     rows = _find_many_by_ids(
-        engine=engine,
+        conn=conn,
         table=Repos,
         ids=repo_ids)
     return list(map(make_repo_from_db_row, rows))
@@ -96,10 +106,11 @@ def find_many_repos_by_ids(engine: ta.Engine, repo_ids: ta.Integers) -> ta.Repos
 
 @utils.log_time(loggers.games_queue)
 def find_game_by_id(engine: ta.Engine, game_id: str) -> models.Game:
-    rows = _find_many_by_ids(
-        engine=engine,
-        table=Games,
-        ids=[game_id])
+    with engine.connect() as conn:
+        rows = _find_many_by_ids(
+            conn=conn,
+            table=Games,
+            ids=[game_id])
     if len(rows) != 1:
         raise NotFound(f'game {game_id} not found in the database')
     return _make_game_from_db_row(rows[0])
@@ -205,11 +216,10 @@ def _insert_game_and_change_repo_ratings(conn, game: models.Game, match: models.
         conn.execute(_make_query_to_update_rating(match.black))
 
 
-def _find_many_by_ids(engine: ta.Engine, table, ids):
+def _find_many_by_ids(conn, table, ids):
     id_column = _get_id_column(table)
     query = table.select().where(id_column.in_(ids))
-    with engine.connect() as conn:
-        rows = list(conn.execute(query))
+    rows = list(conn.execute(query))
     if len(rows) != len(ids):
         found_ids = [a_row[id_column] for a_row in rows]
         not_found_ids = set(ids) - set(found_ids)

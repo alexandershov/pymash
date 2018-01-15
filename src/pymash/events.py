@@ -57,10 +57,11 @@ async def _ensure_games_queue_is_ready(app):
 def process_game_finished_event(engine: ta.Engine, game: models.Game) -> None:
     loggers.games_queue.info('processing game %s', game)
     try:
-        white_fn, black_fn = db.find_many_functions_by_ids(engine, [game.white_id, game.black_id])
-        white_repo, black_repo = db.find_many_repos_by_ids(engine, [white_fn.repo_id, black_fn.repo_id])
+        white_repo, black_repo = db.find_many_repos_by_function_ids(
+            engine, game.white_id, game.black_id)
     except db.NotFound as exc:
         raise DeletedFromDb(str(exc)) from exc
+
     match = models.Match(white_repo, black_repo, game.result)
     loggers.games_queue.info(
         'before: %s has rating %s, %s has rating %s',
