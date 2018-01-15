@@ -15,6 +15,7 @@ from pymash import db
 from pymash import loggers
 from pymash import models
 from pymash import parser
+from pymash import type_aliases as ta
 from pymash import utils
 from pymash.scripts import base
 
@@ -30,15 +31,27 @@ class Selector:
 
 @utils.log_time(loggers.loader)
 def load_most_popular(
-        engine, language, limit, whitelisted_full_names=(), blacklisted_full_names=(), concurrency=1):
+        engine: ta.Engine, language: str, limit: int,
+        whitelisted_full_names: ta.SetOfStrings = (),
+        blacklisted_full_names: ta.SetOfStrings = (),
+        concurrency: int = 1) -> None:
     github_client = _get_github_client()
     github_repos = find_most_popular_github_repos(github_client, language, limit)
+    github_repos.extend(_find_github_repos(github_client, whitelisted_full_names))
     github_repos = _exclude_blacklisted(github_repos, blacklisted_full_names)
-    with utils.log_time(loggers.loader, f'loading {len(whitelisted_full_names)} whitelisted repos'):
-        for full_name in whitelisted_full_names:
-            github_repos.append(_parse_github_repo(github_client.get_repo(full_name, lazy=False)))
+
     loaded_repos = load_many_github_repos(github_repos, concurrency=concurrency)
     db.deactivate_all_other_repos(engine, loaded_repos)
+
+
+def _find_github_repos(github_client, full_names) -> ta.GithubRepos:
+    github_repos = []
+    log_msg = f'loading {len(full_names)} github repos'
+    with utils.log_time(loggers.loader, log_msg):
+        for a_full_name in full_names:
+            a_github_repo = github_client.get_repo(a_full_name, lazy=False)
+            github_repos.append(_parse_github_repo(a_github_repo))
+    return github_repos
 
 
 def _exclude_blacklisted(
