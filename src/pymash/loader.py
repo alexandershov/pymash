@@ -116,7 +116,7 @@ def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
                 with utils.log_time(loggers.loader, f'unzipping {temp_file.name}'):
                     _unzip_file(temp_file.name, temp_dir)
                 with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
-                    py_files = list(_find_files(temp_dir, 'py'))
+                    py_files = _find_files(temp_dir, 'py')
                     for a_file in py_files:
                         with open(a_file, encoding='utf-8') as fileobj:
                             file_functions = parser.get_functions(fileobj, catch_exceptions=True)
@@ -139,7 +139,8 @@ def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
 
 
 def _select_random_functions(functions: tp.List[parser.Function]) -> tp.List[parser.Function]:
-    return random.sample(functions, min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(functions)))
+    num_functions = min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(functions))
+    return random.sample(functions, num_functions)
 
 
 def _find_files(directory, extension):
@@ -151,7 +152,7 @@ def _find_files(directory, extension):
     return files
 
 
-def select_good_functions(functions: tp.Iterable[parser.Function]) -> tp.List[parser.Function]:
+def select_good_functions(functions: tp.Iterable[parser.Function]) -> ta.ParserFunctions:
     return [
         a_function
         for a_function in functions
@@ -160,17 +161,18 @@ def select_good_functions(functions: tp.Iterable[parser.Function]) -> tp.List[pa
 
 
 def _is_bad_function(fn: parser.Function) -> bool:
-    if Selector.BAD_FUNCTION_NAME_RE.search(fn.name) is not None:
+    if _has_bad_name(fn):
         return True
-    lines = fn.text.splitlines()
-    if len(lines) < Selector.MIN_NUM_LINES:
+    if not (Selector.MIN_NUM_LINES <= len(fn.lines) <= Selector.MAX_NUM_LINES):
         return True
-    if len(lines) > Selector.MAX_NUM_LINES:
-        return True
-    has_too_long_line = any(len(a_line) > Selector.MAX_LINE_LENGTH for a_line in lines)
+    has_too_long_line = any(len(a_line) > Selector.MAX_LINE_LENGTH for a_line in fn.lines)
     if has_too_long_line:
         return True
-    num_comment_lines = sum(1 for a_line in lines if parser.is_comment_line(a_line))
+    num_comment_lines = sum(1 for a_line in fn.lines if parser.is_comment_line(a_line))
     if num_comment_lines > Selector.MAX_NUM_COMMENT_LINES:
         return True
     return False
+
+
+def _has_bad_name(fn: parser.Function) -> bool:
+    return Selector.BAD_FUNCTION_NAME_RE.search(fn.name) is not None

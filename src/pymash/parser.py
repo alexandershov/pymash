@@ -55,6 +55,13 @@ class Function:
     def __init__(self, name, text):
         self.name = name
         self.text = text
+        self._lines = None
+
+    @property
+    def lines(self):
+        if self._lines is None:
+            self._lines = self.text.splitlines()
+        return self._lines
 
     def __hash__(self):
         return hash((self.name, self.text))
