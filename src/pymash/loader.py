@@ -116,22 +116,29 @@ def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
 
 
 def _get_functions_from_github_repo(github_repo: models.GithubRepo) -> tp.Set[parser.Function]:
-    functions = set()
     with tempfile.NamedTemporaryFile() as temp_file:
         with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
             urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
         with tempfile.TemporaryDirectory() as temp_dir:
             with utils.log_time(loggers.loader, f'unzipping {temp_file.name}'):
                 _unzip_file(temp_file.name, temp_dir)
-            with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
-                py_files = _find_files(temp_dir, 'py')
-                for a_file in py_files:
-                    with open(a_file, encoding='utf-8') as fileobj:
-                        file_functions = parser.get_functions(fileobj, catch_exceptions=True)
-                        functions.update(file_functions)
-        loggers.loader.info(
-            'found %d distinct functions in %d files', len(functions), len(py_files))
+            return _get_functions_from_directory(github_repo, temp_dir)
+
+
+def _get_functions_from_directory(
+        github_repo: models.GithubRepo, dir_path: str) -> tp.Set[parser.Function]:
+    functions = set()
+    with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
+        py_files = _find_files(dir_path, 'py')
+        for a_file in py_files:
+            functions.update(_get_functions_from_file(a_file))
+    loggers.loader.info(f'found %d distinct functions in %d files', len(functions), len(py_files))
     return functions
+
+
+def _get_functions_from_file(file_path):
+    with open(file_path, encoding='utf-8') as fileobj:
+        return parser.get_functions(fileobj, catch_exceptions=True)
 
 
 def _select_functions_to_update(functions: tp.Set[parser.Function]) -> ta.ParserFunctions:
