@@ -119,10 +119,15 @@ def _get_functions_from_github_repo(github_repo: models.GithubRepo) -> tp.Set[pa
     with tempfile.NamedTemporaryFile() as temp_file:
         with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
             urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
-        with tempfile.TemporaryDirectory() as temp_dir:
-            with utils.log_time(loggers.loader, f'unzipping {temp_file.name}'):
-                _unzip_file(temp_file.name, temp_dir)
-            return _get_functions_from_directory(github_repo, temp_dir)
+        return _get_functions_from_zip_archive(temp_file.name, github_repo)
+
+
+def _get_functions_from_zip_archive(
+        archive_path: str, github_repo: models.GithubRepo) -> tp.Set[parser.Function]:
+    with tempfile.TemporaryDirectory() as temp_dir:
+        with utils.log_time(loggers.loader, f'unzipping {archive_path}'):
+            _unzip_file(archive_path, temp_dir)
+        return _get_functions_from_directory(github_repo, temp_dir)
 
 
 def _get_functions_from_directory(
@@ -155,7 +160,7 @@ def _select_random_functions(functions: tp.List[parser.Function]) -> tp.List[par
     return random.sample(functions, num_functions)
 
 
-def _find_files(directory, extension):
+def _find_files(directory: str, extension: str) -> tp.List[str]:
     files = []
     pattern = os.path.join(directory, f'**/*.{extension}')
     for path in glob.iglob(pattern, recursive=True):
