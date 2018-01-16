@@ -14,13 +14,15 @@ class _RepoDbModel(Base):
     is_active = sa.Column(sa.Boolean, nullable=False)
     rating = sa.Column(sa.Float, nullable=False)
 
+    __table_args__ = (
+        sa.Index(
+            'repos_is_active_rating_partial_idx',
+            rating,
+            postgresql_where=is_active.is_(True)),
+    )
+
 
 Repos = _RepoDbModel.__table__
-
-sa.Index(
-    'repos_is_active_rating_partial_idx',
-    Repos.c.rating,
-    postgresql_where=Repos.c.is_active.is_(True))
 
 
 class _FunctionDbModel(Base):
