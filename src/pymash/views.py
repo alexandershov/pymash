@@ -46,30 +46,34 @@ class _PostGameInput:
 @utils.log_time(loggers.web)
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
+    game = await _get_game_or_error(request, data)
+    expected_hash = game.get_hash(request.app['config'].game_hash_salt)
+    if expected_hash != data[_PostGameInput.Keys.hash_]:
+        return web.HTTPBadRequest()
+    await events.post_game_finished_event(request.app, game)
+    redirect_url = request.app.router['new_game'].url_for()
+    return web.HTTPFound(redirect_url)
+
+
+async def _get_game_or_error(request, data):
     try:
         parsed_input = _PostGameInput.schema(dict(data))
     except vol.Invalid:
         loggers.web.info('bad request for post_game', exc_info=True)
-        return web.HTTPBadRequest()
+        raise web.HTTPBadRequest
     keys = _PostGameInput.Keys
     try:
         result = models.GameResult(
             white_score=parsed_input[keys.white_score],
             black_score=parsed_input[keys.black_score])
-        game = models.Game(
+        return models.Game(
             game_id=request.match_info['game_id'],
             white_id=parsed_input[keys.white_id],
             black_id=parsed_input[keys.black_id],
             result=result)
     except (models.ResultError, models.GameError):
         loggers.web.info('bad request for post_game', exc_info=True)
-        return web.HTTPBadRequest()
-    expected_hash = game.get_hash(request.app['config'].game_hash_salt)
-    if expected_hash != data[keys.hash_]:
-        return web.HTTPBadRequest()
-    await events.post_game_finished_event(request.app, game)
-    redirect_url = request.app.router['new_game'].url_for()
-    return web.HTTPFound(redirect_url)
+        raise web.HTTPBadRequest
 
 
 @utils.log_time(loggers.web)
