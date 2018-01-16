@@ -7,12 +7,10 @@ import re
 import textwrap
 import typing as tp
 
-# TODO(aershov182): add more useful logs in a whole project
-
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
 
-COMMENT_LINE_RE = re.compile('^\s*#')
+_COMMENT_LINE_RE = re.compile('^\s*#')
 
 
 class BaseError(Exception):
@@ -36,7 +34,7 @@ class AstSyntaxError(BaseError):
 
 
 class _SentinelNode:
-    def __init__(self, source_lines):
+    def __init__(self, source_lines: tp.List[str]) -> None:
         self.lineno = len(source_lines) + 1
         self.col_offset = 0
 
@@ -46,33 +44,33 @@ class _Position:
     def from_ast_node(cls, node):
         return cls(node.lineno, node.col_offset)
 
-    def __init__(self, lineno, column):
+    def __init__(self, lineno: int, column: int) -> None:
         self.lineno = lineno
         self.column = column
 
 
 class Function:
-    def __init__(self, name, text):
+    def __init__(self, name: str, text: str) -> None:
         self.name = name
         self.text = text
-        self._lines = None
+        self._cached_lines = None
 
     @property
-    def lines(self):
-        if self._lines is None:
-            self._lines = self.text.splitlines()
-        return self._lines
+    def lines(self) -> tp.List[str]:
+        if self._cached_lines is None:
+            self._cached_lines = self.text.splitlines()
+        return self._cached_lines
 
-    def __hash__(self):
+    def __hash__(self) -> int:
         return hash((self.name, self.text))
 
-    def __eq__(self, other):
-        if not isinstance(other, Function):
-            return False
+    def __eq__(self, other) -> bool:
+        assert isinstance(other, Function)
         return (self.name, self.text) == (other.name, other.text)
 
-    def __repr__(self):
-        return f'{self.__class__.__name__}(name={self.name!r}, text={self.text!r})'
+    def __repr__(self) -> str:
+        cls_name = self.__class__.__name__
+        return f'{cls_name}(name={self.name!r}, text={self.text!r})'
 
 
 def get_functions(fileobj, *, catch_exceptions: bool = False) -> tp.List[Function]:
@@ -230,7 +228,7 @@ def _is_empty_line(s: str) -> bool:
 
 
 def is_comment_line(s: str) -> bool:
-    if COMMENT_LINE_RE.match(s) is not None:
+    if _COMMENT_LINE_RE.match(s) is not None:
         return True
     return False
 
