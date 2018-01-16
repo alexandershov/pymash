@@ -47,15 +47,13 @@ class _PostGameInput:
 async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
     game = await _get_game_or_error(request, data)
-    expected_hash = game.get_hash(request.app['config'].game_hash_salt)
-    if expected_hash != data[_PostGameInput.Keys.hash_]:
-        return web.HTTPBadRequest()
+    _validate_hash(request, game, data[_PostGameInput.Keys.hash_])
     await events.post_game_finished_event(request.app, game)
     redirect_url = request.app.router['new_game'].url_for()
     return web.HTTPFound(redirect_url)
 
 
-async def _get_game_or_error(request, data):
+async def _get_game_or_error(request, data) -> models.Game:
     try:
         parsed_input = _PostGameInput.schema(dict(data))
     except vol.Invalid:
@@ -73,6 +71,12 @@ async def _get_game_or_error(request, data):
             result=result)
     except (models.ResultError, models.GameError):
         loggers.web.info('bad request for post_game', exc_info=True)
+        raise web.HTTPBadRequest
+
+
+def _validate_hash(request: web.Request, game: models.Game, actual_hash: str):
+    expected_hash = game.get_hash(request.app['config'].game_hash_salt)
+    if expected_hash != actual_hash:
         raise web.HTTPBadRequest
 
 
