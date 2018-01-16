@@ -1,4 +1,3 @@
-import typing as tp
 import uuid
 
 import aiohttp_jinja2
@@ -9,14 +8,13 @@ from pymash import db
 from pymash import events
 from pymash import loggers
 from pymash import models
+from pymash import type_aliases as ta
 from pymash import utils
-
-_DICT_OR_RESPONSE = tp.Union[dict, web.Response]
 
 
 @utils.log_time(loggers.web)
 @aiohttp_jinja2.template('leaders.html')
-async def show_leaders(request: web.Request) -> _DICT_OR_RESPONSE:
+async def show_leaders(request: web.Request) -> ta.DictOrResponse:
     repos = await db.find_active_repos_order_by_rating(request.app['db_engine'])
     return {
         'repos': repos,
@@ -76,7 +74,7 @@ async def post_game(request: web.Request) -> web.Response:
 
 @utils.log_time(loggers.web)
 @aiohttp_jinja2.template('game.html')
-async def show_game(request: web.Request) -> _DICT_OR_RESPONSE:
+async def show_game(request: web.Request) -> ta.DictOrResponse:
     num_tries = 3
     for _ in range(num_tries):
         functions = await db.try_to_find_two_random_functions(request.app['db_engine'])
@@ -97,7 +95,7 @@ async def show_game(request: web.Request) -> _DICT_OR_RESPONSE:
     }
 
 
-def _are_valid_functions(functions: tp.List[models.Function]):
+def _are_valid_functions(functions: ta.Functions):
     if len(functions) != 2:
         return False
     white, black = functions

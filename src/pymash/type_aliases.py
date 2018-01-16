@@ -3,6 +3,7 @@ import typing as tp
 import aiopg.sa
 import github.Repository
 import sqlalchemy
+from aiohttp import web
 
 from pymash import models
 from pymash import parser
@@ -20,3 +21,5 @@ Repository = github.Repository.Repository
 
 GithubRepos = tp.List[models.GithubRepo]
 ParserFunctions = tp.List[parser.Function]
+
+DictOrResponse = tp.Union[dict, web.Response]
