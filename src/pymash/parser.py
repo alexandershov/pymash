@@ -144,32 +144,44 @@ def _get_function_text(source_lines, fn_node, from_pos: _Position, to_pos: _Posi
     fn_lines = []
     relevant_lines = source_lines[from_pos.lineno - 1:to_pos.lineno - 1]
     for lineno, line in enumerate(relevant_lines, start=from_pos.lineno):
-        line_to_add = []
+        chars_to_add = []
         for col_offset, char in enumerate(line):
             char_pos = _Position(lineno, col_offset)
             if not docstring_info.contains(char_pos):
-                line_to_add.append(char)
-        fn_lines.append(''.join(line_to_add))
+                chars_to_add.append(char)
+        fn_lines.append(''.join(chars_to_add))
     final_fn_lines = _exclude_meaningless_lines(fn_lines)
     text = docstring_info.cut_from(''.join(final_fn_lines))
     return textwrap.dedent(text)
 
 
-class _DocstringInfo:
-    def __init__(self, exists, begin: _Position, end: _Position) -> None:
-        if exists:
-            assert begin is not None
-            assert end is not None
-        self._exists = exists
+class _BaseDocstringInfo:
+    def contains(self, pos: _Position) -> bool:
+        raise NotImplementedError
+
+    def cut_from(self, text: str) -> str:
+        raise NotImplementedError
+
+
+class _EmptyDocstringInfo(_BaseDocstringInfo):
+    def contains(self, pos: _Position) -> bool:
+        return False
+
+    def cut_from(self, text: str) -> str:
+        return text
+
+
+class _DocstringInfo(_BaseDocstringInfo):
+    def __init__(self, begin: _Position, end: _Position) -> None:
         self._begin = begin
         self._end = end
 
     def contains(self, pos: _Position) -> bool:
         # multi line docstrings are handled separately via _hacky_cut_multiline_docstring
         # because of the python bug
-        if self._exists and not self._is_multi_line:
-            return _is_position_inside(pos, self._begin, self._end)
-        return False
+        if self._is_multi_line:
+            return False
+        return _is_position_inside(pos, self._begin, self._end)
 
     def cut_from(self, text: str) -> str:
         if self._is_multi_line:
@@ -180,25 +192,20 @@ class _DocstringInfo:
     def _is_multi_line(self):
         # ast has a bug: multiline strings have wrong start:
         # (column == -1, line number is just wrong)
-        return self._exists and self._begin.column == -1
+        return self._begin.column == -1
 
 
-def _get_docstring_info(fn_node) -> _DocstringInfo:
+def _get_docstring_info(fn_node) -> _BaseDocstringInfo:
     node = _get_docstring_node_or_none(fn_node)
-    begin = None
-    end = None
-    exists = (node is not None)
-    if exists and len(fn_node.body) == 1:
+    if node is None:
+        return _EmptyDocstringInfo()
+
+    if len(fn_node.body) == 1:
         raise EmptyFunctionError
-    if exists:
-        begin = _Position.from_ast_node(node)
-        after_node = fn_node.body[1]
-        end = _Position.from_ast_node(after_node)
-    return _DocstringInfo(
-        exists=exists,
-        begin=begin,
-        end=end,
-    )
+    begin = _Position.from_ast_node(node)
+    after_node = fn_node.body[1]
+    end = _Position.from_ast_node(after_node)
+    return _DocstringInfo(begin, end)
 
 
 def _get_docstring_node_or_none(fn_node):
