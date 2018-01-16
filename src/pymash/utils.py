@@ -1,7 +1,6 @@
+import asyncio
 import functools
 import time
-
-import asyncio
 
 
 # noinspection PyUnusedLocal
@@ -14,25 +13,21 @@ class log_time:
         self._logger = logger
         self._get_args_str_or_str = get_args_str_or_str
         self._started_at = None
+        self._finished_at = None
+        self._fn = None
 
     def __call__(self, fn):
         if asyncio.iscoroutinefunction(fn):
             async def wrapper(*args, **kwargs):
-                started_at = time.time()
+                self._before_fn(fn)
                 result = await fn(*args, **kwargs)
-                finished_at = time.time()
-                self._logger.info(
-                    '%s.%s(%s) took %.3fs', fn.__module__, fn.__qualname__, self._get_args_str_or_str(*args, **kwargs),
-                    finished_at - started_at)
+                self._after_fn(*args, **kwargs)
                 return result
         else:
             def wrapper(*args, **kwargs):
-                started_at = time.time()
+                self._before_fn(fn)
                 result = fn(*args, **kwargs)
-                finished_at = time.time()
-                self._logger.info(
-                    '%s.%s(%s) took %.3fs', fn.__module__, fn.__qualname__, self._get_args_str_or_str(*args, **kwargs),
-                    finished_at - started_at)
+                self._after_fn(*args, **kwargs)
                 return result
 
         return functools.update_wrapper(wrapper, fn)
@@ -43,5 +38,17 @@ class log_time:
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         assert self._started_at is not None
-        finished_at = time.time()
-        self._logger.info('%s took %.3fs', self._get_args_str_or_str, finished_at - self._started_at)
+        assert isinstance(self._get_args_str_or_str, str)
+        duration = time.time() - self._started_at
+        self._logger.info('%s took %.3fs', self._get_args_str_or_str, duration)
+
+    def _before_fn(self, fn):
+        self._fn = fn
+        self._started_at = time.time()
+
+    def _after_fn(self, *args, **kwargs):
+        self._finished_at = time.time()
+        args_str = self._get_args_str_or_str(*args, **kwargs)
+        self._logger.info(
+            '%s.%s(%s) took %.3fs', self._fn.__module__, self._fn.__qualname__, args_str,
+            self._finished_at - self._started_at)
