@@ -1,6 +1,8 @@
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
 
+__all__ = ['Repos', 'Functions', 'Games']
+
 Base = declarative.declarative_base()
 
 
@@ -33,6 +35,13 @@ class _FunctionDbModel(Base):
     is_active = sa.Column(sa.Boolean, nullable=False)
     random = sa.Column(sa.Float, server_default=sa.func.random(), nullable=False, index=True)
 
+    __table_args__ = (
+        sa.Index(
+            'functions_is_active_random_partial_idx',
+            random,
+            postgresql_where=is_active.is_(True)),
+    )
+
 
 Functions = _FunctionDbModel.__table__
 
@@ -40,11 +49,6 @@ repo_id_md5_text_unique_idx = sa.Index(
     'functions_repo_id_md5_text_unique_idx',
     Functions.c.repo_id, sa.func.md5(Functions.c.text),
     unique=True)
-
-sa.Index(
-    'functions_is_active_random_partial_idx',
-    Functions.c.random,
-    postgresql_where=Functions.c.is_active.is_(True))
 
 
 class _GameDbModel(Base):
@@ -57,5 +61,3 @@ class _GameDbModel(Base):
 
 
 Games = _GameDbModel.__table__
-
-__all__ = ['Repos', 'Functions', 'Games']
