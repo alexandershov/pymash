@@ -16,7 +16,7 @@ def test_change_ratings(
         monkeypatch,
         white_rating, black_rating, result,
         expected_white_rating, expected_black_rating):
-    monkeypatch.setattr(models, 'RATING_CHANGE_COEFF', 24)
+    monkeypatch.setattr(models.Match, 'RATING_CHANGE_COEFF', 24)
     white = _make_repo(repo_id='white_repo_id', rating=white_rating)
     black = _make_repo(repo_id='black_repo_id', rating=black_rating)
     match = models.Match(white, black, result)

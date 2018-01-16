@@ -10,7 +10,7 @@ def setup_jinja2(app: web.Application) -> None:
     aiohttp_jinja2.setup(
         app,
         loader=jinja2.PackageLoader('pymash', 'templates'),
-        filters={'_highlight': _highlight})
+        filters={'highlight': _highlight})
 
 
 def _highlight(s, language='python'):
