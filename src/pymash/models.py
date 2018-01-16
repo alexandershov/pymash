@@ -35,11 +35,11 @@ class InvalidScore(GameError):
 
 class BaseResult:
     @property
-    def white_score(self) -> float:
+    def white_score(self) -> int:
         raise NotImplementedError
 
     @property
-    def black_score(self) -> float:
+    def black_score(self) -> int:
         raise NotImplementedError
 
     def __eq__(self, other: 'BaseResult') -> bool:
@@ -159,7 +159,7 @@ class Match:
         self.black.sub_rating(white_delta)
 
     @property
-    def _white_score(self) -> float:
+    def _white_score(self) -> int:
         return self._result.white_score
 
     @property
