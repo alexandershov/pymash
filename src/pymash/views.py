@@ -75,14 +75,7 @@ async def post_game(request: web.Request) -> web.Response:
 @utils.log_time(loggers.web)
 @aiohttp_jinja2.template('game.html')
 async def show_game(request: web.Request) -> ta.DictOrResponse:
-    num_tries = 3
-    for _ in range(num_tries):
-        functions = await db.try_to_find_two_random_functions(request.app['db_engine'])
-        if _are_valid_functions(functions):
-            break
-    else:
-        return web.HTTPServiceUnavailable()
-    white, black = functions
+    white, black = await _find_two_random_function_or_error(request.app['db_engine'])
     game = models.Game(
         game_id=uuid.uuid4().hex,
         white_id=black.function_id,
@@ -93,6 +86,16 @@ async def show_game(request: web.Request) -> ta.DictOrResponse:
         'white': white,
         'black': black,
     }
+
+
+async def _find_two_random_function_or_error(engine: ta.AsyncEngine):
+    num_tries = 3
+    for _ in range(num_tries):
+        functions = await db.try_to_find_two_random_functions(engine)
+        if _are_valid_functions(functions):
+            return functions
+    else:
+        raise web.HTTPServiceUnavailable
 
 
 def _are_valid_functions(functions: ta.Functions):
