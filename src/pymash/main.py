@@ -1,56 +1,56 @@
 import argparse
 
 import aioboto3
-import aiohttp_jinja2
-import jinja2
-import pygments
-import pygments.lexers
 from aiohttp import web
 from aiopg import sa
-from pygments.formatters import html as pygments_html
 
 from pymash import cfg
 from pymash import loggers
 from pymash import routes
+from pymash import templates
 from pymash import utils
 
 
 def main():
-    app = create_app()
     args = _parse_args()
+    app = create_app()
     web.run_app(app, host=args.host, port=args.port)
 
 
 def create_app() -> web.Application:
-    loggers.setup_logging()
     app = web.Application()
-    config = cfg.get_config()
-    app['config'] = config
+    app['config'] = cfg.get_config()
+    _setup_startup_cleanup(app)
+    routes.setup_routes(app)
+    templates.setup_jinja2(app)
+    return app
+
+
+def _setup_startup_cleanup(app: web.Application) -> None:
+    app.on_startup.append(_setup_logging)
     app.on_startup.append(_create_engine)
     app.on_startup.append(_create_sqs_resource)
     app.on_cleanup.append(_close_engine)
     app.on_cleanup.append(_close_sqs_resource)
-    routes.setup_routes(app)
-    aiohttp_jinja2.setup(
-        app,
-        loader=jinja2.PackageLoader('pymash', 'templates'),
-        filters={'highlight': highlight})
-    return app
+
+
+def _setup_logging(app: web.Application) -> None:
+    loggers.setup_logging()
 
 
 @utils.log_time(loggers.web)
-async def _create_engine(app):
+async def _create_engine(app: web.Application) -> None:
     app['db_engine'] = await sa.create_engine(app['config'].dsn, loop=app.loop)
 
 
 @utils.log_time(loggers.web)
-async def _close_engine(app):
+async def _close_engine(app: web.Application) -> None:
     app['db_engine'].close()
     await app['db_engine'].wait_closed()
 
 
 @utils.log_time(loggers.web)
-async def _create_sqs_resource(app):
+async def _create_sqs_resource(app: web.Application) -> None:
     config = app['config']
     app['sqs_resource'] = aioboto3.resource(
         'sqs',
@@ -61,20 +61,8 @@ async def _create_sqs_resource(app):
 
 
 @utils.log_time(loggers.web)
-async def _close_sqs_resource(app):
+async def _close_sqs_resource(app: web.Application) -> None:
     await app['sqs_resource'].close()
-
-
-def highlight_with_css_class(text, language, css_class):
-    formatter = pygments_html.HtmlFormatter(cssclass=css_class)
-    # TODO: can we do without strip?
-    return pygments.highlight(text,
-                              pygments.lexers.get_lexer_by_name(language),
-                              formatter).strip()
-
-
-def highlight(s, language='python'):
-    return highlight_with_css_class(s, language, 'highlight')
 
 
 def _parse_args():
