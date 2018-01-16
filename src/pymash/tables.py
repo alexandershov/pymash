@@ -3,6 +3,14 @@ from sqlalchemy.ext import declarative
 
 __all__ = ['Repos', 'Functions', 'Games']
 
+
+def get_index_by_name(table, name):
+    for index in table.indexes:
+        if index.name == name:
+            return index
+    raise ValueError(f'unknown index {name}')
+
+
 Base = declarative.declarative_base()
 
 
@@ -40,15 +48,14 @@ class _FunctionDbModel(Base):
             'functions_is_active_random_partial_idx',
             random,
             postgresql_where=is_active.is_(True)),
+        sa.Index(
+            'functions_repo_id_md5_text_unique_idx',
+            repo_id, sa.func.md5(text),
+            unique=True)
     )
 
 
 Functions = _FunctionDbModel.__table__
-
-repo_id_md5_text_unique_idx = sa.Index(
-    'functions_repo_id_md5_text_unique_idx',
-    Functions.c.repo_id, sa.func.md5(Functions.c.text),
-    unique=True)
 
 
 class _GameDbModel(Base):
