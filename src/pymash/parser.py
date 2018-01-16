@@ -7,6 +7,8 @@ import re
 import textwrap
 import typing as tp
 
+from pymash import loggers
+
 _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)"""\n', re.DOTALL)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
 
@@ -73,7 +75,7 @@ class Function:
         return f'{cls_name}(name={self.name!r}, text={self.text!r})'
 
 
-def get_functions(fileobj, *, catch_exceptions: bool = False) -> tp.List[Function]:
+def get_functions(fileobj, catch_exceptions: bool = False) -> tp.List[Function]:
     try:
         source_code = fileobj.read()
     except UnicodeDecodeError:
@@ -83,14 +85,10 @@ def get_functions(fileobj, *, catch_exceptions: bool = False) -> tp.List[Functio
     return _get_functions_from_str(source_code, catch_exceptions=catch_exceptions)
 
 
-def _get_functions_from_str(source_code: str, *, catch_exceptions: bool = False) -> tp.List[Function]:
+def _get_functions_from_str(
+        source_code: str, catch_exceptions: bool = False) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
-    try:
-        nodes = _get_ast_nodes(source_code, source_lines)
-    except AstSyntaxError:
-        if not catch_exceptions:
-            raise
-        return []
+    nodes = _get_ast_nodes(source_code, source_lines, catch_exceptions)
     functions = []
     for fn_node, next_node in _iter_function_nodes_with_next(nodes):
         try:
@@ -100,6 +98,7 @@ def _get_functions_from_str(source_code: str, *, catch_exceptions: bool = False)
                 from_pos=_Position.from_ast_node(fn_node),
                 to_pos=_Position.from_ast_node(next_node))
         except UnknownFunctionText:
+            loggers.loader.error('unknown function text', exc_info=True)
             if not catch_exceptions:
                 raise
         else:
@@ -107,11 +106,14 @@ def _get_functions_from_str(source_code: str, *, catch_exceptions: bool = False)
     return functions
 
 
-def _get_ast_nodes(source_code: str, source_lines: tp.List[str]):
+def _get_ast_nodes(source_code: str, source_lines: tp.List[str], catch_exceptions: bool):
     try:
         parsed = ast.parse(source_code)
     except SyntaxError:
-        raise AstSyntaxError
+        loggers.loader.error('could not parse source', exc_info=True)
+        if not catch_exceptions:
+            raise
+        return []
     nodes = copy.copy(parsed.body)
     nodes.append(_SentinelNode(source_lines))
     return nodes
