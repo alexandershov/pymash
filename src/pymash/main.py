@@ -4,10 +4,10 @@ import aioboto3
 from aiohttp import web
 from aiopg import sa
 
+from pymash import appenv
 from pymash import cfg
 from pymash import loggers
 from pymash import routes
-from pymash import templates
 from pymash import utils
 
 
@@ -22,7 +22,7 @@ def create_app() -> web.Application:
     app['config'] = cfg.get_config()
     _setup_startup_cleanup(app)
     routes.setup_routes(app)
-    templates.setup_jinja2(app)
+    appenv.setup_jinja2(app)
     return app
 
 
@@ -34,6 +34,7 @@ def _setup_startup_cleanup(app: web.Application) -> None:
     app.on_cleanup.append(_close_sqs_resource)
 
 
+# noinspection PyUnusedLocal
 def _setup_logging(app: web.Application) -> None:
     loggers.setup_logging()
 
