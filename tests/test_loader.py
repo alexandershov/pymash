@@ -151,6 +151,7 @@ def test_select_good_functions(source_code, expected_names):
 def _add_data(pymash_engine):
     with pymash_engine.connect() as conn:
         conn.execute(Repos.insert().values({
+            # -2 to avoid conflict with postgres auto sequence which starts with 0
             Repos.c.repo_id: -2,
             Repos.c.github_id: 1002,
             Repos.c.name: 'flask',
@@ -192,10 +193,10 @@ def _add_data(pymash_engine):
 def _assert_repo_was_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         rows = list(conn.execute(Repos.select()))
-        django_row = conn.execute(Repos.select().where(Repos.c.github_id == 1001)).first()
-        flask_row = conn.execute(Repos.select().where(Repos.c.github_id == 1002)).first()
-        pymash_row = conn.execute(Repos.select().where(Repos.c.github_id == 1003)).first()
-        requests_row = conn.execute(Repos.select().where(Repos.c.github_id == 1005)).first()
+        django_row = _find_repo_by_id(conn, 1001)
+        flask_row = _find_repo_by_id(conn, 1002)
+        pymash_row = _find_repo_by_id(conn, 1003)
+        requests_row = _find_repo_by_id(conn, 1005)
     assert len(rows) == 4
 
     django_repo = db.make_repo_from_db_row(django_row)
@@ -221,6 +222,10 @@ def _assert_repo_was_loaded(pymash_engine):
     assert requests_repo.url == 'https://github.com/requests/requests'
     assert not requests_repo.is_active
     assert requests_repo.rating == 2000
+
+
+def _find_repo_by_id(conn, repo_id):
+    return conn.execute(Repos.select().where(Repos.c.github_id == repo_id)).first()
 
 
 def _assert_functions_were_loaded(pymash_engine):
