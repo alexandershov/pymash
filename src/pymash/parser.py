@@ -209,8 +209,8 @@ def _get_docstring_info(fn_node) -> _BaseDocstringInfo:
 
 
 def _get_docstring_node_or_none(fn_node):
-    has_first_expression = fn_node.body and isinstance(fn_node.body[0], ast.Expr)
-    if not has_first_expression:
+    is_first_node_expression = fn_node.body and isinstance(fn_node.body[0], ast.Expr)
+    if not is_first_node_expression:
         return None
     node = fn_node.body[0]
     node_value = node.value
@@ -224,10 +224,14 @@ def _get_docstring_node_or_none(fn_node):
 
 def _exclude_meaningless_lines(lines):
     result = list(itertools.dropwhile(_is_empty_line, lines))
-    result = list(reversed(list(itertools.dropwhile(_is_empty_or_comment_line, reversed(result)))))
+    result = _reverse_iterable(itertools.dropwhile(_is_empty_or_comment_line, reversed(result)))
     if result:
         result[-1] = result[-1].rstrip('\r\n')
     return result
+
+
+def _reverse_iterable(iterable: tp.Iterable) -> tp.List:
+    return list(reversed(list(iterable)))
 
 
 def _is_empty_line(s: str) -> bool:
@@ -253,7 +257,7 @@ def _hacky_cut_multiline_docstring(text: str) -> str:
     ]
     for a_regex in sorted(regexes, key=_EarliestMatch(text)):
         if a_regex.search(text) is not None:
-            return a_regex.subn(_check_and_cut_multiline_docstring, text, 1)[0]
+            return a_regex.subn(_check_and_cut_multiline_docstring, text, count=1)[0]
     return text
 
 
