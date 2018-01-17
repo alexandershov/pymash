@@ -199,29 +199,38 @@ def _assert_repo_was_loaded(pymash_engine):
         requests_row = _find_repo_by_id(conn, 1005)
     assert len(rows) == 4
 
-    django_repo = db.make_repo_from_db_row(django_row)
-    assert django_repo.name == 'django'
-    assert django_repo.url == 'https://github.com/django/django'
-    assert django_repo.is_active
-    assert django_repo.rating == models.Repo.DEFAULT_RATING
+    _expect_repo(
+        repo_row=django_row,
+        name='django',
+        url='https://github.com/django/django',
+        is_active=True,
+        rating=models.Repo.DEFAULT_RATING)
+    _expect_repo(
+        repo_row=flask_row,
+        name='flask',
+        url='https://github.com/pallets/flask',
+        is_active=True,
+        rating=1900)
+    _expect_repo(
+        repo_row=pymash_row,
+        name='pymash',
+        url='https://github.com/alexandershov/pymash',
+        is_active=True,
+        rating=1800)
+    _expect_repo(
+        repo_row=requests_row,
+        name='requests',
+        url='https://github.com/requests/requests',
+        is_active=False,
+        rating=2000)
 
-    flask_repo = db.make_repo_from_db_row(flask_row)
-    assert flask_repo.name == 'flask'
-    assert flask_repo.url == 'https://github.com/pallets/flask'
-    assert flask_repo.is_active
-    assert flask_repo.rating == 1900
 
-    pymash_repo = db.make_repo_from_db_row(pymash_row)
-    assert pymash_repo.name == 'pymash'
-    assert pymash_repo.url == 'https://github.com/alexandershov/pymash'
-    assert pymash_repo.is_active
-    assert pymash_repo.rating == 1800
-
-    requests_repo = db.make_repo_from_db_row(requests_row)
-    assert requests_repo.name == 'requests'
-    assert requests_repo.url == 'https://github.com/requests/requests'
-    assert not requests_repo.is_active
-    assert requests_repo.rating == 2000
+def _expect_repo(repo_row, name, url, is_active, rating):
+    repo = db.make_repo_from_db_row(repo_row)
+    assert repo.name == name
+    assert repo.url == url
+    assert repo.is_active is is_active
+    assert repo.rating == rating
 
 
 def _find_repo_by_id(conn, repo_id):
