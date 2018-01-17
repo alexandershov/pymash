@@ -18,7 +18,7 @@ from pymash.tables import *
     # we don't select deactivated functions (function_id=888)
     ([0.3, 0.5], True),
     # if random value is too large, then we cut it to the largest possible value in the database
-    # ([0.3, 0.7], True),
+    ([0.3, 0.9999], True),
     # first game is with the same repo, second is ok
     ([0.3, 0.3, 0.3, 0.6], True),
     # first two games are with the same repo, third is ok
@@ -54,6 +54,7 @@ async def test_show_leaders(pymash_engine, test_client):
     flask_index = text.index('1901')
     django_index = text.index('1801')
     assert flask_index < django_index
+    # we don't show deactivated repos
     assert text.find('2001') == -1
 
 
@@ -105,12 +106,10 @@ def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black
 ])
 async def test_post_game(data, is_success, test_client, monkeypatch):
     app = _create_app()
-    games_queue_mock = mock.Mock()
-    games_queue_mock.send_message.return_value = _make_future_with_result(None)
-    sqs_resource_mock = mock.Mock()
-    sqs_resource_mock.get_queue_by_name.return_value = _make_future_with_result(games_queue_mock)
-    sqs_resource_mock.close.return_value = _make_future_with_result(None)
-    app.on_startup.append(lambda app_: monkeypatch.setitem(app_, 'sqs_resource', sqs_resource_mock))
+    sqs_resource_mock = _sqs_resource_mock()
+    games_queue_mock = await sqs_resource_mock.get_queue_by_name('some_name')
+    app.on_startup.append(
+        lambda app_: monkeypatch.setitem(app_, 'sqs_resource', sqs_resource_mock))
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
                            data=data)
@@ -121,6 +120,15 @@ async def test_post_game(data, is_success, test_client, monkeypatch):
     else:
         assert response.status == 400
         games_queue_mock.send_message.assert_not_called()
+
+
+def _sqs_resource_mock():
+    games_queue_mock = mock.Mock()
+    games_queue_mock.send_message.return_value = _make_future_with_result(None)
+    sqs_resource_mock = mock.Mock()
+    sqs_resource_mock.get_queue_by_name.return_value = _make_future_with_result(games_queue_mock)
+    sqs_resource_mock.close.return_value = _make_future_with_result(None)
+    return sqs_resource_mock
 
 
 def _make_future_with_result(result):
