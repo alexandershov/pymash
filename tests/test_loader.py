@@ -239,35 +239,31 @@ def _find_repo_by_id(conn, repo_id):
 
 def _assert_functions_were_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
-        rows = list(conn.execute(Functions.select()))
-        django_rows = _find_functions_with_repo_name(conn, 'django')
-        flask_rows = _find_functions_with_repo_name(conn, 'flask')
-        pymash_rows = _find_functions_with_repo_name(conn, 'pymash')
-        requests_rows = _find_functions_with_repo_name(conn, 'requests')
-    assert len(rows) == 8
-    assert len(django_rows) == 2
-    assert len(flask_rows) == 3
-    assert len(requests_rows) == 1
-    django_functions = list(map(db.make_function_from_db_row, django_rows))
-    flask_functions = list(map(db.make_function_from_db_row, flask_rows))
-    pymash_functions = list(map(db.make_function_from_db_row, pymash_rows))
-    requests_functions = list(map(db.make_function_from_db_row, requests_rows))
-    assert _group_by_text(django_functions) == {
-        'def add(x, y):\n    return x + y': True,
-        'def sub(x, y):\n    return x - y': True,
-    }
-    assert _group_by_text(flask_functions) == {
-        'def add(x, y):\n    return x + y': True,
-        'def sub(x, y):\n    return x - y': True,
-        'def mul(x, y):\n    return x * y': False,
-    }
-    assert _group_by_text(pymash_functions) == {
-        'def add(x, y):\n    return x + y': True,
-        'def sub(x, y):\n    return x - y': True,
-    }
-    assert _group_by_text(requests_functions) == {
-        'def add(x, y):\n    return x + y': False,
-    }
+        all_rows = list(conn.execute(Functions.select()))
+        _assert_functions(conn, 'django', {
+            'def add(x, y):\n    return x + y': True,
+            'def sub(x, y):\n    return x - y': True,
+        })
+        _assert_functions(conn, 'flask', {
+            'def add(x, y):\n    return x + y': True,
+            'def sub(x, y):\n    return x - y': True,
+            'def mul(x, y):\n    return x * y': False,
+        })
+        _assert_functions(conn, 'pymash', {
+            'def add(x, y):\n    return x + y': True,
+            'def sub(x, y):\n    return x - y': True,
+        })
+        _assert_functions(conn, 'requests', {
+            'def add(x, y):\n    return x + y': False,
+        })
+    assert len(all_rows) == 8
+
+
+def _assert_functions(conn, repo_name, _grouped_by_text):
+    rows = _find_functions_with_repo_name(conn, repo_name)
+    assert len(rows) == len(_grouped_by_text)
+    functions = list(map(db.make_function_from_db_row, rows))
+    assert _group_by_text(functions) == _grouped_by_text
 
 
 def _find_functions_with_repo_name(conn, repo_name):
