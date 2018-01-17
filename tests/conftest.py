@@ -28,6 +28,7 @@ def _create_database(system_engine, pymash_engine):
         _drop_db_stmt(test_db_name), _create_db_stmt(test_db_name))
     _create_tables(pymash_engine)
     yield
+    # we need to close all connections before dropping the database
     pymash_engine.dispose()
     _run_system_commands(
         system_engine,
