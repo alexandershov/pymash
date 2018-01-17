@@ -36,7 +36,7 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
         return values.popleft()
 
     monkeypatch.setattr(random, 'random', stateful_random)
-    app = _create_app()
+    app = main.create_app()
     response = await _get(app, test_client, '/game')
     if is_success:
         text = await _get_checked_response_text(response)
@@ -48,7 +48,7 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
 
 
 async def test_show_leaders(pymash_engine, test_client):
-    app = _create_app()
+    app = main.create_app()
     _add_repos_for_test_show_leaders(pymash_engine)
     # TODO(aershov182): change assertions when we'll have a real markup
     text = await _get_text(app, test_client, '/leaders')
@@ -106,7 +106,7 @@ def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black
      }, False),
 ])
 async def test_post_game(data, is_success, test_client, monkeypatch):
-    app = _create_app()
+    app = main.create_app()
     sqs_resource_mock = _sqs_resource_mock()
     games_queue_mock = await sqs_resource_mock.get_queue_by_name('some_name')
     app.on_startup.append(functools.partial(monkeypatch.setitem, name='sqs_resource', value=sqs_resource_mock))
@@ -138,9 +138,9 @@ def _make_future_with_result(result):
 
 
 def _add_repos_for_test_show_leaders(pymash_engine):
-    _add_some_repo_with_rating(pymash_engine, 1001, 1801, is_active=True)
-    _add_some_repo_with_rating(pymash_engine, 1002, 1901, is_active=True)
-    _add_some_repo_with_rating(pymash_engine, 1003, 2001, is_active=False)
+    _add_some_repo_with_rating(pymash_engine, github_id=1001, rating=1801, is_active=True)
+    _add_some_repo_with_rating(pymash_engine, github_id=1002, rating=1901, is_active=True)
+    _add_some_repo_with_rating(pymash_engine, github_id=1003, rating=2001, is_active=False)
 
 
 async def _get_text(app, test_client, path) -> str:
@@ -160,26 +160,16 @@ async def _post_text(app, test_client, path, data=None) -> str:
 
 async def _post(app, test_client, path, allow_redirects=True, data=None) -> aiohttp.client.ClientResponse:
     client = await test_client(app)
-    return await client.post(path,
-                             allow_redirects=allow_redirects,
-                             data=data)
+    return await client.post(
+        path,
+        allow_redirects=allow_redirects,
+        data=data)
 
 
 async def _get_checked_response_text(resp):
     text = await resp.text()
     resp.raise_for_status()
     return text
-
-
-def _create_app():
-    app = main.create_app()
-    return app
-
-
-async def _clean_tables(app):
-    async with app['db_engine'].acquire() as conn:
-        for table in [Games, Functions, Repos]:
-            await conn.execute(table.delete())
 
 
 def _add_some_repo_with_rating(pymash_engine, github_id, rating, is_active):
