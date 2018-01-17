@@ -1,5 +1,6 @@
 import asyncio
 import collections
+import functools
 import random
 from unittest import mock
 
@@ -108,8 +109,7 @@ async def test_post_game(data, is_success, test_client, monkeypatch):
     app = _create_app()
     sqs_resource_mock = _sqs_resource_mock()
     games_queue_mock = await sqs_resource_mock.get_queue_by_name('some_name')
-    app.on_startup.append(
-        lambda app_: monkeypatch.setitem(app_, 'sqs_resource', sqs_resource_mock))
+    app.on_startup.append(functools.partial(monkeypatch.setitem, name='sqs_resource', value=sqs_resource_mock))
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
                            data=data)
