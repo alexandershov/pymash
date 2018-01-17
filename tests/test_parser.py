@@ -20,7 +20,7 @@ _EXPECTED_RESULT = [
 @pytest.mark.parametrize('source_code, expected_functions', [
     # normal case
     (
-            '''\
+            '''
             def add(x, y):
                 return x + y
             ''',
@@ -28,7 +28,7 @@ _EXPECTED_RESULT = [
     ),
     # ignore comments after a function
     (
-            '''\
+            '''
             def add(x, y):
                 return x + y
                 # some useless comment
@@ -40,7 +40,7 @@ _EXPECTED_RESULT = [
     ),
     # # method
     (
-            '''\
+            '''
             class Number:
                 def add(self, other):
                     return self.x + other.x
@@ -60,7 +60,7 @@ _EXPECTED_RESULT = [
     ),
     # we refuse to parse one function
     (
-            '''\
+            '''
             def sub(x, y):
                 """multiline docstring with 
                 \''' single quotes"""
@@ -73,7 +73,7 @@ _EXPECTED_RESULT = [
     ),
     # async function
     (
-            '''\
+            '''
                 async def add(self, other):
                     return self.x + (await other.x)
             ''',
@@ -100,7 +100,7 @@ _EXPECTED_RESULT = [
     ),
     # docstring is cut
     (
-            '''\
+            '''
             def add(x, y):
                 """some docstring."""
                 return x + y
@@ -109,7 +109,7 @@ _EXPECTED_RESULT = [
     ),
     # multiline double quotes docstring is cut
     (
-            '''\
+            '''
             def add(x, y):
                 """some
                 multiline
@@ -120,7 +120,7 @@ _EXPECTED_RESULT = [
     ),
     # multiline single quotes docstring is cut
     (
-            """\
+            """
             def add(x, y):
                 '''some
                 multiline
@@ -131,7 +131,7 @@ _EXPECTED_RESULT = [
     ),
     # we don't touch literals in body (single quotes docstring)
     (
-            """\
+            """
             def add(x, y):
                 '''some
                 multiline
@@ -155,7 +155,7 @@ _EXPECTED_RESULT = [
     ),
     # we don't touch literals in body (double quotes docstring)
     (
-            '''\
+            '''
             def add(x, y):
                 """some
                 multiline
@@ -189,14 +189,15 @@ _EXPECTED_RESULT = [
     ),
 ])
 def test_get_functions(source_code, expected_functions):
-    actual_functions = parser.get_functions(io.StringIO(textwrap.dedent(source_code)), catch_exceptions=True)
+    fileobj = io.StringIO(textwrap.dedent(source_code))
+    actual_functions = parser.get_functions(fileobj, catch_exceptions=True)
     assert actual_functions == expected_functions
 
 
 @pytest.mark.parametrize('source_code, expected_exception', [
     # we refuse to parse functions with only docstrings
     (
-            '''\
+            '''
             def add(x, y):
                 "Add two numbers"
             ''',
@@ -205,7 +206,7 @@ def test_get_functions(source_code, expected_functions):
     # we refuse to parse multiline docstrings with inner triple double quotes:
     # it's hard to do with regexes and it's very rare case anyway
     (
-            '''\
+            '''
             def add(x, y):
                 """some
                 \\"""multiline
@@ -216,7 +217,7 @@ def test_get_functions(source_code, expected_functions):
     ),
     # we refuse to parse multiline docstrings with quoted inner double quotes: rare case
     (
-            '''\
+            '''
             def add(x, y):
                 """some
                 \\"""
@@ -229,7 +230,7 @@ def test_get_functions(source_code, expected_functions):
     # we refuse to parse multiline docstrings with inner triple single quotes:
     # it's hard to do with regexes and it's very rare case anyway
     (
-            """\
+            """
             def add(x, y):
                 '''some
                 \\'''multiline
@@ -240,7 +241,7 @@ def test_get_functions(source_code, expected_functions):
     ),
     # we refuse to parse multiline docstrings with quoted inner single quotes: rare case
     (
-            """\
+            """
             def add(x, y):
                 '''some
                 \\'''
@@ -256,7 +257,7 @@ def test_get_functions_failure(source_code, expected_exception):
         parser.get_functions(io.StringIO(textwrap.dedent(source_code)))
 
 
-def test_get_functions_decode_failure():
+def test_get_functions_catch_decode_error():
     # noinspection PyTypeChecker
     fileobj = io.TextIOWrapper(io.BytesIO('тест'.encode('cp1251')), encoding='utf-8')
     assert parser.get_functions(fileobj, catch_exceptions=True) == []
