@@ -97,7 +97,8 @@ def _assert_game_saved(pymash_engine, game):
 
 def _assert_game_not_saved(pymash_engine, game):
     with pymash_engine.connect() as conn:
-        num_rows = conn.execute(Games.count().where(Games.c.game_id == game.game_id)).scalar()
+        num_games_query = Games.count().where(Games.c.game_id == game.game_id)
+        num_rows = conn.execute(num_games_query).scalar()
         assert num_rows == 0
 
 
