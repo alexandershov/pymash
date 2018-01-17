@@ -1,5 +1,6 @@
 import ast
 import copy
+import functools
 import itertools
 import math
 import numbers
@@ -41,6 +42,7 @@ class _SentinelNode:
         self.col_offset = 0
 
 
+@functools.total_ordering
 class _Position:
     @classmethod
     def from_ast_node(cls, node):
@@ -49,6 +51,15 @@ class _Position:
     def __init__(self, lineno: int, column: int) -> None:
         self.lineno = lineno
         self.column = column
+
+    def __eq__(self, other: '_Position') -> bool:
+        return self._as_tuple() == other._as_tuple()
+
+    def __lt__(self, other: '_Position') -> bool:
+        return self._as_tuple() < other._as_tuple()
+
+    def _as_tuple(self):
+        return self.lineno, self.column
 
 
 class Function:
@@ -283,13 +294,4 @@ def _check_and_cut_multiline_docstring(match) -> str:
 
 def _is_position_inside(pos: _Position, begin: _Position, end: _Position) -> bool:
     assert end.lineno >= begin.lineno
-    if pos.lineno > end.lineno or pos.lineno < begin.lineno:
-        return False
-    if end.lineno == begin.lineno:
-        return begin.column <= pos.column < end.column
-    if pos.lineno == begin.lineno:
-        return pos.column >= begin.column
-    elif pos.lineno == end.lineno:
-        return pos.column < end.column
-    else:
-        return True
+    return begin <= pos < end
