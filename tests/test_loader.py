@@ -16,9 +16,9 @@ from pymash import parser
 from pymash.tables import *
 
 
-def test_load_most_popular(pymash_engine, github_mock, random_sample_mock, monkeypatch):
+def test_load_most_popular(pymash_engine, github_mock, monkeypatch):
     monkeypatch.setattr(github, 'Github', github_mock)
-    monkeypatch.setattr(random, 'sample', random_sample_mock)
+    monkeypatch.setattr(random, 'sample', _mock_random_sample)
 
     _add_data(pymash_engine)
     loader.load_most_popular(
@@ -31,19 +31,13 @@ def test_load_most_popular(pymash_engine, github_mock, random_sample_mock, monke
     _assert_functions_were_loaded(pymash_engine)
 
 
-@pytest.fixture(name='random_sample_mock')
-def fixture_random_sample():
-    orig_random_sample = random.sample
-
-    def _mock_random_sample(population, k):
-        if len(population) == k:
-            return orig_random_sample(population, k)
-        assert len(population) == k + 1
-        result = [a_function for a_function in population if a_function.name != 'zzz']
-        assert len(result) == len(population) - 1
-        return result
-
-    return _mock_random_sample
+def _mock_random_sample(population, k):
+    if len(population) == k:
+        return population
+    assert len(population) == k + 1
+    result = [a_function for a_function in population if a_function.name != 'zzz']
+    assert len(result) == len(population) - 1
+    return result
 
 
 @pytest.fixture(name='github_mock')
