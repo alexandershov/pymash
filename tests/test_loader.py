@@ -83,6 +83,14 @@ def fixture_github_mock():
 
 
 @pytest.mark.parametrize('source_code, expected_names', [
+    # normal case
+    (
+            '''
+            def add(x, y): 
+                return x + y
+            ''',
+            ['add'],
+    ),
     # we ignore functions with bad names
     (
             '''
