@@ -5,6 +5,7 @@ from unittest import mock
 import boto3
 import pytest
 
+from pymash import db
 from pymash import events
 from pymash import models
 from pymash.scripts import process_finished_games
@@ -15,29 +16,31 @@ from pymash.tables import *
 def test_process_game_finished_event(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    _call_process_finished_games()
-    _check_game_and_repos(pymash_engine, game)
+
+    _process_and_check_finished_games(pymash_engine, game)
 
 
 @pytest.mark.usefixtures('add_functions_and_repos')
 def test_process_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    _call_process_finished_games()
-    _check_game_and_repos(pymash_engine, game)
-    _call_process_finished_games()
-    _check_game_and_repos(pymash_engine, game)
+
+    _process_and_check_finished_games(pymash_engine, game)
+    _process_and_check_finished_games(pymash_engine, game)
 
 
 @pytest.mark.usefixtures('add_functions_and_repos')
 def test_process_different_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
-    _call_process_finished_games()
-    _check_game_and_repos(pymash_engine, game)
+    _process_and_check_finished_games(pymash_engine, game)
 
     changed_game = _get_game(result=models.WHITE_WINS_RESULT)
     _monkeypatch_boto3(monkeypatch, [changed_game])
+    _process_and_check_finished_games(pymash_engine, game)
+
+
+def _process_and_check_finished_games(pymash_engine, game):
     _call_process_finished_games()
     _check_game_and_repos(pymash_engine, game)
 
@@ -85,13 +88,11 @@ def _assert_repo_has_rating(pymash_engine, repo_id, expected_rating):
 
 
 def _assert_game_saved(pymash_engine, game):
-    with pymash_engine.connect() as conn:
-        row = conn.execute(Games.select().where(Games.c.game_id == game.game_id)).first()
-    assert row[Games.c.game_id] == game.game_id
-    assert row[Games.c.white_id] == game.white_id
-    assert row[Games.c.black_id] == game.black_id
-    assert row[Games.c.white_score] == game.result.white_score
-    assert row[Games.c.black_score] == game.result.black_score
+    game_from_db = db.find_game_by_id(pymash_engine, game.game_id)
+    assert game_from_db.game_id == game.game_id
+    assert game_from_db.white_id == game.white_id
+    assert game_from_db.black_id == game.black_id
+    assert game_from_db.result == game.result
 
 
 def _assert_game_not_saved(pymash_engine, game):
