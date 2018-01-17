@@ -16,9 +16,37 @@ from pymash import parser
 from pymash.tables import *
 
 
-def test_load_most_popular(pymash_engine, monkeypatch):
-    archive_with_two_functions = mock.Mock(return_value=_make_data_dir_path('repo_with_three_functions.py.zip'))
-    archive_with_three_functions = mock.Mock(return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
+def test_load_most_popular(pymash_engine, github_mock, monkeypatch):
+    monkeypatch.setattr(github, 'Github', github_mock)
+    orig_random_sample = random.sample
+
+    def _mock_random_sample(population, k):
+        if len(population) == k:
+            return orig_random_sample(population, k)
+        assert len(population) == k + 1
+        result = [a_function for a_function in population if a_function.name != 'zzz']
+        assert len(result) == len(population) - 1
+        return result
+
+    monkeypatch.setattr(random, 'sample', _mock_random_sample)
+
+    _add_data(pymash_engine)
+    loader.load_most_popular(
+        pymash_engine, 'python', 1000,
+        whitelisted_full_names={'alexandershov/pymash'},
+        blacklisted_full_names={'isocpp/CppCoreGuidelines'},
+        concurrency=2,
+    )
+    _assert_repo_was_loaded(pymash_engine)
+    _assert_functions_were_loaded(pymash_engine)
+
+
+@pytest.fixture(name='github_mock')
+def fixture_github_mock():
+    archive_with_two_functions = mock.Mock(
+        return_value=_make_data_dir_path('repo_with_three_functions.py.zip'))
+    archive_with_three_functions = mock.Mock(
+        return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
     github_client_repos = [
         _make_mock(
             id=1001,
@@ -52,28 +80,7 @@ def test_load_most_popular(pymash_engine, monkeypatch):
     github_mock = mock.Mock()
     github_mock.return_value.search_repositories.return_value = github_client_repos
     github_mock.return_value.get_repo.return_value = pymash_mock
-    monkeypatch.setattr(github, 'Github', github_mock)
-    orig_random_sample = random.sample
-
-    def _mock_random_sample(population, k):
-        if len(population) == k:
-            return orig_random_sample(population, k)
-        assert len(population) == k + 1
-        result = [a_function for a_function in population if a_function.name != 'zzz']
-        assert len(result) == len(population) - 1
-        return result
-
-    monkeypatch.setattr(random, 'sample', _mock_random_sample)
-
-    _add_data(pymash_engine)
-    loader.load_most_popular(
-        pymash_engine, 'python', 1000,
-        whitelisted_full_names={'alexandershov/pymash'},
-        blacklisted_full_names={'isocpp/CppCoreGuidelines'},
-        concurrency=2,
-    )
-    _assert_repo_was_loaded(pymash_engine)
-    _assert_functions_were_loaded(pymash_engine)
+    return github_mock
 
 
 @pytest.mark.parametrize('source_code, expected_names', [
@@ -244,7 +251,8 @@ def _assert_functions_were_loaded(pymash_engine):
 
 def _find_functions_with_repo_name(conn, repo_name):
     return list(conn.execute(
-        Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id, Repos.c.name == repo_name)).select()))
+        Functions.join(Repos, sa.and_(Functions.c.repo_id == Repos.c.repo_id,
+                                      Repos.c.name == repo_name)).select()))
 
 
 def _group_by_text(functions: tp.List[models.Function]):
