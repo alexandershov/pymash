@@ -23,6 +23,11 @@ class _RepoDbModel(Base):
     url = sa.Column(sa.Text, nullable=False)
     is_active = sa.Column(sa.Boolean, nullable=False)
     rating = sa.Column(sa.Float, nullable=False)
+    # TODO(aershov182): dry created definition in all tables
+    created = sa.Column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.current_timestamp(),
+        nullable=False)
 
     __table_args__ = (
         sa.Index(
@@ -42,6 +47,10 @@ class _FunctionDbModel(Base):
     text = sa.Column(sa.Text, nullable=False)
     is_active = sa.Column(sa.Boolean, nullable=False)
     random = sa.Column(sa.Float, server_default=sa.func.random(), nullable=False, index=True)
+    created = sa.Column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.current_timestamp(),
+        nullable=False)
 
     __table_args__ = (
         sa.Index(
@@ -65,6 +74,10 @@ class _GameDbModel(Base):
     black_id = sa.Column(sa.ForeignKey(Functions.c.function_id), nullable=False)
     white_score = sa.Column(sa.Integer, nullable=False)
     black_score = sa.Column(sa.Integer, nullable=False)
+    created = sa.Column(
+        sa.DateTime(timezone=True),
+        server_default=sa.func.current_timestamp(),
+        nullable=False)
 
 
 Games = _GameDbModel.__table__
