@@ -4,12 +4,14 @@ from sqlalchemy import event
 
 __all__ = ['Repos', 'Functions', 'Games']
 
+# noinspection SqlNoDataSourceInspection
 _TRIGGER_TEMPLATE = (
-    '''CREATE FUNCTION set_updated_{table_name}()                                                                           returns trigger as $$
+    '''CREATE FUNCTION set_updated_{table_name}()                                                                          
+       RETURNS TRIGGER AS $$
        BEGIN
          NEW.updated = current_timestamp;
          return NEW;
-       END $$ language 'plpgsql';
+       END $$ LANGUAGE 'plpgsql';
     '''
     'CREATE TRIGGER set_updated BEFORE INSERT OR UPDATE ON {table_name} '
     'FOR EACH ROW EXECUTE PROCEDURE set_updated_{table_name}()')
@@ -57,6 +59,7 @@ class _RepoDbModel(_CreatedUpdatedMixin, Base):
     )
 
 
+# noinspection PyTypeChecker
 Repos = _get_table_with_trigger(_RepoDbModel)
 
 
@@ -80,6 +83,7 @@ class _FunctionDbModel(_CreatedUpdatedMixin, Base):
     )
 
 
+# noinspection PyTypeChecker
 Functions = _get_table_with_trigger(_FunctionDbModel)
 
 
@@ -92,4 +96,5 @@ class _GameDbModel(_CreatedUpdatedMixin, Base):
     black_score = sa.Column(sa.Integer, nullable=False)
 
 
+# noinspection PyTypeChecker
 Games = _get_table_with_trigger(_GameDbModel)
