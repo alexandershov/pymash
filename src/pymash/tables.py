@@ -1,5 +1,6 @@
 import sqlalchemy as sa
 from sqlalchemy.ext import declarative
+from sqlalchemy import event
 
 __all__ = ['Repos', 'Functions', 'Games']
 
@@ -13,6 +14,16 @@ def get_index_by_name(table, name):
 
 Base = declarative.declarative_base()
 
+_TRIGGER_TEMPLATE = (
+    '''CREATE FUNCTION set_updated_{table_name}()                                                                           returns trigger as $$
+       BEGIN
+         NEW.updated = current_timestamp;
+         return NEW;
+       END $$ language 'plpgsql';
+    '''
+    'CREATE TRIGGER set_updated BEFORE INSERT OR UPDATE ON {table_name} '
+    'FOR EACH ROW EXECUTE PROCEDURE set_updated_{table_name}()')
+
 
 # TODO: add created/updated attributes to all tables
 class _RepoDbModel(Base):
@@ -23,11 +34,12 @@ class _RepoDbModel(Base):
     url = sa.Column(sa.Text, nullable=False)
     is_active = sa.Column(sa.Boolean, nullable=False)
     rating = sa.Column(sa.Float, nullable=False)
-    # TODO(aershov182): dry created definition in all tables
+    # TODO(aershov182): dry created/updated definition in all tables
     created = sa.Column(
         sa.DateTime(timezone=True),
         server_default=sa.func.current_timestamp(),
         nullable=False)
+    updated = sa.Column(sa.DateTime(timezone=True), nullable=False)
 
     __table_args__ = (
         sa.Index(
@@ -38,6 +50,10 @@ class _RepoDbModel(Base):
 
 
 Repos = _RepoDbModel.__table__
+
+repos_trigger = sa.DDL(
+    _TRIGGER_TEMPLATE.format(table_name='repos'))
+event.listen(Repos, 'after_create', repos_trigger)
 
 
 class _FunctionDbModel(Base):
@@ -51,6 +67,7 @@ class _FunctionDbModel(Base):
         sa.DateTime(timezone=True),
         server_default=sa.func.current_timestamp(),
         nullable=False)
+    updated = sa.Column(sa.DateTime(timezone=True), nullable=False)
 
     __table_args__ = (
         sa.Index(
@@ -65,6 +82,9 @@ class _FunctionDbModel(Base):
 
 
 Functions = _FunctionDbModel.__table__
+functions_trigger = sa.DDL(
+    _TRIGGER_TEMPLATE.format(table_name='functions'))
+event.listen(Functions, 'after_create', functions_trigger)
 
 
 class _GameDbModel(Base):
@@ -78,6 +98,10 @@ class _GameDbModel(Base):
         sa.DateTime(timezone=True),
         server_default=sa.func.current_timestamp(),
         nullable=False)
+    updated = sa.Column(sa.DateTime(timezone=True), nullable=False)
 
 
 Games = _GameDbModel.__table__
+games_trigger = sa.DDL(
+    _TRIGGER_TEMPLATE.format(table_name='games'))
+event.listen(Games, 'after_create', games_trigger)
