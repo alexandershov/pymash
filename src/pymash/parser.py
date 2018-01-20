@@ -14,6 +14,7 @@ _MULTILINE_DOUBLE_QUOTES_DOCSTRING_RE = re.compile(r'[ \t]*"""(?P<docstring>.*?)
 _MULTILINE_SINGLE_QUOTES_DOCSTRING_RE = re.compile(r"[ \t]*'''(?P<docstring>.*?)'''\n", re.DOTALL)
 
 _COMMENT_LINE_RE = re.compile('^\s*#')
+_BAD_CLASS_NAME_RE = re.compile('test', re.IGNORECASE)
 
 
 class BaseError(Exception):
@@ -144,9 +145,14 @@ def _iter_function_nodes_with_next(nodes: tp.Iterable) -> tp.Iterable[tp.Tuple]:
         if isinstance(cur_node, (ast.FunctionDef, ast.AsyncFunctionDef)):
             yield cur_node, next_node
         elif isinstance(cur_node, ast.ClassDef):
-            class_nodes = itertools.chain(cur_node.body, [next_node])
-            yield from _iter_function_nodes_with_next(class_nodes)
+            if _is_good_class_name(cur_node.name):
+                class_nodes = itertools.chain(cur_node.body, [next_node])
+                yield from _iter_function_nodes_with_next(class_nodes)
     return result
+
+
+def _is_good_class_name(name):
+    return _BAD_CLASS_NAME_RE.search(name) is None
 
 
 def _iter_by_pairs(iterable: tp.Iterable) -> tp.Iterable:

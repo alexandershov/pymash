@@ -169,6 +169,15 @@ def fixture_github_mock():
             ''',
             []
     ),
+    # we ignore functions inside of the classes with the test in it
+    (
+            '''class TestCase(unittest.TestCase):
+                    def setUp(self):
+                        self.x = x
+                        self.y = y
+            ''',
+            []
+    ),
 ])
 def test_select_good_functions(source_code, expected_names, monkeypatch):
     monkeypatch.setattr(loader.Selector, 'MIN_NUM_STATEMENTS', 2)
