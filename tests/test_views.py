@@ -1,6 +1,5 @@
 import asyncio
 import collections
-import functools
 import random
 from unittest import mock
 
@@ -107,9 +106,8 @@ def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black
 ])
 async def test_post_game(data, is_success, test_client, monkeypatch):
     app = main.create_app()
-    sqs_resource_mock = _sqs_resource_mock()
-    games_queue_mock = await sqs_resource_mock.get_queue_by_name('some_name')
-    app.on_startup.append(functools.partial(monkeypatch.setitem, name='sqs_resource', value=sqs_resource_mock))
+    games_queue_mock = await _monkeypatch_sqs(app, monkeypatch)
+
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
                            data=data)
@@ -120,6 +118,24 @@ async def test_post_game(data, is_success, test_client, monkeypatch):
     else:
         assert response.status == 400
         games_queue_mock.send_message.assert_not_called()
+
+
+async def _monkeypatch_sqs(app, monkeypatch):
+    sqs_resource_mock = _sqs_resource_mock()
+    games_queue_mock = await sqs_resource_mock.get_queue_by_name('some_name')
+    app.on_startup.append(_SqsAppMock(monkeypatch, sqs_resource_mock))
+    return games_queue_mock
+
+
+class _SqsAppMock:
+    def __init__(self, monkeypatch, sqs_resource_mock):
+        self._monkeypatch = monkeypatch
+        self._sqs_resource_mock = sqs_resource_mock
+
+    async def __call__(self, app):
+        # close real sqs_resource to avoid "Unclosed client session" errors
+        await app['sqs_resource'].close()
+        self._monkeypatch.setitem(app, 'sqs_resource', self._sqs_resource_mock)
 
 
 def _sqs_resource_mock():
@@ -158,7 +174,8 @@ async def _post_text(app, test_client, path, data=None) -> str:
     return await _get_checked_response_text(resp)
 
 
-async def _post(app, test_client, path, allow_redirects=True, data=None) -> aiohttp.client.ClientResponse:
+async def _post(app, test_client, path, allow_redirects=True,
+                data=None) -> aiohttp.client.ClientResponse:
     client = await test_client(app)
     return await client.post(
         path,
