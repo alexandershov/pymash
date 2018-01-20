@@ -121,6 +121,7 @@ def fixture_github_mock():
                 # 1
                 # 2
                 # 3
+                x += 1
                 return x + y
             ''',
             [],
@@ -149,6 +150,14 @@ def fixture_github_mock():
                 return (
                     x + y
                 )
+            ''',
+            []
+    ),
+    # we ignore functions with `raise NotImplementedError` (two spaces after raise are intentional)
+    (
+            '''def add(x, y):
+                x += 1
+                raise  NotImplementedError
             ''',
             []
     ),

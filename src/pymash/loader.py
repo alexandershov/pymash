@@ -30,6 +30,9 @@ class Selector:
     NUM_OF_FUNCTIONS_PER_REPO = 1000
 
 
+_NOT_IMPLEMENTED_RE = re.compile(r'raise\s+NotImplementedError')
+
+
 @utils.log_time(loggers.loader)
 def load_most_popular(
         engine: ta.Engine, language: str, limit: int,
@@ -187,6 +190,7 @@ def _is_bad_function(fn: parser.Function) -> bool:
         _has_too_few_statements,
         _has_too_long_line,
         _has_too_many_comment_lines,
+        _raises_not_implemented_error,
     ]
     if any(a_check(fn) for a_check in checks):
         return True
@@ -216,3 +220,7 @@ def _has_too_long_line(fn: parser.Function) -> bool:
 def _has_too_many_comment_lines(fn: parser.Function) -> bool:
     num_comment_lines = sum(1 for a_line in fn.lines if parser.is_comment_line(a_line))
     return num_comment_lines > Selector.MAX_NUM_COMMENT_LINES
+
+
+def _raises_not_implemented_error(fn: parser.Function) -> bool:
+    return _NOT_IMPLEMENTED_RE.search(fn.text) is not None
