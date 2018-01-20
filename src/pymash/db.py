@@ -172,6 +172,8 @@ def _upsert_one_active_function(conn, repo, fn: parser.Function) -> None:
     }
     update_data = {
         Functions.c.is_active.key: True,
+        Functions.c.file_name.key: fn.file_name,
+        Functions.c.line_number.key: fn.line_number,
     }
     index = tables.get_index_by_name(Functions, 'functions_repo_id_md5_text_unique_idx')
     statement = postgresql.insert(Functions).values(insert_data).on_conflict_do_update(

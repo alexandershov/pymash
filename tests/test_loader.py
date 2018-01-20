@@ -2,7 +2,6 @@ import io
 import os
 import random
 import textwrap
-import typing as tp
 from unittest import mock
 
 import github
@@ -291,20 +290,20 @@ def _assert_functions_were_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         all_rows = list(conn.execute(Functions.select()))
         _assert_grouped_functions(conn, 'django', {
-            'def add(x, y):\n    return x + y': True,
-            'def sub(x, y):\n    return x - y': True,
+            'def add(x, y):\n    return x + y': (True, 'file_with_two_functions.py'),
+            'def sub(x, y):\n    return x - y': (True, 'file_with_two_functions.py'),
         })
         _assert_grouped_functions(conn, 'flask', {
-            'def add(x, y):\n    return x + y': True,
-            'def sub(x, y):\n    return x - y': True,
-            'def mul(x, y):\n    return x * y': False,
+            'def add(x, y):\n    return x + y': (True, 'file_with_two_functions.py'),
+            'def sub(x, y):\n    return x - y': (True, 'file_with_two_functions.py'),
+            'def mul(x, y):\n    return x * y': (False, 'flask.py'),
         })
         _assert_grouped_functions(conn, 'pymash', {
-            'def add(x, y):\n    return x + y': True,
-            'def sub(x, y):\n    return x - y': True,
+            'def add(x, y):\n    return x + y': (True, 'file_with_two_functions.py'),
+            'def sub(x, y):\n    return x - y': (True, 'file_with_two_functions.py'),
         })
         _assert_grouped_functions(conn, 'requests', {
-            'def add(x, y):\n    return x + y': False,
+            'def add(x, y):\n    return x + y': (False, 'requests.py'),
         })
     assert len(all_rows) == 8
 
@@ -312,8 +311,7 @@ def _assert_functions_were_loaded(pymash_engine):
 def _assert_grouped_functions(conn, repo_name, _grouped_by_text):
     rows = _find_functions_with_repo_name(conn, repo_name)
     assert len(rows) == len(_grouped_by_text)
-    functions = list(map(db.make_function_from_db_row, rows))
-    assert _group_by_text(functions) == _grouped_by_text
+    assert _group_by_text(rows) == _grouped_by_text
 
 
 def _find_functions_with_repo_name(conn, repo_name):
@@ -322,12 +320,19 @@ def _find_functions_with_repo_name(conn, repo_name):
                                       Repos.c.name == repo_name)).select()))
 
 
-def _group_by_text(functions: tp.List[models.Function]):
-    assert len({a_function.text for a_function in functions}) == len(functions)
+def _group_by_text(function_rows):
+    assert len({row.text for row in function_rows}) == len(function_rows)
     return {
-        a_function.text: a_function.is_active
-        for a_function in functions
+        row[Functions.c.text]: _get_function_info(row)
+        for row in function_rows
     }
+
+
+def _get_function_info(function_row):
+    return (
+        function_row[Functions.c.is_active],
+        os.path.basename(function_row[Functions.c.file_name]),
+    )
 
 
 def _make_data_dir_path(relative_name):
