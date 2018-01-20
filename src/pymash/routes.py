@@ -6,6 +6,7 @@ from pymash import views
 
 
 def setup_routes(app: web.Application):
+    app.router.add_get('/', views.show_game, name='new_game')
     app.router.add_get('/game', views.show_game, name='new_game')
 
     app.router.add_post('/game/{game_id}', views.post_game, name='post_game')
