@@ -80,7 +80,7 @@ def add_functions_and_repos(pymash_engine):
             Functions.c.text: 'def django(): return 1',
             Functions.c.is_active: True,
             Functions.c.random: 0.3,
-            Functions.c.file_name: 'django.py',
+            Functions.c.file_name: '/tmp/django/django.py',
             Functions.c.line_number: 100111,
         }))
         conn.execute(Functions.insert().values({
@@ -89,7 +89,7 @@ def add_functions_and_repos(pymash_engine):
             Functions.c.text: 'def flask(): return 2',
             Functions.c.is_active: True,
             Functions.c.random: 0.6,
-            Functions.c.file_name: 'flask.py',
+            Functions.c.file_name: '/tmp/flask/flask.py',
             Functions.c.line_number: 100222,
         }))
         conn.execute(Functions.insert().values({
@@ -98,7 +98,7 @@ def add_functions_and_repos(pymash_engine):
             Functions.c.text: 'def not_active_flask(): return 2',
             Functions.c.is_active: False,
             Functions.c.random: 0.5,
-            Functions.c.file_name: 'flask.py',
+            Functions.c.file_name: '/tmp/flask/flask.py',
             Functions.c.line_number: 100333,
         }))
 

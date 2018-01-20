@@ -208,7 +208,7 @@ def _add_data(pymash_engine):
             Functions.c.text: 'def add(x, y):\n    return x + y',
             Functions.c.is_active: True,
             Functions.c.random: 0.6,
-            Functions.c.file_name: 'flask.py',
+            Functions.c.file_name: '/tmp/flask/flask.py',
             Functions.c.line_number: 100333,
         }))
         conn.execute(Functions.insert().values({
@@ -217,7 +217,7 @@ def _add_data(pymash_engine):
             Functions.c.text: 'def mul(x, y):\n    return x * y',
             Functions.c.is_active: True,
             Functions.c.random: 0.7,
-            Functions.c.file_name: 'flask.py',
+            Functions.c.file_name: '/tmp/flask/flask.py',
             Functions.c.line_number: 100444,
         }))
         conn.execute(Repos.insert().values({
@@ -234,7 +234,7 @@ def _add_data(pymash_engine):
             Functions.c.text: 'def add(x, y):\n    return x + y',
             Functions.c.is_active: True,
             Functions.c.random: 0.8,
-            Functions.c.file_name: 'requests.py',
+            Functions.c.file_name: '/tmp/requests/requests.py',
             Functions.c.line_number: 100555,
         }))
 
