@@ -22,9 +22,7 @@ def _highlight(s, language='python'):
 
 def _highlight_with_css_class(text, language, css_class):
     formatter = pygments_html.HtmlFormatter(cssclass=css_class)
-    highlighted_text = pygments.highlight(
+    return pygments.highlight(
         text,
         pygments.lexers.get_lexer_by_name(language),
         formatter)
-    # TODO: can we do without strip?
-    return highlighted_text.strip()
