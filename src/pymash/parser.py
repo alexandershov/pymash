@@ -73,6 +73,10 @@ class Function:
         return self._node.name
 
     @property
+    def num_statements(self) -> int:
+        return len(self._node.body)
+
+    @property
     def lines(self) -> tp.List[str]:
         if self._cached_lines is None:
             self._cached_lines = self.text.splitlines()

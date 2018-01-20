@@ -144,14 +144,14 @@ def fixture_github_mock():
             [],
     ),
     # we ignore functions with too few statements
-    # (
-    #         '''def add(x, y):
-    #             return (
-    #                 x + y
-    #             )
-    #         ''',
-    #         []
-    # ),
+    (
+            '''def add(x, y):
+                return (
+                    x + y
+                )
+            ''',
+            []
+    ),
 ])
 def test_select_good_functions(source_code, expected_names, monkeypatch):
     monkeypatch.setattr(loader.Selector, 'MIN_NUM_STATEMENTS', 2)

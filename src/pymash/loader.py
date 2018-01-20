@@ -95,7 +95,8 @@ def _unzip_file(path: str, output_dir: str) -> None:
 
 @utils.log_time(
     loggers.loader,
-    lambda github_repos, concurrency: f'{len(github_repos)} github repos, concurrency {concurrency}')
+    lambda github_repos,
+           concurrency: f'{len(github_repos)} github repos, concurrency {concurrency}')
 def _load_many_github_repos(github_repos: ta.GithubRepos, concurrency: int) -> ta.Repos:
     loggers.loader.info(
         'will load %d github repos, concurrency %d', len(github_repos), concurrency)
@@ -183,6 +184,7 @@ def _is_bad_function(fn: parser.Function) -> bool:
         _has_bad_name,
         _is_too_short,
         _is_too_long,
+        _has_too_few_statements,
         _has_too_long_line,
         _has_too_many_comment_lines,
     ]
@@ -201,6 +203,10 @@ def _is_too_short(fn: parser.Function) -> bool:
 
 def _is_too_long(fn: parser.Function) -> bool:
     return len(fn.lines) > Selector.MAX_NUM_LINES
+
+
+def _has_too_few_statements(fn: parser.Function) -> bool:
+    return fn.num_statements < Selector.MIN_NUM_STATEMENTS
 
 
 def _has_too_long_line(fn: parser.Function) -> bool:
