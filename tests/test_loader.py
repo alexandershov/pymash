@@ -161,6 +161,14 @@ def fixture_github_mock():
             ''',
             []
     ),
+    # we ignore __init__ (to avoid having a boring function with a bunch of assignments)
+    (
+            '''def __init__(self, x, y):
+                self.x = x
+                self.y = y
+            ''',
+            []
+    ),
 ])
 def test_select_good_functions(source_code, expected_names, monkeypatch):
     monkeypatch.setattr(loader.Selector, 'MIN_NUM_STATEMENTS', 2)

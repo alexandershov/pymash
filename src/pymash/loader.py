@@ -191,6 +191,7 @@ def _is_bad_function(fn: parser.Function) -> bool:
         _has_too_long_line,
         _has_too_many_comment_lines,
         _raises_not_implemented_error,
+        _is_init_method,
     ]
     if any(a_check(fn) for a_check in checks):
         return True
@@ -224,3 +225,7 @@ def _has_too_many_comment_lines(fn: parser.Function) -> bool:
 
 def _raises_not_implemented_error(fn: parser.Function) -> bool:
     return _NOT_IMPLEMENTED_RE.search(fn.text) is not None
+
+
+def _is_init_method(fn: parser.Function) -> bool:
+    return fn.name == '__init__'
