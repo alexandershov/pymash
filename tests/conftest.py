@@ -44,6 +44,7 @@ def _set_loader_selector_params(monkeypatch):
     monkeypatch.setattr(loader.Selector, 'MAX_NUM_COMMENT_LINES', 2)
     monkeypatch.setattr(loader.Selector, 'MAX_NUM_LINES', 7)
     monkeypatch.setattr(loader.Selector, 'MIN_NUM_LINES', 2)
+    monkeypatch.setattr(loader.Selector, 'MIN_NUM_STATEMENTS', 1)
     monkeypatch.setattr(loader.Selector, 'NUM_OF_FUNCTIONS_PER_REPO', 2)
 
 

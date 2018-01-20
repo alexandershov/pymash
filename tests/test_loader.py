@@ -87,6 +87,7 @@ def fixture_github_mock():
     (
             '''
             def add(x, y): 
+                x += 1
                 return x + y
             ''',
             ['add'],
@@ -95,9 +96,11 @@ def fixture_github_mock():
     (
             '''
             def teSt_add(x, y):
+                x += 1
                 assert x == y
                 
             def assErt_equal(x, y):
+                x += 1
                 assert_equal(x, y)
             ''',
             [],
@@ -137,11 +140,12 @@ def fixture_github_mock():
     ),
     # we ignore functions with too few lines
     (
-            '''def add(x, y): return x + y''',
+            '''def add(x, y): x += 1; return x + y''',
             [],
     ),
 ])
-def test_select_good_functions(source_code, expected_names):
+def test_select_good_functions(source_code, expected_names, monkeypatch):
+    monkeypatch.setattr(loader.Selector, 'MIN_NUM_STATEMENTS', 2)
     functions = parser.get_functions(io.StringIO(textwrap.dedent(source_code)))
     good_functions = loader.select_good_functions(functions)
     actual_names = {a_function.name for a_function in good_functions}
