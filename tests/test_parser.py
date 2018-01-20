@@ -1,3 +1,4 @@
+import ast
 import io
 import textwrap
 
@@ -5,15 +6,21 @@ import pytest
 
 from pymash import parser
 
+
+def _make_function(text):
+    text = textwrap.dedent(text)
+    parsed = ast.parse(text)
+    assert len(parsed.body) == 1
+    fn_node = parsed.body[0]
+    return parser.Function(fn_node, text)
+
+
 _EXPECTED_RESULT = [
-    parser.Function(
-        name='add',
-        text=textwrap.dedent(
-            '''\
-            def add(x, y):
-                return x + y'''
-        )
-    ),
+    _make_function(
+        '''\
+        def add(x, y):
+            return x + y'''
+    )
 ]
 
 
@@ -48,13 +55,10 @@ _EXPECTED_RESULT = [
             import this
             ''',
             [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        def add(self, other):
-                            return self.x + other.x'''
-                    )
+                _make_function(
+                    '''\
+                    def add(self, other):
+                        return self.x + other.x'''
                 ),
             ]
     ),
@@ -78,13 +82,10 @@ _EXPECTED_RESULT = [
                     return self.x + (await other.x)
             ''',
             [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        async def add(self, other):
-                            return self.x + (await other.x)'''
-                    )
+                _make_function(
+                    '''\
+                    async def add(self, other):
+                        return self.x + (await other.x)'''
                 ),
             ]
     ),
@@ -92,8 +93,7 @@ _EXPECTED_RESULT = [
     (
             '''def add(x, y): return x + y''',
             [
-                parser.Function(
-                    name='add',
+                _make_function(
                     text='''def add(x, y): return x + y'''
                 )
             ]
@@ -141,15 +141,12 @@ _EXPECTED_RESULT = [
                 return x + y
             """,
             [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        def add(x, y):
-                            s = \"""
-                                some string\"""
-                            return x + y'''
-                    )
+                _make_function(
+                    '''\
+                    def add(x, y):
+                        s = \"""
+                            some string\"""
+                        return x + y'''
                 )
             ]
     ),
@@ -165,15 +162,12 @@ _EXPECTED_RESULT = [
                 return x + y
             ''',
             [
-                parser.Function(
-                    name='add',
-                    text=textwrap.dedent(
-                        '''\
-                        def add(x, y):
-                            s = \'''
-                                some string\'''
-                            return x + y'''
-                    )
+                _make_function(
+                    '''\
+                    def add(x, y):
+                        s = \'''
+                            some string\'''
+                        return x + y'''
                 )
             ]
     ),

@@ -63,10 +63,14 @@ class _Position:
 
 
 class Function:
-    def __init__(self, name: str, text: str) -> None:
-        self.name = name
+    def __init__(self, node, text: str) -> None:
+        self._node = node
         self.text = text
         self._cached_lines = None
+
+    @property
+    def name(self):
+        return self._node.name
 
     @property
     def lines(self) -> tp.List[str]:
@@ -113,7 +117,7 @@ def _get_functions_from_str(
             if not catch_exceptions:
                 raise
         else:
-            functions.append(Function(fn_node.name, text))
+            functions.append(Function(fn_node, text))
     return functions
 
 
