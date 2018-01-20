@@ -142,14 +142,9 @@ def _get_functions_from_directory(
     with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
         py_files = _find_files(dir_path, 'py')
         for a_file in py_files:
-            functions.update(_get_functions_from_file(a_file))
+            functions.update(parser.get_functions(a_file, catch_exceptions=True))
     loggers.loader.info(f'found %d distinct functions in %d files', len(functions), len(py_files))
     return functions
-
-
-def _get_functions_from_file(file_path):
-    with open(file_path, encoding='utf-8') as fileobj:
-        return parser.get_functions(fileobj, catch_exceptions=True)
 
 
 def _select_functions_to_update(functions: tp.Set[parser.Function]) -> ta.ParserFunctions:

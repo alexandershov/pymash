@@ -185,7 +185,8 @@ def fixture_github_mock():
 ])
 def test_select_good_functions(source_code, expected_names, monkeypatch):
     monkeypatch.setattr(loader.Selector, 'MIN_NUM_STATEMENTS', 2)
-    functions = parser.get_functions(io.StringIO(textwrap.dedent(source_code)))
+    functions = parser.get_functions_from_fileobj(
+        io.StringIO(textwrap.dedent(source_code)), 'file.py')
     good_functions = loader.select_good_functions(functions)
     actual_names = {a_function.name for a_function in good_functions}
     assert actual_names == set(expected_names)
@@ -208,6 +209,8 @@ def _add_data(pymash_engine):
             Functions.c.text: 'def add(x, y):\n    return x + y',
             Functions.c.is_active: True,
             Functions.c.random: 0.6,
+            Functions.c.file_name: 'flask.py',
+            Functions.c.line_number: 100333,
         }))
         conn.execute(Functions.insert().values({
             Functions.c.function_id: 888,
@@ -215,6 +218,8 @@ def _add_data(pymash_engine):
             Functions.c.text: 'def mul(x, y):\n    return x * y',
             Functions.c.is_active: True,
             Functions.c.random: 0.7,
+            Functions.c.file_name: 'flask.py',
+            Functions.c.line_number: 100444,
         }))
         conn.execute(Repos.insert().values({
             Repos.c.repo_id: -5,
@@ -230,6 +235,8 @@ def _add_data(pymash_engine):
             Functions.c.text: 'def add(x, y):\n    return x + y',
             Functions.c.is_active: True,
             Functions.c.random: 0.8,
+            Functions.c.file_name: 'requests.py',
+            Functions.c.line_number: 100555,
         }))
 
 

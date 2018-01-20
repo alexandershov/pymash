@@ -70,6 +70,8 @@ class _FunctionDbModel(_CreatedUpdatedMixin, Base):
     text = sa.Column(sa.Text, nullable=False)
     is_active = sa.Column(sa.Boolean, nullable=False)
     random = sa.Column(sa.Float, server_default=sa.func.random(), nullable=False, index=True)
+    file_name = sa.Column(sa.Text, nullable=False)
+    line_number = sa.Column(sa.BigInteger, nullable=False)
 
     __table_args__ = (
         sa.Index(

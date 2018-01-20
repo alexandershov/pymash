@@ -64,10 +64,15 @@ class _Position:
 
 
 class Function:
-    def __init__(self, node, text: str) -> None:
+    def __init__(self, node, text: str, file_name: str) -> None:
         self._node = node
         self.text = text
+        self.file_name = file_name
         self._cached_lines = None
+
+    @property
+    def line_number(self) -> int:
+        return self._node.lineno
 
     @property
     def name(self):
@@ -95,18 +100,24 @@ class Function:
         return f'{cls_name}(name={self.name!r}, text={self.text!r})'
 
 
-def get_functions(fileobj, catch_exceptions: bool = False) -> tp.List[Function]:
+def get_functions(path: str, catch_exceptions: bool = False) -> tp.List[Function]:
+    with open(path, encoding='utf-8') as fileobj:
+        return get_functions_from_fileobj(fileobj, path, catch_exceptions=catch_exceptions)
+
+
+def get_functions_from_fileobj(
+        fileobj, file_name: str, catch_exceptions: bool = False) -> tp.List[Function]:
     try:
         source_code = fileobj.read()
     except UnicodeDecodeError:
         if not catch_exceptions:
             raise
         return []
-    return _get_functions_from_str(source_code, catch_exceptions=catch_exceptions)
+    return _get_functions_from_str(source_code, file_name, catch_exceptions=catch_exceptions)
 
 
 def _get_functions_from_str(
-        source_code: str, catch_exceptions: bool = False) -> tp.List[Function]:
+        source_code: str, file_name: str, catch_exceptions: bool = False) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
     nodes = _get_ast_nodes(source_code, source_lines, catch_exceptions)
     functions = []
@@ -122,7 +133,11 @@ def _get_functions_from_str(
             if not catch_exceptions:
                 raise
         else:
-            functions.append(Function(fn_node, text))
+            fn = Function(
+                node=fn_node,
+                text=text,
+                file_name=file_name)
+            functions.append(fn)
     return functions
 
 

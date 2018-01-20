@@ -162,11 +162,13 @@ def _upsert_active_functions(conn, repo: models.Repo, functions: ta.ParserFuncti
         _upsert_one_active_function(conn, repo, fn)
 
 
-def _upsert_one_active_function(conn, repo, fn: parser.Function):
+def _upsert_one_active_function(conn, repo, fn: parser.Function) -> None:
     insert_data = {
         Functions.c.repo_id: repo.repo_id,
         Functions.c.text: fn.text,
         Functions.c.is_active: True,
+        Functions.c.file_name: fn.file_name,
+        Functions.c.line_number: fn.line_number,
     }
     update_data = {
         Functions.c.is_active.key: True,

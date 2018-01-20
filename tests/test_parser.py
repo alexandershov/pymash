@@ -12,7 +12,10 @@ def _make_function(text):
     parsed = ast.parse(text)
     assert len(parsed.body) == 1
     fn_node = parsed.body[0]
-    return parser.Function(fn_node, text)
+    return parser.Function(
+        node=fn_node,
+        text=text,
+        file_name='some_file.py')
 
 
 _EXPECTED_RESULT = [
@@ -184,7 +187,8 @@ _EXPECTED_RESULT = [
 ])
 def test_get_functions(source_code, expected_functions):
     fileobj = io.StringIO(textwrap.dedent(source_code))
-    actual_functions = parser.get_functions(fileobj, catch_exceptions=True)
+    actual_functions = parser.get_functions_from_fileobj(
+        fileobj, 'file.py', catch_exceptions=True)
     assert actual_functions == expected_functions
 
 
@@ -248,10 +252,11 @@ def test_get_functions(source_code, expected_functions):
 ])
 def test_get_functions_failure(source_code, expected_exception):
     with pytest.raises(expected_exception):
-        parser.get_functions(io.StringIO(textwrap.dedent(source_code)))
+        parser.get_functions_from_fileobj(
+            io.StringIO(textwrap.dedent(source_code)), 'file.py')
 
 
 def test_get_functions_catch_decode_error():
     # noinspection PyTypeChecker
     fileobj = io.TextIOWrapper(io.BytesIO('тест'.encode('cp1251')), encoding='utf-8')
-    assert parser.get_functions(fileobj, catch_exceptions=True) == []
+    assert parser.get_functions_from_fileobj(fileobj, 'file.py', catch_exceptions=True) == []
