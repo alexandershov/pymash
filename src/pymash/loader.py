@@ -31,6 +31,7 @@ class Selector:
 
 
 _NOT_IMPLEMENTED_RE = re.compile(r'raise\s+NotImplementedError')
+_TEST_FILE_PATH_RE = re.compile(r'test', re.IGNORECASE)
 
 
 @utils.log_time(loggers.loader)
@@ -168,9 +169,11 @@ def _select_random_functions(functions: tp.List[parser.Function]) -> tp.List[par
 def _find_files(directory: str, extension: str) -> tp.List[str]:
     files = []
     pattern = os.path.join(directory, f'**/*.{extension}')
-    for path in glob.iglob(pattern, recursive=True):
-        full_path = os.path.join(directory, path)
-        files.append(full_path)
+    for matched_path in glob.iglob(pattern, recursive=True):
+        full_path = os.path.join(directory, matched_path)
+        rel_path = os.path.relpath(full_path, directory)
+        if not _is_test_file(rel_path):
+            files.append(full_path)
     return files
 
 
@@ -180,6 +183,10 @@ def select_good_functions(functions: tp.Iterable[parser.Function]) -> ta.ParserF
         for a_function in functions
         if not _is_bad_function(a_function)
     ]
+
+
+def _is_test_file(path):
+    return _TEST_FILE_PATH_RE.search(path) is not None
 
 
 def _is_bad_function(fn: parser.Function) -> bool:

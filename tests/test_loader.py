@@ -42,9 +42,13 @@ def _mock_random_sample(population, k):
 
 @pytest.fixture(name='github_mock')
 def fixture_github_mock():
-    archive_with_three_functions = mock.Mock(
-        return_value=_make_data_dir_path('repo_with_three_functions.py.zip'))
+    archive_with_four_functions_and_tests = mock.Mock(
+        # one function is zzz (ignored by _random_sample_mock)
+        # another function in a test file (ignored by _find_files)
+        # remaining functions are okay
+        return_value=_make_data_dir_path('repo_with_four_functions_and_tests.py.zip'))
     archive_with_two_functions = mock.Mock(
+        # both functions are okay
         return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
     github_client_repos = [
         _make_mock(
@@ -52,7 +56,7 @@ def fixture_github_mock():
             name='django',
             full_name='django/django',
             html_url='https://github.com/django/django',
-            get_archive_link=archive_with_three_functions,
+            get_archive_link=archive_with_four_functions_and_tests,
             stargazers_count=25000),
         _make_mock(
             id=1002,
