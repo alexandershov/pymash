@@ -42,9 +42,9 @@ def _mock_random_sample(population, k):
 
 @pytest.fixture(name='github_mock')
 def fixture_github_mock():
-    archive_with_two_functions = mock.Mock(
-        return_value=_make_data_dir_path('repo_with_three_functions.py.zip'))
     archive_with_three_functions = mock.Mock(
+        return_value=_make_data_dir_path('repo_with_three_functions.py.zip'))
+    archive_with_two_functions = mock.Mock(
         return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
     github_client_repos = [
         _make_mock(
