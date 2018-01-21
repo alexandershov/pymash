@@ -9,13 +9,13 @@
             <tr>
                 <th>Repo</th>
                 <!-- TODO(aershov182): how to use colspan correctly? to move this column to the right? -->
-                <th class="rating-column">Rating</th>
+                <th>Rating</th>
             </tr>
             </thead>
             {% for a_repo in repos %}
                 <tr>
                     <td><a href="{{ a_repo.url }}">{{ a_repo.name }}</a></td>
-                    <td class="rating-column">{{ a_repo.rating|int }}</td>
+                    <td>{{ a_repo.rating|int }}</td>
                 </tr>
             {% endfor %}
         </table>
