@@ -34,13 +34,23 @@
 
         {# todo: how to make it take only needed width? #}
         .player {
-            margin-top: 1em;
-            margin-bottom: 1em;
+            display: inline-block;
         }
 
         .highlight {
-            border-radius: 7px;
-            display: inline-block;
+            background-color: transparent;
+        }
+
+        .highlight pre {
+            background-color: transparent;
+        }
+
+        .white {
+            background-color: lightgray;
+        }
+
+        .black {
+            background-color: lightcyan;
         }
     </style>
     <title>{% block title %}Pymash{% endblock %}</title>

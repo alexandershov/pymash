@@ -4,16 +4,16 @@
 
 {% block body %}
     <div class="container">
-        {% with text=white.text, white_score=1, black_score=0 %}
-            <div class="player white">
-            {% include 'player.html' %}
-            </div>
-        {% endwith %}
-        <hr/>
-    <div class="player black">
-        {% with text=black.text, white_score=0, black_score=1 %}
-            {% include 'player.html' %}
-        {% endwith %}
-    </div>
+        <div class="player white">
+            {% with text=white.text, white_score=1, black_score=0 %}
+                {% include 'player.html' %}
+            {% endwith %}
+        </div>
+        <div></div>
+        <div class="player black">
+            {% with text=black.text, white_score=0, black_score=1 %}
+                {% include 'player.html' %}
+            {% endwith %}
+        </div>
     </div>
 {% endblock %}
