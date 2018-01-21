@@ -1,14 +1,20 @@
 {% extends 'base.html' %}
 
 {% block body %}
-    <table>
-        {% for a_repo in repos %}
-            <tr>
-                <td><a href="{{ a_repo.url }}">{{ a_repo.name }}</a></td>
-                <td>{{ a_repo.rating }}</td>
-            </tr>
-        {% endfor %}
-    </table>
+    <div class="container">
+        <table class="table is-striped is-fullwidth">
+            <thead>
+            <th>Repo</th>
+            <th>Rating</th>
+            </thead>
+            {% for a_repo in repos %}
+                <tr>
+                    <td><a href="{{ a_repo.url }}">{{ a_repo.name }}</a></td>
+                    <td>{{ a_repo.rating }}</td>
+                </tr>
+            {% endfor %}
+        </table>
+    </div>
 {% endblock %}
 
 

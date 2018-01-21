@@ -1,23 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="has-navbar-fixed-bottom">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="static/pygments-1.0.0.css">
+    <link rel="stylesheet" href="static/bulma-0.6.2.css">
     <title>Pymash</title>
-    <link rel="stylesheet" href="static/pygments.css">
 </head>
 <body>
 
 {% block header %}
-    <a href="{{ url('new_game') }}">Pymash</a>
-    <a href="{{ url('show_leaders') }}">Leaders</a>
+    <div class="navbar is-primary" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="{{ url('new_game') }}" class="navbar-item">Pymash</a>
+                <a href="{{ url('show_leaders') }}" class="navbar-item">Leaders</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 {% block body %}{% endblock %}
 
 {% block footer %}
-    <a href="">Making of</a>
-    <a href="">Report a bug</a>
-    <a href="">Source</a>
+    <div class="navbar is-fixed-bottom" role="navigation" aria-label="main navigation">
+        <div class="container">
+            <div class="navbar-brand">
+                <a href="" class="navbar-item">Making of</a>
+                <a href="https://github.com/alexandershov/pymash/issues/new" class="navbar-item">Report
+                    a bug</a>
+                <a href="https://github.com/alexandershov/pymash" class="navbar-item">Source
+                    code</a>
+            </div>
+        </div>
+    </div>
 {% endblock %}
 
 </body>
