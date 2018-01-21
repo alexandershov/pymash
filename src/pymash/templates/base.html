@@ -11,12 +11,25 @@
         .table {
             width: 100%;
         }
+
         .table td:first-child {
             width: 100%;
         }
 
         pre {
             padding-left: 1em;
+        }
+
+        {# todo: fix css according to note in
+         https://philipwalton.github.io/solved-by-flexbox/demos/sticky-footer/ #}
+        body {
+            display: flex;
+            min-height: 100vh;
+            flex-direction: column;
+        }
+
+        .main {
+            flex: 1;
         }
 
         {# todo: how to make it take only needed width? #}
@@ -30,21 +43,23 @@
 <body>
 
 {% block header %}
-    {% set is_leaders_view = request.match_info.route.name == 'show_leaders' %}
-    <div class="navbar is-primary" role="navigation" aria-label="main navigation">
-        <div class="container">
-            <div class="navbar-brand">
-                <!-- TODO(aershov182): add some icon here -->
-                <a href="{{ url('new_game') }}"
-                   class="navbar-item{% if not is_leaders_view %} is-active{% endif %}">Pymash</a>
-                <a href="{{ url('show_leaders') }}"
-                   class="navbar-item{% if is_leaders_view %} is-active{% endif %}">
-                    Leaders
-                </a>
-                {{ request }}
+    <header>
+        {% set is_leaders_view = request.match_info.route.name == 'show_leaders' %}
+        <div class="navbar is-primary" role="navigation" aria-label="main navigation">
+            <div class="container">
+                <div class="navbar-brand">
+                    <!-- TODO(aershov182): add some icon here -->
+                    <a href="{{ url('new_game') }}"
+                       class="navbar-item{% if not is_leaders_view %} is-active{% endif %}">Pymash</a>
+                    <a href="{{ url('show_leaders') }}"
+                       class="navbar-item{% if is_leaders_view %} is-active{% endif %}">
+                        Leaders
+                    </a>
+                    {{ request }}
+                </div>
             </div>
         </div>
-    </div>
+    </header>
 {% endblock %}
 
 <div class="main">
@@ -52,23 +67,25 @@
 </div>
 
 {% block footer %}
-    <!-- TODO(aershov182): how to make it sticky? -->
-    <!-- TODO(aershov182): how to make it doesn't truncate on mobile -->
-    <div class="navbar" role="navigation" aria-label="main navigation">
-        <div class="container">
-            <div class="navbar-brand">
-                <a href="https://github.com/alexandershov/pymash" class="navbar-item">
-                    Source code
-                </a>
-                <a href="https://github.com/alexandershov/pymash/issues/new" class="navbar-item">
-                    Report a bug
-                </a>
-                <a href="" class="navbar-item">
-                    Making of
-                </a>
+    <!-- TODO(aershov182): how to make it doesn't truncate on mobile? -->
+    <footer>
+        <div class="navbar" role="navigation" aria-label="main navigation">
+            <div class="container">
+                <div class="navbar-brand">
+                    <a href="https://github.com/alexandershov/pymash" class="navbar-item">
+                        Source
+                    </a>
+                    <a href="https://github.com/alexandershov/pymash/issues/new"
+                       class="navbar-item">
+                        Report a bug
+                    </a>
+                    <a href="" class="navbar-item">
+                        Making of
+                    </a>
+                </div>
             </div>
         </div>
-    </div>
+    </footer>
 {% endblock %}
 
 </body>
