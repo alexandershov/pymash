@@ -1,4 +1,4 @@
-<div class="column">
+<div class="box player">
     {{ text|highlight }}
     <form action="{{ url('post_game', game_id=game.game_id) }}" method="POST">
         <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
