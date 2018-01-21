@@ -1,5 +1,7 @@
-<div class="box player">
+<!-- TODO(aershov182): how to add rounded border not in mobile? -->
+<div class="player">
     {{ text|highlight }}
+    <!-- TODO(aershov182): how to center button only on mobile-->
     <form action="{{ url('post_game', game_id=game.game_id) }}" method="POST">
         <input type="hidden" name="white_id" value="{{ game.white_id }}"/>
         <input type="hidden" name="black_id" value="{{ game.black_id }}"/>

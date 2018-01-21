@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="has-navbar-fixed-bottom">
+<html lang="en">
 <head>
     <!-- TODO(aershov182): add favicon -->
     <meta charset="utf-8">
@@ -7,15 +7,16 @@
     <link rel="stylesheet" href="static/pygments-1.0.0.css">
     <link rel="stylesheet" href="static/bulma-0.6.2.css">
     <style>
-        {# TODO: is it possible to override padding-left in bulma? #}
-        .table th, .table td {
-            padding-left: 0;
+        {# TODO: is it possible to override padding/margin in bulma? #}
+        .table .rating-column {
+            text-align: right;
         }
 
         pre {
-            padding-left: 5px;
+            padding-left: 1em;
         }
 
+        {# todo: how to make it take only needed width? #}
         .player {
             margin-top: 1em;
             margin-bottom: 1em;
@@ -30,7 +31,9 @@
     <div class="navbar is-primary" role="navigation" aria-label="main navigation">
         <div class="container">
             <div class="navbar-brand">
-                <a href="{{ url('new_game') }}" class="navbar-item">Pymash</a>
+                <!-- TODO(aershov182): add some icon here -->
+                <a href="{{ url('new_game') }}"
+                   class="navbar-item{% if not is_leaders_view %} is-active{% endif %}">Pymash</a>
                 <a href="{{ url('show_leaders') }}"
                    class="navbar-item{% if is_leaders_view %} is-active{% endif %}">
                     Leaders
@@ -46,17 +49,19 @@
 </div>
 
 {% block footer %}
-    <div class="navbar is-fixed-bottom" role="navigation" aria-label="main navigation">
+    <!-- TODO(aershov182): how to make it sticky? -->
+    <!-- TODO(aershov182): how to make it doesn't truncate on mobile -->
+    <div class="navbar" role="navigation" aria-label="main navigation">
         <div class="container">
             <div class="navbar-brand">
-                <a href="" class="navbar-item">
-                    Making of
+                <a href="https://github.com/alexandershov/pymash" class="navbar-item">
+                    Source code
                 </a>
                 <a href="https://github.com/alexandershov/pymash/issues/new" class="navbar-item">
                     Report a bug
                 </a>
-                <a href="https://github.com/alexandershov/pymash" class="navbar-item">
-                    Source code
+                <a href="" class="navbar-item">
+                    Making of
                 </a>
             </div>
         </div>
