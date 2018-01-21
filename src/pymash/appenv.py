@@ -10,6 +10,7 @@ def setup_jinja2(app: web.Application) -> None:
     aiohttp_jinja2.setup(
         app,
         loader=jinja2.PackageLoader('pymash', 'templates'),
+        context_processors=[aiohttp_jinja2.request_processor],
         filters={'highlight': _highlight})
 
 

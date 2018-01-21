@@ -10,11 +10,16 @@
 <body>
 
 {% block header %}
+    {% set is_leaders_view = request.match_info.route.name == 'show_leaders' %}
     <div class="navbar is-primary" role="navigation" aria-label="main navigation">
         <div class="container">
             <div class="navbar-brand">
                 <a href="{{ url('new_game') }}" class="navbar-item">Pymash</a>
-                <a href="{{ url('show_leaders') }}" class="navbar-item">Leaders</a>
+                <a href="{{ url('show_leaders') }}"
+                   class="navbar-item{% if is_leaders_view %} is-active{% endif %}">
+                    Leaders
+                </a>
+                {{ request }}
             </div>
         </div>
     </div>
