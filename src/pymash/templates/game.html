@@ -1,11 +1,17 @@
 {% extends 'base.html' %}
 
-{% block body %}
-    {% with text=white.text, white_score=1, black_score=0 %}
-        {% include 'player.html' %}
-    {% endwith %}
+{% block title %}Which code is better?{% endblock %}
 
-    {% with text=black.text, white_score=0, black_score=1 %}
-        {% include 'player.html' %}
-    {% endwith %}
+{% block body %}
+    <div class="container">
+        <div class="columns">
+            {% with text=white.text, white_score=1, black_score=0 %}
+                {% include 'player.html' %}
+            {% endwith %}
+            <hr/>
+            {% with text=black.text, white_score=0, black_score=1 %}
+                {% include 'player.html' %}
+            {% endwith %}
+        </div>
+    </div>
 {% endblock %}

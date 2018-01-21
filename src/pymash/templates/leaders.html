@@ -1,16 +1,21 @@
 {% extends 'base.html' %}
 
+{% block title %}Leaders{% endblock %}
+
 {% block body %}
     <div class="container">
         <table class="table is-striped is-fullwidth">
             <thead>
-            <th>Repo</th>
-            <th>Rating</th>
+            <tr>
+                <th>Repo</th>
+                <!-- TODO(aershov182): how to use colspan correctly? -->
+                <th colspan="11">Rating</th>
+            </tr>
             </thead>
             {% for a_repo in repos %}
                 <tr>
                     <td><a href="{{ a_repo.url }}">{{ a_repo.name }}</a></td>
-                    <td>{{ a_repo.rating }}</td>
+                    <td>{{ a_repo.rating|int }}</td>
                 </tr>
             {% endfor %}
         </table>

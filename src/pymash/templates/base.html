@@ -10,8 +10,12 @@
         .table th, .table td {
             padding-left: 0;
         }
+
+        pre {
+            padding-left: 5px;
+        }
     </style>
-    <title>Pymash</title>
+    <title>{% block title %}Pymash{% endblock %}</title>
 </head>
 <body>
 
@@ -31,7 +35,9 @@
     </div>
 {% endblock %}
 
-{% block body %}{% endblock %}
+<div class="main">
+    {% block body %}{% endblock %}
+</div>
 
 {% block footer %}
     <div class="navbar is-fixed-bottom" role="navigation" aria-label="main navigation">
