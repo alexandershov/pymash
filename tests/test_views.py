@@ -40,8 +40,9 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
     if is_success:
         text = await _get_checked_response_text(response)
         # TODO(aershov182): change assertions when we'll have a real markup
-        assert '666' in text
-        assert '777' in text
+        django_index = text.index('666')
+        flask_index = text.index('777')
+        assert django_index < flask_index
     else:
         assert response.status == 503
 

@@ -86,8 +86,8 @@ async def show_game(request: web.Request) -> ta.DictOrResponse:
     white, black = await _find_two_random_function_or_error(request.app['db_engine'])
     game = models.Game(
         game_id=uuid.uuid4().hex,
-        white_id=black.function_id,
-        black_id=white.function_id,
+        white_id=white.function_id,
+        black_id=black.function_id,
         result=models.UNKNOWN_RESULT)
     return {
         'game': game,
