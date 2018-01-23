@@ -4,14 +4,14 @@
 
 {% block body %}
     <div class="game">
-        <div style="display: table-row">
+        <div class="player-row">
             <div class="player white">
                 {% with text=white.text, white_score=1, black_score=0 %}
                     {% include 'player.html' %}
                 {% endwith %}
             </div>
         </div>
-        <div style="display: table-row;">
+        <div class="player-row">
             <div class="player black">
                 {% with text=black.text, white_score=0, black_score=1 %}
                     {% include 'player.html' %}

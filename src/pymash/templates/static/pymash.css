@@ -6755,6 +6755,9 @@ body {
   display: table-cell;
   padding-left: 1.5em; }
 
+.player-row {
+  display: table-row; }
+
 @media screen and (min-width: 1024px) {
   pre {
     padding-left: 1em; }

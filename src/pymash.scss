@@ -41,11 +41,15 @@ body {
   margin-left: 15em;
 }
 
-
 .player {
   display: table-cell;
   padding-left: 1.5em;
 }
+
+.player-row {
+  display: table-row;
+}
+
 @include from($desktop) {
   pre {
     padding-left: 1em;
