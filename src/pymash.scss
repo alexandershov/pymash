@@ -38,7 +38,12 @@ body {
 
 .game {
   display: table;
-  margin-left: 15em;
+}
+
+@include from($desktop) {
+  .game {
+    margin-left: 15em;
+  }
 }
 
 .player {
