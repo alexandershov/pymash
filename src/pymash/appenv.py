@@ -18,7 +18,7 @@ def _highlight(s, language='python'):
     return _highlight_with_css_class(
         s,
         language=language,
-        css_class='highlight')
+        css_class='pymash-highlight')
 
 
 def _highlight_with_css_class(text, language, css_class):
