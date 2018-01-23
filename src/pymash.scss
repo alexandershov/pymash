@@ -48,7 +48,7 @@ body {
 
 .player {
   display: table-cell;
-  padding-left: 1.5em;
+  padding-left: 1em;
 }
 
 .player-row {
@@ -64,6 +64,11 @@ body {
     margin-bottom: 1em;
     margin-left: 1em;
   }
+}
+
+pre {
+  tab-size: 4;
+  overflow: scroll;
 }
 
 @include until($desktop) {

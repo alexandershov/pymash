@@ -6755,7 +6755,7 @@ body {
     margin-left: 15em; } }
 .player {
   display: table-cell;
-  padding-left: 1.5em; }
+  padding-left: 1em; }
 
 .player-row {
   display: table-row; }
@@ -6767,6 +6767,10 @@ body {
   .choose {
     margin-bottom: 1em;
     margin-left: 1em; } }
+pre {
+  tab-size: 4;
+  overflow: scroll; }
+
 @media screen and (max-width: 1023px) {
   pre {
     padding-left: 0; }
