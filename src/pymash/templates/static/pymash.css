@@ -6748,9 +6748,11 @@ body {
   background-color: transparent; }
 
 .game {
-  display: table;
-  margin-left: 15em; }
+  display: table; }
 
+@media screen and (min-width: 1024px) {
+  .game {
+    margin-left: 15em; } }
 .player {
   display: table-cell;
   padding-left: 1.5em; }
