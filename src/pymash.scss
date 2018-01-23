@@ -4,60 +4,60 @@
 // TODO: is it possible to override padding/margin in bulma?
 
 .table {
-            width: 100%;
-        }
+  width: 100%;
+}
 
-        .table td:first-child {
-            width: 100%;
-        }
+.table td:first-child {
+  width: 100%;
+}
 
-        pre {
-            padding-left: 1em;
-        }
+pre {
+  padding-left: 1em;
+}
 
-         //todo: fix css according to note in
-         //https://philipwalton.github.io/solved-by-flexbox/demos/sticky-footer/ #}
-        body {
-            display: flex;
-            min-height: 100vh;
-            flex-direction: column;
-        }
+//todo: fix css according to note in
+//https://philipwalton.github.io/solved-by-flexbox/demos/sticky-footer/ #}
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column;
+}
 
-        .main {
-            flex: 1;
-        }
+.main {
+  flex: 1;
+}
 
-        //todo: how to make it take only needed width?
-        .player {
-            display: inline-block;
-        }
+//todo: how to make it take only needed width?
+.player {
+  display: inline-block;
+}
 
-        .pymash-highlight {
-            background-color: transparent;
-        }
+.pymash-highlight {
+  background-color: transparent;
+}
 
-        .pymash-highlight pre {
-            background-color: transparent;
-        }
+.pymash-highlight pre {
+  background-color: transparent;
+}
 
-        .choose {
-          margin-bottom: 1em;
-            margin-left: 1em;
-        }
+.choose {
+  margin-bottom: 1em;
+  margin-left: 1em;
+}
 
-        .white {
-            background-color: #feffe5;
-        }
+.white {
+  background-color: #feffe5;
+}
 
-        .black {
-            background-color: #d3fcff;
-        }
+.black {
+  background-color: #d3fcff;
+}
 
-        footer .navbar-brand {
-            flex-flow: wrap;
-        }
+footer .navbar-brand {
+  flex-flow: wrap;
+}
 
-        footer .navbar-brand .navbar-item {
-            padding-left: 0.8em;
-            padding-right: 0.8em;
-        }
+footer .navbar-brand .navbar-item {
+  padding-left: 0.8em;
+  padding-right: 0.8em;
+}
