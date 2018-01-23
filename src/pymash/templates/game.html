@@ -3,16 +3,16 @@
 {% block title %}Which code is better?{% endblock %}
 
 {% block body %}
-    <div style="display: table;">
+    <div class="game">
         <div style="display: table-row">
-            <div class="player white" style="display: table-cell; padding-left: 1.5em">
+            <div class="player white">
                 {% with text=white.text, white_score=1, black_score=0 %}
                     {% include 'player.html' %}
                 {% endwith %}
             </div>
         </div>
         <div style="display: table-row;">
-            <div class="player black" style="display: table-cell; padding-left: 1.5em">
+            <div class="player black">
                 {% with text=black.text, white_score=0, black_score=1 %}
                     {% include 'player.html' %}
                 {% endwith %}
