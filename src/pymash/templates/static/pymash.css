@@ -6724,4 +6724,47 @@ label.panel-block {
   background-color: whitesmoke;
   padding: 3rem 1.5rem 6rem; }
 
+.table {
+  width: 100%; }
+
+.table td:first-child {
+  width: 100%; }
+
+pre {
+  padding-left: 1em; }
+
+body {
+  display: flex;
+  min-height: 100vh;
+  flex-direction: column; }
+
+.main {
+  flex: 1; }
+
+.player {
+  display: inline-block; }
+
+.pymash-highlight {
+  background-color: transparent; }
+
+.pymash-highlight pre {
+  background-color: transparent; }
+
+.choose {
+  margin-bottom: 1em;
+  margin-left: 1em; }
+
+.white {
+  background-color: #feffe5; }
+
+.black {
+  background-color: #d3fcff; }
+
+footer .navbar-brand {
+  flex-flow: wrap; }
+
+footer .navbar-brand .navbar-item {
+  padding-left: 0.8em;
+  padding-right: 0.8em; }
+
 /*# sourceMappingURL=pymash.css.map */
