@@ -21,6 +21,7 @@ body {
 
 .main {
   flex: 1;
+  overflow: scroll;
 }
 
 //todo: how to make it take only needed width?
@@ -68,7 +69,6 @@ body {
 
 pre {
   tab-size: 4;
-  overflow: scroll;
 }
 
 @include until($desktop) {

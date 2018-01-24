@@ -6736,7 +6736,8 @@ body {
   flex-direction: column; }
 
 .main {
-  flex: 1; }
+  flex: 1;
+  overflow: scroll; }
 
 .player {
   display: inline-block; }
@@ -6768,8 +6769,7 @@ body {
     margin-bottom: 1em;
     margin-left: 1em; } }
 pre {
-  tab-size: 4;
-  overflow: scroll; }
+  tab-size: 4; }
 
 @media screen and (max-width: 1023px) {
   pre {
