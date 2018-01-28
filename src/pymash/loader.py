@@ -78,6 +78,7 @@ def _find_most_popular_github_repos(
     while cur < limit:
         list(repositories[:cur + step])
         cur += step
+        loggers.loader.info(f'forcing loading till {cur + step} repos')
     return list(map(_parse_repository, repositories[:limit]))
 
 
