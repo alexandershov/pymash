@@ -73,6 +73,11 @@ def _find_most_popular_github_repos(
         github_client, language: str, limit: int) -> ta.GithubRepos:
     loggers.loader.info('finding %d most popular %s repos', limit, language)
     repositories = github_client.search_repositories(f'language:{language}', sort='stars')
+    step = 100
+    cur = 0
+    while cur < limit:
+        list(repositories[cur:cur + step])
+        cur += step
     return list(map(_parse_repository, repositories[:limit]))
 
 
