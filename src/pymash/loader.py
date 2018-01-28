@@ -76,7 +76,7 @@ def _find_most_popular_github_repos(
     step = 100
     cur = 0
     while cur < limit:
-        list(repositories[cur:cur + step])
+        list(repositories[:cur + step])
         cur += step
     return list(map(_parse_repository, repositories[:limit]))
 
