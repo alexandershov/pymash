@@ -75,11 +75,13 @@ def _find_most_popular_github_repos(
     repositories = github_client.search_repositories(f'language:{language}', sort='stars')
     step = 100
     cur = 0
+    fetched_repos = []
     while cur < limit:
-        list(repositories[:cur + step])
-        cur += step
-        loggers.loader.info(f'forcing loading till {cur + step} repos')
-    return list(map(_parse_repository, repositories[:limit]))
+        next_cur = cur + step
+        loggers.loader.info(f'forcing loading till {next_cur} repos')
+        fetched_repos = list(repositories[:next_cur])
+        cur = next_cur
+    return list(map(_parse_repository, fetched_repos))
 
 
 def _get_github_client():
