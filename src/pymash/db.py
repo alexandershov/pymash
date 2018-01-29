@@ -129,8 +129,10 @@ def save_game_and_match(engine: ta.Engine, game: models.Game, match: models.Matc
                 raise GameResultChanged
 
 
-@utils.log_time(loggers.loader, lambda engine, github_repo: f'{github_repo.url}')
-def upsert_repo(engine: ta.Engine, github_repo: models.GithubRepo) -> models.Repo:
+@utils.log_time(loggers.loader, lambda engine, github_repo, functions: f'{github_repo.url}')
+def upsert_repo(
+        engine: ta.Engine,
+        github_repo: models.GithubRepo, functions: ta.ParserFunctions) -> models.Repo:
     insert_data = {
         Repos.c.github_id: github_repo.github_id,
         Repos.c.name: github_repo.name,
@@ -145,16 +147,17 @@ def upsert_repo(engine: ta.Engine, github_repo: models.GithubRepo) -> models.Rep
     }
     query = postgresql.insert(Repos).values(insert_data).on_conflict_do_update(
         index_elements=[Repos.c.github_id], set_=update_data).returning(*Repos.columns)
-    with engine.connect() as conn:
-        return make_repo_from_db_row(conn.execute(query).first())
+    with engine.begin() as conn:
+        repo = make_repo_from_db_row(conn.execute(query).first())
+        _update_functions(conn, repo, functions)
+        return repo
 
 
 @utils.log_time(loggers.loader,
                 lambda engine, repo, functions: f'{len(functions)} from {repo.url}')
-def update_functions(engine: ta.Engine, repo: models.Repo, functions: ta.ParserFunctions) -> None:
-    with engine.begin() as conn:
-        _deactivate_functions(conn, repo)
-        _upsert_active_functions(conn, repo, functions)
+def _update_functions(conn, repo: models.Repo, functions: ta.ParserFunctions) -> None:
+    _deactivate_functions(conn, repo)
+    _upsert_active_functions(conn, repo, functions)
 
 
 def _upsert_active_functions(conn, repo: models.Repo, functions: ta.ParserFunctions):

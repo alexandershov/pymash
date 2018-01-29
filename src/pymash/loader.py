@@ -27,7 +27,8 @@ class Selector:
     MIN_NUM_LINES = 3
     MAX_NUM_LINES = 20
     MIN_NUM_STATEMENTS = 4
-    NUM_OF_FUNCTIONS_PER_REPO = 1000
+    NUM_FUNCTIONS_PER_REPO = 1000
+    MIN_NUM_FUNCTIONS_PER_REPO = 20
 
 
 _NOT_IMPLEMENTED_RE = re.compile(r'raise\s+NotImplementedError')
@@ -106,20 +107,21 @@ def _load_many_github_repos(github_repos: ta.GithubRepos, concurrency: int) -> t
     loggers.loader.info(
         'will load %d github repos, concurrency %d', len(github_repos), concurrency)
     pool = multiprocessing.Pool(concurrency)
-    return pool.map(load_github_repo, github_repos)
+    maybe_repos = pool.map(load_github_repo, github_repos)
+    return list(filter(None, maybe_repos))
 
 
 # TODO: maybe separate parsing & saving to database
 @utils.log_time(loggers.loader)
-def load_github_repo(github_repo: models.GithubRepo) -> models.Repo:
+def load_github_repo(github_repo: models.GithubRepo) -> tp.Optional[models.Repo]:
     loggers.loader.info('loading repo %s', github_repo.full_name)
     with base.ScriptContext() as context:
-        repo = db.upsert_repo(context.engine, github_repo)
         functions = _get_functions_from_github_repo(github_repo)
-
         functions_to_update = _select_functions_to_update(functions)
-        db.update_functions(context.engine, repo, functions_to_update)
-        return repo
+        if len(functions) >= Selector.MIN_NUM_FUNCTIONS_PER_REPO:
+            return db.upsert_repo(context.engine, github_repo, functions_to_update)
+        else:
+            return None
 
 
 def _get_functions_from_github_repo(github_repo: models.GithubRepo) -> tp.Set[parser.Function]:
@@ -158,7 +160,7 @@ def _select_functions_to_update(functions: tp.Set[parser.Function]) -> ta.Parser
 
 
 def _select_random_functions(functions: tp.List[parser.Function]) -> tp.List[parser.Function]:
-    num_functions = min(Selector.NUM_OF_FUNCTIONS_PER_REPO, len(functions))
+    num_functions = min(Selector.NUM_FUNCTIONS_PER_REPO, len(functions))
     return random.sample(functions, num_functions)
 
 
