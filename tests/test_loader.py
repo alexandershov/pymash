@@ -79,7 +79,14 @@ def fixture_github_mock():
             full_name='whatever/big-list-of-naughty-strings',
             html_url='https://github.com/whatever/big-list-of-naughty-strings',
             get_archive_link=archive_with_zero_functions,
-            stargazers_count=100_000)
+            stargazers_count=100_000),
+        _make_mock(
+            id=1007,
+            name='httpie',
+            full_name='whatever/httpie',
+            html_url='https://github.com/whatever/httpie',
+            get_archive_link=archive_with_zero_functions,
+            stargazers_count=35_000)
     ]
     pymash_mock = _make_mock(
         id=1003,
@@ -246,6 +253,14 @@ def _add_data(pymash_engine):
             Functions.c.file_name: '/tmp/requests/requests.py',
             Functions.c.line_number: 100555,
         }))
+        conn.execute(Repos.insert().values({
+            Repos.c.repo_id: -6,
+            Repos.c.github_id: 1007,
+            Repos.c.name: 'httpie',
+            Repos.c.url: 'https://github.com/whatever/httpie',
+            Repos.c.is_active: True,
+            Repos.c.rating: 1800,
+        }))
 
 
 def _assert_repos_were_loaded(pymash_engine):
@@ -255,7 +270,8 @@ def _assert_repos_were_loaded(pymash_engine):
         flask_row = _find_repo_by_id(conn, 1002)
         pymash_row = _find_repo_by_id(conn, 1003)
         requests_row = _find_repo_by_id(conn, 1005)
-    assert len(rows) == 4
+        httpie_row = _find_repo_by_id(conn, 1007)
+    assert len(rows) == 5
 
     _expect_repo(
         repo_row=django_row,
@@ -281,6 +297,13 @@ def _assert_repos_were_loaded(pymash_engine):
         url='https://github.com/requests/requests',
         is_active=False,
         rating=2000)
+    _expect_repo(
+        repo_row=httpie_row,
+        name='httpie',
+        url='https://github.com/whatever/httpie',
+        # deactivated, because it has no functions in _most_popular_repos
+        is_active=False,
+        rating=1800)
 
 
 def _expect_repo(repo_row, name, url, is_active, rating):
