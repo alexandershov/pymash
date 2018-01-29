@@ -26,7 +26,7 @@ def test_load_most_popular(pymash_engine, github_mock, monkeypatch):
         blacklisted_full_names={'isocpp/CppCoreGuidelines'},
         concurrency=2,
     )
-    _assert_repo_was_loaded(pymash_engine)
+    _assert_repos_were_loaded(pymash_engine)
     _assert_functions_were_loaded(pymash_engine)
 
 
@@ -49,6 +49,8 @@ def fixture_github_mock():
     archive_with_two_functions = mock.Mock(
         # both functions are okay
         return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
+    archive_with_zero_functions = mock.Mock(
+        return_value=_make_data_dir_path('repo_with_zero_functions.py.zip'))
     github_client_repos = [
         _make_mock(
             id=1001,
@@ -56,21 +58,28 @@ def fixture_github_mock():
             full_name='django/django',
             html_url='https://github.com/django/django',
             get_archive_link=archive_with_four_functions_and_tests,
-            stargazers_count=25000),
+            stargazers_count=25_000),
         _make_mock(
             id=1002,
             name='flask',
             full_name='pallets/flask',
             html_url='https://github.com/pallets/flask',
             get_archive_link=archive_with_two_functions,
-            stargazers_count=26000),
+            stargazers_count=26_000),
         _make_mock(
             id=1004,
             name='CppCoreGuideLines',
             full_name='isocpp/CppCoreGuidelines',
             html_url='https://github.com/isocpp/CppCoreGuidelines',
             get_archive_link=archive_with_two_functions,
-            stargazers_count=33000)
+            stargazers_count=33_000),
+        _make_mock(
+            id=1006,
+            name='big-list-of-naughty-strings',
+            full_name='whatever/big-list-of-naughty-strings',
+            html_url='https://github.com/whatever/big-list-of-naughty-strings',
+            get_archive_link=archive_with_zero_functions,
+            stargazers_count=100_000)
     ]
     pymash_mock = _make_mock(
         id=1003,
@@ -239,7 +248,7 @@ def _add_data(pymash_engine):
         }))
 
 
-def _assert_repo_was_loaded(pymash_engine):
+def _assert_repos_were_loaded(pymash_engine):
     with pymash_engine.connect() as conn:
         rows = list(conn.execute(Repos.select()))
         django_row = _find_repo_by_id(conn, 1001)
