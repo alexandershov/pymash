@@ -15,6 +15,7 @@ setuptools.setup(
         'psycopg2==2.7.3.1',
         'PyGithub==1.35',
         'Pygments==2.2.0',
+        'requests==2.18.4',
         'SQLAlchemy==1.1.14',
         'voluptuous==0.10.5',
     ],
