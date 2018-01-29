@@ -5,10 +5,10 @@ import random
 import re
 import tempfile
 import typing as tp
-import urllib.request as urllib_request
 import zipfile
 
 import github
+import requests
 
 from pymash import cfg
 from pymash import db
@@ -88,8 +88,12 @@ def _parse_repository(repository: ta.Repository) -> models.GithubRepo:
         name=repository.name,
         full_name=repository.full_name,
         url=repository.html_url,
-        zipball_url=repository.get_archive_link('zipball'),
+        zipball_url=_get_zipball_url(repository),
         num_stars=repository.stargazers_count)
+
+
+def _get_zipball_url(repository: ta.Repository) -> str:
+    return repository.archive_url.format_map({'archive_format': 'zipball', '/ref': ''})
 
 
 @utils.log_time(loggers.loader)
@@ -127,8 +131,14 @@ def load_github_repo(github_repo: models.GithubRepo) -> tp.Optional[models.Repo]
 def _get_functions_from_github_repo(github_repo: models.GithubRepo) -> tp.Set[parser.Function]:
     with tempfile.NamedTemporaryFile() as temp_file:
         with utils.log_time(loggers.loader, f'fetching {github_repo.zipball_url}'):
-            urllib_request.urlretrieve(github_repo.zipball_url, temp_file.name)
+            _urlretrieve(github_repo.zipball_url, temp_file.name)
         return _get_functions_from_zip_archive(temp_file.name, github_repo)
+
+
+def _urlretrieve(url, output_path):
+    resp = requests.get(url)
+    with open(output_path, 'wb') as fileobj:
+        fileobj.write(resp.content)
 
 
 def _get_functions_from_zip_archive(

@@ -1,11 +1,14 @@
+import contextlib
 import io
 import os
 import random
 import textwrap
+import urllib.request
 from unittest import mock
 
 import github
 import pytest
+import requests
 import sqlalchemy as sa
 
 from pymash import db
@@ -18,6 +21,7 @@ from pymash.tables import *
 def test_load_most_popular(pymash_engine, github_mock, monkeypatch):
     monkeypatch.setattr(github, 'Github', github_mock)
     monkeypatch.setattr(random, 'sample', _mock_random_sample)
+    monkeypatch.setattr(requests, 'get', _read_file)
 
     _add_data(pymash_engine)
     loader.load_most_popular(
@@ -28,6 +32,11 @@ def test_load_most_popular(pymash_engine, github_mock, monkeypatch):
     )
     _assert_repos_were_loaded(pymash_engine)
     _assert_functions_were_loaded(pymash_engine)
+
+
+def _read_file(path):
+    with contextlib.closing(urllib.request.urlopen(path)) as fileobj:
+        return mock.Mock(content=fileobj.read())
 
 
 def _mock_random_sample(population, k):
@@ -41,51 +50,48 @@ def _mock_random_sample(population, k):
 
 @pytest.fixture(name='github_mock')
 def fixture_github_mock():
-    archive_with_four_functions_and_tests = mock.Mock(
-        # one function is zzz (ignored by _random_sample_mock)
-        # another function in a test file (ignored by _find_files)
-        # remaining functions are okay
-        return_value=_make_data_dir_path('repo_with_four_functions_and_tests.py.zip'))
-    archive_with_two_functions = mock.Mock(
-        # both functions are okay
-        return_value=_make_data_dir_path('repo_with_two_functions.py.zip'))
-    archive_with_zero_functions = mock.Mock(
-        return_value=_make_data_dir_path('repo_with_zero_functions.py.zip'))
+    # one function is zzz (ignored by _random_sample_mock)
+    # another function in a test file (ignored by _find_files)
+    # remaining functions are okay
+    archive_with_four_functions_and_tests = _make_archive_url_mock('repo_with_four_functions_and_tests.py.zip')
+    # both functions are okay
+    archive_with_two_functions = _make_archive_url_mock('repo_with_two_functions.py.zip')
+    archive_with_zero_functions = _make_archive_url_mock('repo_with_zero_functions.py.zip')
     github_client_repos = [
         _make_mock(
             id=1001,
             name='django',
             full_name='django/django',
             html_url='https://github.com/django/django',
-            get_archive_link=archive_with_four_functions_and_tests,
+            archive_url=archive_with_four_functions_and_tests,
             stargazers_count=25_000),
         _make_mock(
             id=1002,
             name='flask',
             full_name='pallets/flask',
             html_url='https://github.com/pallets/flask',
-            get_archive_link=archive_with_two_functions,
+            archive_url=archive_with_two_functions,
             stargazers_count=26_000),
         _make_mock(
             id=1004,
             name='CppCoreGuideLines',
             full_name='isocpp/CppCoreGuidelines',
             html_url='https://github.com/isocpp/CppCoreGuidelines',
-            get_archive_link=archive_with_two_functions,
+            archive_url=archive_with_two_functions,
             stargazers_count=33_000),
         _make_mock(
             id=1006,
             name='big-list-of-naughty-strings',
             full_name='whatever/big-list-of-naughty-strings',
             html_url='https://github.com/whatever/big-list-of-naughty-strings',
-            get_archive_link=archive_with_zero_functions,
+            archive_url=archive_with_zero_functions,
             stargazers_count=100_000),
         _make_mock(
             id=1007,
             name='httpie',
             full_name='whatever/httpie',
             html_url='https://github.com/whatever/httpie',
-            get_archive_link=archive_with_zero_functions,
+            archive_url=archive_with_zero_functions,
             stargazers_count=35_000)
     ]
     pymash_mock = _make_mock(
@@ -93,7 +99,7 @@ def fixture_github_mock():
         name='pymash',
         full_name='alexandershov/pymash',
         html_url='https://github.com/alexandershov/pymash',
-        get_archive_link=archive_with_two_functions,
+        archive_url=archive_with_two_functions,
         stargazers_count=1)
     github_mock = mock.Mock()
     github_mock.return_value.search_repositories.return_value = github_client_repos
@@ -367,8 +373,14 @@ def _get_function_info(function_row):
     )
 
 
-def _make_data_dir_path(relative_name):
-    return 'file://' + os.path.join(os.path.dirname(__file__), 'data', relative_name)
+def _make_archive_url_mock(relative_path):
+    result = mock.Mock()
+    result.format_map.return_value = _make_data_dir_path(relative_path)
+    return result
+
+
+def _make_data_dir_path(relative_path):
+    return 'file://' + os.path.join(os.path.dirname(__file__), 'data', relative_path)
 
 
 def _make_mock(**kwargs):
