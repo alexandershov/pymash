@@ -180,8 +180,9 @@ def _find_files(directory: str, extension: str) -> tp.List[str]:
     for matched_path in glob.iglob(pattern, recursive=True):
         full_path = os.path.join(directory, matched_path)
         rel_path = os.path.relpath(full_path, directory)
-        if not _is_test_file(rel_path):
-            files.append(full_path)
+        if os.path.isfile(full_path):
+            if not _is_test_file(rel_path):
+                files.append(full_path)
     return files
 
 
