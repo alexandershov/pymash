@@ -79,7 +79,7 @@ def _find_most_popular_github_repos(
 
 def _get_github_client():
     config = cfg.get_config()
-    return github.Github(config.github_token)
+    return github.Github(config.github_token, per_page=100)
 
 
 def _parse_repository(repository: ta.Repository) -> models.GithubRepo:
