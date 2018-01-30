@@ -68,9 +68,9 @@ def make_function_from_db_row(row: dict) -> models.Function:
 
 @utils.log_time(loggers.web)
 async def try_to_find_two_random_functions(engine: ta.AsyncEngine) -> ta.Functions:
-    select_some_function = _make_query_to_find_random_function()
-    select_another_function = _make_query_to_find_random_function()
-    select_two_functions = select_some_function.union_all(select_another_function)
+    select_first = _make_query_to_find_random_function()
+    select_second = _make_query_to_find_random_function()
+    select_two_functions = select_first.union_all(select_second)
     async with engine.acquire() as conn:
         rows = await conn.execute(select_two_functions)
         return list(map(make_function_from_db_row, rows))
