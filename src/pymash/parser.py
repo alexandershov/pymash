@@ -125,7 +125,7 @@ def get_functions_from_fileobj(
 def _get_functions_from_str(
         source_code: str, file_name: str, options: Options) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
-    nodes = _get_ast_nodes(source_code, source_lines, options.catch_exceptions)
+    nodes = _get_ast_nodes(source_code, source_lines, options)
     functions = []
     for fn_node, next_node in _iter_function_nodes_with_next(nodes):
         try:
@@ -148,12 +148,13 @@ def _get_functions_from_str(
     return functions
 
 
-def _get_ast_nodes(source_code: str, source_lines: tp.List[str], catch_exceptions: bool):
+def _get_ast_nodes(source_code: str, source_lines: tp.List[str], options: Options):
     try:
         parsed = ast.parse(source_code)
     except SyntaxError:
-        loggers.loader.error('could not parse source', exc_info=True)
-        if not catch_exceptions:
+        if options.verbose:
+            loggers.loader.error('could not parse source', exc_info=True)
+        if not options.catch_exceptions:
             raise
         return []
     nodes = copy.copy(parsed.body)
