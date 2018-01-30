@@ -152,10 +152,11 @@ def _get_functions_from_zip_archive(
 def _get_functions_from_directory(
         github_repo: models.GithubRepo, dir_path: str) -> tp.Set[parser.Function]:
     functions = set()
+    parser_options = parser.Options(catch_exceptions=True, verbose=False)
     with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
         py_files = _find_files(dir_path, 'py')
         for a_file in py_files:
-            functions.update(parser.get_functions(a_file, catch_exceptions=True))
+            functions.update(parser.get_functions(a_file, parser_options))
     loggers.loader.info(f'found %d distinct functions in %d files', len(functions), len(py_files))
     return functions
 

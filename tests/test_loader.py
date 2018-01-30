@@ -207,7 +207,7 @@ def fixture_github_mock():
 def test_select_good_functions(source_code, expected_names, monkeypatch):
     monkeypatch.setattr(loader.Selector, 'MIN_NUM_STATEMENTS', 2)
     functions = parser.get_functions_from_fileobj(
-        io.StringIO(textwrap.dedent(source_code)), 'file.py')
+        io.StringIO(textwrap.dedent(source_code)), 'file.py', parser.Options(False, True))
     good_functions = loader.select_good_functions(functions)
     actual_names = {a_function.name for a_function in good_functions}
     assert actual_names == set(expected_names)

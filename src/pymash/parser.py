@@ -37,6 +37,12 @@ class AstSyntaxError(BaseError):
     pass
 
 
+class Options:
+    def __init__(self, catch_exceptions: bool, verbose: bool) -> None:
+        self.catch_exceptions = catch_exceptions
+        self.verbose = verbose
+
+
 class _SentinelNode:
     def __init__(self, source_lines: tp.List[str]) -> None:
         self.lineno = len(source_lines) + 1
@@ -100,26 +106,26 @@ class Function:
         return f'{cls_name}(name={self.name!r}, text={self.text!r})'
 
 
-def get_functions(path: str, catch_exceptions: bool = False) -> tp.List[Function]:
+def get_functions(path: str, options: Options) -> tp.List[Function]:
     with open(path, encoding='utf-8') as fileobj:
-        return get_functions_from_fileobj(fileobj, path, catch_exceptions=catch_exceptions)
+        return get_functions_from_fileobj(fileobj, path, options=options)
 
 
 def get_functions_from_fileobj(
-        fileobj, file_name: str, catch_exceptions: bool = False) -> tp.List[Function]:
+        fileobj, file_name: str, options: Options) -> tp.List[Function]:
     try:
         source_code = fileobj.read()
     except UnicodeDecodeError:
-        if not catch_exceptions:
+        if not options.catch_exceptions:
             raise
         return []
-    return _get_functions_from_str(source_code, file_name, catch_exceptions=catch_exceptions)
+    return _get_functions_from_str(source_code, file_name, options)
 
 
 def _get_functions_from_str(
-        source_code: str, file_name: str, catch_exceptions: bool = False) -> tp.List[Function]:
+        source_code: str, file_name: str, options: Options) -> tp.List[Function]:
     source_lines = source_code.splitlines(keepends=True)
-    nodes = _get_ast_nodes(source_code, source_lines, catch_exceptions)
+    nodes = _get_ast_nodes(source_code, source_lines, options.catch_exceptions)
     functions = []
     for fn_node, next_node in _iter_function_nodes_with_next(nodes):
         try:
@@ -129,8 +135,9 @@ def _get_functions_from_str(
                 from_pos=_Position.from_ast_node(fn_node),
                 to_pos=_Position.from_ast_node(next_node))
         except UnknownFunctionText:
-            loggers.loader.error('unknown function text', exc_info=True)
-            if not catch_exceptions:
+            if options.verbose:
+                loggers.loader.error('unknown function text', exc_info=True)
+            if not options.catch_exceptions:
                 raise
         else:
             fn = Function(

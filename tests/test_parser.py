@@ -188,7 +188,7 @@ _EXPECTED_RESULT = [
 def test_get_functions(source_code, expected_functions):
     fileobj = io.StringIO(textwrap.dedent(source_code))
     actual_functions = parser.get_functions_from_fileobj(
-        fileobj, 'file.py', catch_exceptions=True)
+        fileobj, 'file.py', parser.Options(True, True))
     assert actual_functions == expected_functions
 
 
@@ -253,10 +253,10 @@ def test_get_functions(source_code, expected_functions):
 def test_get_functions_failure(source_code, expected_exception):
     with pytest.raises(expected_exception):
         parser.get_functions_from_fileobj(
-            io.StringIO(textwrap.dedent(source_code)), 'file.py')
+            io.StringIO(textwrap.dedent(source_code)), 'file.py', parser.Options(False, True))
 
 
 def test_get_functions_catch_decode_error():
     # noinspection PyTypeChecker
     fileobj = io.TextIOWrapper(io.BytesIO('тест'.encode('cp1251')), encoding='utf-8')
-    assert parser.get_functions_from_fileobj(fileobj, 'file.py', catch_exceptions=True) == []
+    assert parser.get_functions_from_fileobj(fileobj, 'file.py', parser.Options(True, True)) == []
