@@ -122,7 +122,7 @@ def load_github_repo(github_repo: models.GithubRepo) -> tp.Optional[models.Repo]
     with base.ScriptContext() as context:
         functions = _get_functions_from_github_repo(github_repo)
         functions_to_update = _select_functions_to_update(functions)
-        if len(functions) >= Selector.MIN_NUM_FUNCTIONS_PER_REPO:
+        if len(functions_to_update) >= Selector.MIN_NUM_FUNCTIONS_PER_REPO:
             return db.upsert_repo(context.engine, github_repo, functions_to_update)
         else:
             return None
