@@ -174,6 +174,9 @@ class GameAttempt:
         self.ip = ip
         self.at = at
 
+    def __repr__(self):
+        return f'GameAttempt(ip={self.ip!a}, at={self.at!a})'
+
 
 class Game:
     ALLOWED_SCORES = [0, 1]
