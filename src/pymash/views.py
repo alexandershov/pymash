@@ -1,3 +1,5 @@
+import functools
+import time
 import uuid
 
 import aiohttp_jinja2
@@ -11,8 +13,28 @@ from pymash import models
 from pymash import type_aliases as ta
 from pymash import utils
 
+_CACHE_LEADERS_IN_SECONDS = 5
+
+
+def _cache_view(seconds):
+    def decorator(view):
+        cache = {}
+
+        async def cached_view(*args, **kwargs):
+            now = _floor_to_full_nearest_multiply(int(time.time()), seconds)
+            if now not in cache:
+                cache.clear()
+                result = await view(*args, **kwargs)
+                cache[now] = result
+            return cache[now]
+
+        return functools.update_wrapper(cached_view, view)
+
+    return decorator
+
 
 @utils.log_time(loggers.web)
+@_cache_view(_CACHE_LEADERS_IN_SECONDS)
 @aiohttp_jinja2.template('leaders.html')
 async def show_leaders(request: web.Request) -> ta.DictOrResponse:
     repos = await db.find_active_repos_order_by_rating(request.app['db_engine'])
@@ -113,3 +135,7 @@ def _are_valid_functions(functions: ta.Functions):
     if white.repo_id == black.repo_id:
         return False
     return True
+
+
+def _floor_to_full_nearest_multiply(x, n):
+    return (x // n) * n
