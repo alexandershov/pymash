@@ -10,22 +10,21 @@ _IP = '127.0.0.1'
 _NOW = dt.datetime(2018, 1, 31, 19, 30, 27)
 
 
-def test_not_a_frauder():
-    watchman = _get_watchman()
-    with freezegun.freeze_time(_NOW):
-        details = watchman.get_fraud_details(_IP)
-    assert not details.is_fraud
-
-
 @freezegun.freeze_time(_NOW)
-def test_frauder():
+def test_watchman():
     watchman = _get_watchman()
+    assert not watchman.get_fraud_details(_IP).is_fraud
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 25)))
+
+    assert not watchman.get_fraud_details(_IP).is_fraud
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 26)))
+
     assert not watchman.get_fraud_details(_IP).is_fraud
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
+
     assert not watchman.get_fraud_details(_IP).is_fraud
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
+
     assert watchman.get_fraud_details(_IP).is_fraud
 
 
