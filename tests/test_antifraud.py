@@ -24,6 +24,7 @@ def test_frauder():
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 26)))
     assert not watchman.get_fraud_details(_IP).is_fraud
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
+    assert not watchman.get_fraud_details(_IP).is_fraud
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
     assert watchman.get_fraud_details(_IP).is_fraud
 
