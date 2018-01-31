@@ -1,3 +1,4 @@
+import datetime as dt
 import hashlib
 
 
@@ -166,6 +167,12 @@ class Match:
     def _expected_white_score(self) -> float:
         rating_diff = self.black.rating - self.white.rating
         return 1 / (1 + 10 ** (rating_diff / 400))
+
+
+class GameAttempt:
+    def __init__(self, ip: str, at: dt.datetime) -> None:
+        self.ip = ip
+        self.at = at
 
 
 class Game:
