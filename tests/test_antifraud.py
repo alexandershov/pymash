@@ -13,19 +13,19 @@ _NOW = dt.datetime(2018, 1, 31, 19, 30, 27)
 @freezegun.freeze_time(_NOW)
 def test_watchman():
     watchman = _get_watchman()
-    assert not watchman.get_fraud_details(_IP).is_banned
+    assert not watchman.is_banned_at(_IP, _NOW)
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 25)))
 
-    assert not watchman.get_fraud_details(_IP).is_banned
+    assert not watchman.is_banned_at(_IP, _NOW)
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 26)))
 
-    assert not watchman.get_fraud_details(_IP).is_banned
+    assert not watchman.is_banned_at(_IP, _NOW)
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
 
-    assert not watchman.get_fraud_details(_IP).is_banned
+    assert not watchman.is_banned_at(_IP, _NOW)
     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
 
-    assert watchman.get_fraud_details(_IP).is_banned
+    assert watchman.is_banned_at(_IP, _NOW)
 
 
 # @freezegun.freeze_time(_NOW)
