@@ -6,6 +6,7 @@ from pymash import fraud
 from pymash import models
 
 _IP = '127.0.0.1'
+_GOOD_IP = '0.0.0.0'
 
 _NOW = dt.datetime(2018, 1, 31, 19, 30, 27)
 
@@ -28,14 +29,18 @@ def test_watchman():
     assert watchman.is_banned_at(_IP, _NOW)
 
 
-# @freezegun.freeze_time(_NOW)
-# def test_watchman_gc():
-#     watchman = _get_watchman()
-#     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 28)))
-#     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 29)))
-#     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
-#     freezegun.freeze_time(dt.datetime(2018, 1, 31, 19, 30, 35))
-#     watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 31)))
+@freezegun.freeze_time(_NOW)
+def test_watchman_gc():
+    watchman = _get_watchman()
+    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 28)))
+    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 29)))
+    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
+    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
+    watchman.add(models.GameAttempt('0.0.0.0', dt.datetime(2018, 1, 31, 19, 30, 30)))
+    freezegun.freeze_time(dt.datetime(2018, 1, 31, 19, 45, 0))
+    watchman.add(models.GameAttempt('1.1.1.1', dt.datetime(2018, 1, 31, 19, 46, 31)))
+    assert watchman.is_banned_at(_IP, _NOW)
+    assert watchman.num_ips == 1
 
 
 def _get_watchman():
@@ -43,4 +48,4 @@ def _get_watchman():
         rate_limit=1,
         window=dt.timedelta(seconds=3),
         ban_duration=dt.timedelta(minutes=30),
-        num_attempts_before_gc=3)
+        num_ips_to_trigger_gc=3)

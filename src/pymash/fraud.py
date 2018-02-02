@@ -34,14 +34,14 @@ class BannedDetails(BanDetails):
 # TODO: expire old records
 class Watchman:
     def __init__(self, rate_limit: float, window: dt.timedelta, ban_duration: dt.timedelta,
-                 num_attempts_before_gc: int = 1_000_000) -> None:
+                 num_ips_to_trigger_gc: int = 1_000_000) -> None:
         assert window.total_seconds() >= 1
         assert window.total_seconds().is_integer()
         self._rate_limit = rate_limit
         self._window = window
         self._ban_duration = ban_duration
         self._info_by_ip: tp.Dict[str, _IpInfo] = collections.defaultdict(_IpInfo)
-        self._num_attempts_before_gc = num_attempts_before_gc
+        self._num_ips_to_trigger_gc = num_ips_to_trigger_gc
 
     # TODO: clean it up
     def add(self, attempt: models.GameAttempt) -> None:
@@ -50,9 +50,7 @@ class Watchman:
         at_sec = attempt.at.replace(microsecond=0)
         cur = at_sec - self._window + dt.timedelta(seconds=1)
         now = dt.datetime.utcnow()
-        if info.is_banned_at(now):
-            return
-        while cur <= at_sec:
+        while cur <= at_sec and not info.is_banned_at(now):
             count = info.get_count_in_interval(cur, cur + self._window)
             cur_rate = count / self._window.total_seconds()
             if cur_rate > self._rate_limit:
@@ -61,10 +59,21 @@ class Watchman:
                 info.ban(end, reason)
                 loggers.games_queue.info('banning ip %s till %s because %s', attempt.ip, end, reason)
             cur += dt.timedelta(seconds=1)
+        if len(self._info_by_ip) >= self._num_ips_to_trigger_gc:
+            self._gc(now)
 
     def is_banned_at(self, ip: str, datetime: dt.datetime) -> bool:
         info = self._info_by_ip[ip]
         return info.is_banned_at(datetime)
+
+    @property
+    def num_ips(self):
+        return len(self._info_by_ip)
+
+    def _gc(self, now: dt.datetime) -> None:
+        for ip in list(self._info_by_ip):
+            if not self.is_banned_at(ip, now):
+                del self._info_by_ip[ip]
 
 
 class _IpInfo:
