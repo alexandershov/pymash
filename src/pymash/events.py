@@ -33,18 +33,24 @@ def make_game_finished_event(ip: str, game: models.Game) -> dict:
         'black_id': game.black_id,
         'white_score': game.result.white_score,
         'black_score': game.result.black_score,
-        'occurred_at': dt.datetime.utcnow().isoformat(),
+        'occurred_at': dt.datetime.utcnow().isoformat(timespec='seconds'),
         'ip': ip,
     }
 
 
-def parse_game_finished_event(data: dict) -> models.Game:
+def parse_game_finished_event_as_game(data: dict) -> models.Game:
     result = models.GameResult(data['white_score'], data['black_score'])
     return models.Game(
         game_id=data['game_id'],
         white_id=data['white_id'],
         black_id=data['black_id'],
         result=result)
+
+
+def parse_game_finished_event_as_game_attempt(data: dict) -> models.GameAttempt:
+    return models.GameAttempt(
+        ip=data['ip'],
+        at=dt.datetime.strptime(data['occurred_at'], '%Y-%m-%dT%H:%M:%S'))
 
 
 @utils.log_time(loggers.web)

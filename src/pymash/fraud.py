@@ -33,7 +33,7 @@ class BannedDetails(BanDetails):
 
 class Watchman:
     def __init__(self, rate_limit: float, window: dt.timedelta, ban_duration: dt.timedelta,
-                 num_ips_to_trigger_gc: int = 10_000) -> None:
+                 num_ips_to_trigger_gc: int) -> None:
         assert window.total_seconds() >= 1
         assert window.total_seconds().is_integer()
         self._rate_limit = rate_limit
