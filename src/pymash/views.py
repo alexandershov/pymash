@@ -70,7 +70,7 @@ async def post_game(request: web.Request) -> web.Response:
     data = await request.post()
     game = await _get_game_or_error(request, data)
     _validate_hash(request, game, data[_PostGameInput.Keys.hash_])
-    await events.post_game_finished_event(request.app, game)
+    await events.post_game_finished_event(request, game)
     redirect_url = request.app.router['new_game'].url_for()
     return web.HTTPFound(redirect_url)
 

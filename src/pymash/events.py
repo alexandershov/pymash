@@ -19,13 +19,14 @@ class DeletedFromDb(BaseError):
 
 
 @utils.log_time(loggers.web)
-async def post_game_finished_event(app: web.Application, game: models.Game) -> None:
-    event = make_game_finished_event_from_game(game)
+async def post_game_finished_event(request: web.Request, game: models.Game) -> None:
+    app = request.app
+    event = make_game_finished_event(_get_user_ip(request), game)
     await _ensure_games_queue_is_ready(app)
     await app['games_queue'].send_message(MessageBody=json.dumps(event))
 
 
-def make_game_finished_event_from_game(game: models.Game) -> dict:
+def make_game_finished_event(ip: str, game: models.Game) -> dict:
     return {
         'game_id': game.game_id,
         'white_id': game.white_id,
@@ -33,6 +34,7 @@ def make_game_finished_event_from_game(game: models.Game) -> dict:
         'white_score': game.result.white_score,
         'black_score': game.result.black_score,
         'occurred_at': dt.datetime.utcnow().isoformat(),
+        'ip': ip,
     }
 
 
@@ -73,3 +75,8 @@ def process_game_finished_event(engine: ta.Engine, game: models.Game) -> None:
         raise DeletedFromDb(str(exc)) from exc
     else:
         loggers.games_queue.info('after: white is %s; black is %s', white_repo, black_repo)
+
+
+def _get_user_ip(request: web.Request) -> str:
+    # TODO: is this correct?
+    return request.headers.get('X-Real-Ip', '')
