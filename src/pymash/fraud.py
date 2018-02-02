@@ -25,7 +25,7 @@ class BannedDetails(BanDetails):
         self._reason = reason
 
     def is_banned_at(self, datetime: dt.datetime) -> bool:
-        return self._end < datetime
+        return datetime < self._end
 
     def __repr__(self):
         return f'BannedDetails(end={self._end!a}, reason={self._reason!a})'
@@ -47,12 +47,13 @@ class Watchman:
     def add(self, attempt: models.GameAttempt) -> None:
         info = self._info_by_ip[attempt.ip]
         info.add(attempt.at)
-        cur = attempt.at - self._window + dt.timedelta(seconds=1)
+        at_sec = attempt.at.replace(microsecond=0)
+        cur = at_sec - self._window + dt.timedelta(seconds=1)
         now = dt.datetime.utcnow()
         if info.is_banned_at(now):
             return
-        while cur <= attempt.at + dt.timedelta(seconds=1):
-            count = info.get_count_in_interval(cur, cur + self._window - dt.timedelta(seconds=1))
+        while cur <= at_sec:
+            count = info.get_count_in_interval(cur, cur + self._window)
             cur_rate = count / self._window.total_seconds()
             if cur_rate > self._rate_limit:
                 reason = f'cur_rate is {cur_rate}, rate_limit is {self._rate_limit}'
