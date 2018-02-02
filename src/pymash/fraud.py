@@ -31,10 +31,9 @@ class BannedDetails(BanDetails):
         return f'BannedDetails(end={self._end!a}, reason={self._reason!a})'
 
 
-# TODO: expire old records
 class Watchman:
     def __init__(self, rate_limit: float, window: dt.timedelta, ban_duration: dt.timedelta,
-                 num_ips_to_trigger_gc: int = 1_000_000) -> None:
+                 num_ips_to_trigger_gc: int = 10_000) -> None:
         assert window.total_seconds() >= 1
         assert window.total_seconds().is_integer()
         self._rate_limit = rate_limit
