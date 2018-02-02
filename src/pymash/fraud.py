@@ -43,12 +43,11 @@ class Watchman:
         self._num_ips_to_trigger_gc = num_ips_to_trigger_gc
 
     # TODO: clean it up
-    def add(self, attempt: models.GameAttempt) -> None:
+    def add(self, now: dt.datetime, attempt: models.GameAttempt) -> None:
         info = self._info_by_ip[attempt.ip]
         info.add(attempt.at)
         at_sec = attempt.at.replace(microsecond=0)
         cur = at_sec - self._window + dt.timedelta(seconds=1)
-        now = dt.datetime.utcnow()
         while cur <= at_sec and not info.is_banned_at(now):
             count = info.get_count_in_interval(cur, cur + self._window)
             cur_rate = count / self._window.total_seconds()

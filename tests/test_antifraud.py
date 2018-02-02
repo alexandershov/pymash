@@ -1,7 +1,5 @@
 import datetime as dt
 
-import freezegun
-
 from pymash import fraud
 from pymash import models
 
@@ -11,34 +9,33 @@ _GOOD_IP = '0.0.0.0'
 _NOW = dt.datetime(2018, 1, 31, 19, 30, 27)
 
 
-@freezegun.freeze_time(_NOW)
 def test_watchman():
     watchman = _get_watchman()
     assert not watchman.is_banned_at(_IP, _NOW)
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 25)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 25)))
 
     assert not watchman.is_banned_at(_IP, _NOW)
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 26)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 26)))
 
     assert not watchman.is_banned_at(_IP, _NOW)
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
 
     assert not watchman.is_banned_at(_IP, _NOW)
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 27)))
 
     assert watchman.is_banned_at(_IP, _NOW)
 
 
-@freezegun.freeze_time(_NOW)
 def test_watchman_gc():
+    # TODO: why freezegun leads to sigsegv?
     watchman = _get_watchman()
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 28)))
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 29)))
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
-    watchman.add(models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
-    watchman.add(models.GameAttempt('0.0.0.0', dt.datetime(2018, 1, 31, 19, 30, 30)))
-    freezegun.freeze_time(dt.datetime(2018, 1, 31, 19, 45, 0))
-    watchman.add(models.GameAttempt('1.1.1.1', dt.datetime(2018, 1, 31, 19, 46, 31)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 28)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 29)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
+    watchman.add(_NOW, models.GameAttempt('0.0.0.0', dt.datetime(2018, 1, 31, 19, 30, 30)))
+    watchman.add(dt.datetime(2018, 1, 31, 19, 45, 0),
+                 models.GameAttempt('1.1.1.1', dt.datetime(2018, 1, 31, 19, 46, 31)))
     assert watchman.is_banned_at(_IP, _NOW)
     assert watchman.num_ips == 1
 
