@@ -159,7 +159,7 @@ def _get_functions_from_directory(
         py_files = _find_files(dir_path, 'py')
         for a_file in py_files:
             functions.update(parser.get_functions(a_file, parser_options))
-    loggers.loader.info(f'found %d distinct functions in %d files', len(functions), len(py_files))
+    loggers.loader.info('found %d distinct functions in %d files', len(functions), len(py_files))
     return functions
 
 
