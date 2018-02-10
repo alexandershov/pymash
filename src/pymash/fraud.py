@@ -73,12 +73,12 @@ class Watchman:
         info.add(attempt.at)
         at_sec = attempt.at.replace(microsecond=0)
         start = at_sec - self._window + dt.timedelta(seconds=1)
-        for cur in _datetimes_between(start, at_sec, step=dt.timedelta(seconds=1)):
-            cur_rate = self._get_cur_rate(info, cur)
-            if cur_rate > self._rate_limit:
-                self._ban(attempt=attempt, info=info, cur_rate=cur_rate, now=now)
+        for datetime in _datetimes_between(start, at_sec, step=dt.timedelta(seconds=1)):
+            rate = self._get_cur_rate(info, datetime)
+            if rate > self._rate_limit:
+                self._ban(attempt=attempt, info=info, rate=rate, now=now)
 
-        if len(self._info_by_ip) >= self._num_ips_to_trigger_gc:
+        if self._needs_gc():
             self._gc(now)
 
     def is_banned_at(self, ip: str, datetime: dt.datetime) -> bool:
@@ -93,11 +93,14 @@ class Watchman:
         count = info.get_count_in_interval(at, at + self._window)
         return count / self._window.total_seconds()
 
-    def _ban(self, attempt: models.GameAttempt, info: _IpInfo, cur_rate: float, now: dt.datetime) -> None:
-        reason = f'cur_rate is {cur_rate}, rate_limit is {self._rate_limit}'
+    def _ban(self, attempt: models.GameAttempt, info: _IpInfo, rate: float, now: dt.datetime) -> None:
+        reason = f'cur_rate is {rate}, rate_limit is {self._rate_limit}'
         end = now + self._ban_duration
         info.ban(end, reason)
         loggers.games_queue.info('banning ip %s till %s because %s', attempt.ip, end, reason)
+
+    def _needs_gc(self) -> bool:
+        return len(self._info_by_ip) >= self._num_ips_to_trigger_gc
 
     def _gc(self, now: dt.datetime) -> None:
         for ip in list(self._info_by_ip):
