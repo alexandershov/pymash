@@ -72,13 +72,12 @@ class Watchman:
         info = self._info_by_ip[attempt.ip]
         info.add(attempt.at)
         at_sec = attempt.at.replace(microsecond=0)
-        cur = at_sec - self._window + dt.timedelta(seconds=1)
-        while cur <= at_sec:
+        start = at_sec - self._window + dt.timedelta(seconds=1)
+        for cur in _datetimes_between(start, at_sec, step=dt.timedelta(seconds=1)):
             cur_rate = self._get_cur_rate(info, cur)
             if cur_rate > self._rate_limit:
                 self._ban(attempt=attempt, info=info, cur_rate=cur_rate, now=now)
 
-            cur += dt.timedelta(seconds=1)
         if len(self._info_by_ip) >= self._num_ips_to_trigger_gc:
             self._gc(now)
 
@@ -108,3 +107,10 @@ class Watchman:
 
 def _convert_to_unix_ts(datetime: dt.datetime) -> int:
     return int(datetime.replace(tzinfo=dt.timezone.utc).timestamp())
+
+
+def _datetimes_between(first, last, step):
+    cur = first
+    while first <= last:
+        yield first
+        first += step
