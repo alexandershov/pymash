@@ -45,8 +45,8 @@ def _process_and_check_finished_games(pymash_engine, game):
     _check_game_and_repos(pymash_engine, game)
 
 
-def _call_process_finished_games():
-    process_finished_games.main(iterations=range(1))
+def _call_process_finished_games(watchman=None):
+    process_finished_games.main(iterations=range(1), watchman=watchman)
 
 
 @pytest.mark.usefixtures('add_functions_and_repos')
@@ -54,6 +54,18 @@ def test_process_game_finished_event_unknown_white_id(pymash_engine, monkeypatch
     game = _get_game(white_id=1000000)
     _monkeypatch_boto3(monkeypatch, [game])
     _call_process_finished_games()
+    _assert_game_not_saved(pymash_engine, game)
+    _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1800)
+    _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)
+
+
+@pytest.mark.usefixtures('add_functions_and_repos')
+def test_process_game_finished_is_banned(pymash_engine, monkeypatch):
+    game = _get_game()
+    _monkeypatch_boto3(monkeypatch, [game])
+    watchman = mock.Mock()
+    watchman.is_banned_at.return_value = True
+    _call_process_finished_games(watchman=watchman)
     _assert_game_not_saved(pymash_engine, game)
     _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1800)
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)
