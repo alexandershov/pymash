@@ -67,19 +67,15 @@ class Watchman:
         self._info_by_ip: tp.Dict[str, _IpInfo] = collections.defaultdict(_IpInfo)
         self._num_ips_to_trigger_gc = num_ips_to_trigger_gc
 
-    # TODO: clean it up
     def add(self, now: dt.datetime, attempt: models.GameAttempt) -> None:
         info = self._info_by_ip[attempt.ip]
         info.add(attempt.at)
-        at_sec = attempt.at.replace(microsecond=0)
-        start = at_sec - self._window + dt.timedelta(seconds=1)
-        for datetime in _datetimes_between(start, at_sec, step=dt.timedelta(seconds=1)):
+        for datetime in self._rate_affecting_datetimes(attempt):
             rate = self._get_rate(info, start=datetime)
             if rate > self._rate_limit:
                 self._ban(attempt=attempt, info=info, rate=rate, now=now)
 
-        if self._needs_gc():
-            self._gc(now)
+        self._gc(now)
 
     def is_banned_at(self, ip: str, datetime: dt.datetime) -> bool:
         info = self._info_by_ip[ip]
@@ -89,6 +85,11 @@ class Watchman:
     def num_ips(self):
         return len(self._info_by_ip)
 
+    def _rate_affecting_datetimes(self, attempt: models.GameAttempt) -> tp.Iterable[dt.datetime]:
+        at_exact_sec = attempt.at.replace(microsecond=0)
+        start = at_exact_sec - self._window + dt.timedelta(seconds=1)
+        yield from _datetimes_between(start, at_exact_sec, step=dt.timedelta(seconds=1))
+
     def _get_rate(self, info: _IpInfo, start: dt.datetime) -> float:
         count = info.get_count_in_interval(start, start + self._window)
         return count / self._window.total_seconds()
@@ -97,12 +98,14 @@ class Watchman:
         reason = f'cur_rate is {rate}, rate_limit is {self._rate_limit}'
         end = now + self._ban_duration
         info.ban(end, reason)
-        loggers.games_queue.info('banning ip %s till %s because %s', attempt.ip, end, reason)
+        loggers.games_queue.info('banned ip %s till %s because %s', attempt.ip, end, reason)
 
     def _needs_gc(self) -> bool:
         return len(self._info_by_ip) >= self._num_ips_to_trigger_gc
 
     def _gc(self, now: dt.datetime) -> None:
+        if not self._needs_gc():
+            return
         for ip in list(self._info_by_ip):
             if not self.is_banned_at(ip, now):
                 del self._info_by_ip[ip]
