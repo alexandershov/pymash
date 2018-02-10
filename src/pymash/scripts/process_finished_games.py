@@ -9,8 +9,9 @@ from pymash import loggers
 from pymash.scripts import base
 
 
-def main(iterations, wait_time_seconds=10):
-    watchman = _get_watchman()
+def main(iterations, wait_time_seconds=10, watchman=None):
+    if watchman is None:
+        watchman = _get_watchman()
     with base.ScriptContext() as context:
         for _ in iterations:
             _process_new_messages(
