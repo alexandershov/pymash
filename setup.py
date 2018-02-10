@@ -20,7 +20,6 @@ setuptools.setup(
         'voluptuous==0.10.5',
     ],
     tests_require=[
-        'freezegun==0.3.9',
         'pytest==3.2.2',
         'pytest-aiohttp==0.1.3',
     ],

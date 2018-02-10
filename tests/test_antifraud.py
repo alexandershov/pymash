@@ -27,7 +27,6 @@ def test_watchman():
 
 
 def test_watchman_gc():
-    # TODO: why freezegun leads to sigsegv?
     watchman = _get_watchman(max_num_attempts_without_gc=5)
     watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 28)))
     watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 29)))
