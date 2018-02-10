@@ -117,7 +117,7 @@ def _convert_to_unix_ts(datetime: dt.datetime) -> int:
     return int(datetime.replace(tzinfo=dt.timezone.utc).timestamp())
 
 
-def _datetimes_between(first, last, step):
+def _datetimes_between(first: dt.datetime, last: dt.datetime, step: dt.timedelta) -> tp.Iterable[dt.datetime]:
     cur = first
     while cur <= last:
         yield cur
