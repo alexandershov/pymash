@@ -140,6 +140,7 @@ def _get_functions_from_github_repo(github_repo: models.GithubRepo) -> tp.Set[pa
 def _urlretrieve(url, output_path):
     resp = requests.get(url)
     with open(output_path, 'wb') as fileobj:
+        loggers.loader.info('writing %d bytes to %s', len(resp.content), output_path)
         fileobj.write(resp.content)
 
 
