@@ -8,6 +8,7 @@ _WHITELISTED_FULL_NAMES = {
 }
 _BLACKLISTED_FULL_NAMES = {
     'isocpp/CppCoreGuidelines',
+    'ytisf/theZoo',
 }
 
 
