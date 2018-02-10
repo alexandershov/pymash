@@ -82,7 +82,7 @@ class Watchman:
         return info.is_banned_at(datetime)
 
     @property
-    def num_ips(self):
+    def num_ips(self) -> int:
         return len(self._info_by_ip)
 
     def _rate_affecting_datetimes(self, attempt: models.GameAttempt) -> tp.Iterable[dt.datetime]:
@@ -117,6 +117,6 @@ def _convert_to_unix_ts(datetime: dt.datetime) -> int:
 
 def _datetimes_between(first, last, step):
     cur = first
-    while first <= last:
-        yield first
-        first += step
+    while cur <= last:
+        yield cur
+        cur += step
