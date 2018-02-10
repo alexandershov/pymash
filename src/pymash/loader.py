@@ -116,7 +116,7 @@ def _load_many_github_repos(github_repos: ta.GithubRepos, concurrency: int) -> t
 
 
 # TODO: maybe separate parsing & saving to database
-@utils.log_time(loggers.loader)
+@utils.log_time(loggers.loader, lambda github_repo: github_repo.full_name)
 def load_github_repo(github_repo: models.GithubRepo) -> tp.Optional[models.Repo]:
     loggers.loader.info('loading repo %s', github_repo.full_name)
     with base.ScriptContext() as context:
@@ -125,6 +125,8 @@ def load_github_repo(github_repo: models.GithubRepo) -> tp.Optional[models.Repo]
         if len(functions_to_update) >= Selector.MIN_NUM_FUNCTIONS_PER_REPO:
             return db.upsert_repo(context.engine, github_repo, functions_to_update)
         else:
+            loggers.loader.info('skipped upsert_repo(%s), because repo has too few functions (%d)',
+                                github_repo.url, len(functions_to_update))
             return None
 
 
