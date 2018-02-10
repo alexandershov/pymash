@@ -74,7 +74,7 @@ class Watchman:
         at_sec = attempt.at.replace(microsecond=0)
         start = at_sec - self._window + dt.timedelta(seconds=1)
         for datetime in _datetimes_between(start, at_sec, step=dt.timedelta(seconds=1)):
-            rate = self._get_cur_rate(info, datetime)
+            rate = self._get_rate(info, start=datetime)
             if rate > self._rate_limit:
                 self._ban(attempt=attempt, info=info, rate=rate, now=now)
 
@@ -89,8 +89,8 @@ class Watchman:
     def num_ips(self):
         return len(self._info_by_ip)
 
-    def _get_cur_rate(self, info: _IpInfo, at: dt.datetime) -> float:
-        count = info.get_count_in_interval(at, at + self._window)
+    def _get_rate(self, info: _IpInfo, start: dt.datetime) -> float:
+        count = info.get_count_in_interval(start, start + self._window)
         return count / self._window.total_seconds()
 
     def _ban(self, attempt: models.GameAttempt, info: _IpInfo, rate: float, now: dt.datetime) -> None:
