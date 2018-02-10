@@ -52,7 +52,7 @@ def _get_watchman():
         rate_limit=1,
         window=dt.timedelta(seconds=10),
         ban_duration=dt.timedelta(minutes=30),
-        num_ips_to_trigger_gc=10_000)
+        max_num_attempts_without_gc=10_000)
 
 
 if __name__ == '__main__':

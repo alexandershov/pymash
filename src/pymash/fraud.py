@@ -56,18 +56,19 @@ class _IpInfo:
 
 
 class Watchman:
-    # TODO: num_ips should be num_game_attempts
     def __init__(self, rate_limit: float, window: dt.timedelta, ban_duration: dt.timedelta,
-                 num_ips_to_trigger_gc: int) -> None:
+                 max_num_attempts_without_gc: int) -> None:
         assert window.total_seconds() >= 1
         assert window.total_seconds().is_integer()
         self._rate_limit = rate_limit
         self._window = window
         self._ban_duration = ban_duration
         self._info_by_ip: tp.Dict[str, _IpInfo] = collections.defaultdict(_IpInfo)
-        self._num_ips_to_trigger_gc = num_ips_to_trigger_gc
+        self._num_attempts_without_gc = 0
+        self._max_num_attempts_without_gc = max_num_attempts_without_gc
 
     def add(self, now: dt.datetime, attempt: models.GameAttempt) -> None:
+        self._num_attempts_without_gc += 1
         info = self._info_by_ip[attempt.ip]
         info.add(attempt.at)
         for datetime in self._rate_affecting_datetimes(attempt):
@@ -101,7 +102,7 @@ class Watchman:
         loggers.games_queue.info('banned ip %s till %s because %s', attempt.ip, end, reason)
 
     def _needs_gc(self) -> bool:
-        return len(self._info_by_ip) >= self._num_ips_to_trigger_gc
+        return self._num_attempts_without_gc >= self._max_num_attempts_without_gc
 
     def _gc(self, now: dt.datetime) -> None:
         if not self._needs_gc():
@@ -109,6 +110,7 @@ class Watchman:
         for ip in list(self._info_by_ip):
             if not self.is_banned_at(ip, now):
                 del self._info_by_ip[ip]
+        self._num_attempts_without_gc = 0
 
 
 def _convert_to_unix_ts(datetime: dt.datetime) -> int:

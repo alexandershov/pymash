@@ -28,21 +28,20 @@ def test_watchman():
 
 def test_watchman_gc():
     # TODO: why freezegun leads to sigsegv?
-    watchman = _get_watchman()
+    watchman = _get_watchman(max_num_attempts_without_gc=5)
     watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 28)))
     watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 29)))
     watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
     watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
-    watchman.add(_NOW, models.GameAttempt('0.0.0.0', dt.datetime(2018, 1, 31, 19, 30, 30)))
     watchman.add(dt.datetime(2018, 1, 31, 19, 45, 0),
                  models.GameAttempt('1.1.1.1', dt.datetime(2018, 1, 31, 19, 46, 31)))
     assert watchman.is_banned_at(_IP, _NOW)
     assert watchman.num_ips == 1
 
 
-def _get_watchman():
+def _get_watchman(max_num_attempts_without_gc=100):
     return fraud.Watchman(
         rate_limit=1,
         window=dt.timedelta(seconds=3),
         ban_duration=dt.timedelta(minutes=30),
-        num_ips_to_trigger_gc=3)
+        max_num_attempts_without_gc=max_num_attempts_without_gc)
