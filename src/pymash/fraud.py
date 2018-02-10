@@ -6,20 +6,20 @@ from pymash import loggers
 from pymash import models
 
 
-class BanDetails:
+class _BanDetails:
     def is_banned_at(self, datetime: dt.datetime) -> bool:
         raise NotImplementedError
 
 
-class NotBannedDetails(BanDetails):
+class _NotBannedDetails(_BanDetails):
     def is_banned_at(self, datetime: dt.datetime) -> bool:
         return False
 
     def __repr__(self):
-        return f'NotBannedDetails()'
+        return f'_NotBannedDetails()'
 
 
-class BannedDetails(BanDetails):
+class _BannedDetails(_BanDetails):
     def __init__(self, end, reason):
         self._end = end
         self._reason = reason
@@ -28,19 +28,19 @@ class BannedDetails(BanDetails):
         return datetime < self._end
 
     def __repr__(self):
-        return f'BannedDetails(end={self._end!a}, reason={self._reason!a})'
+        return f'_BannedDetails(end={self._end!a}, reason={self._reason!a})'
 
 
 class _IpInfo:
     def __init__(self):
         self._count_by_second = collections.Counter()
-        self._ban_details = NotBannedDetails()
+        self._ban_details = _NotBannedDetails()
 
     def add(self, datetime: dt.datetime) -> None:
         self._count_by_second[_convert_to_unix_ts(datetime)] += 1
 
     def ban(self, end, reason) -> None:
-        self._ban_details = BannedDetails(end, reason)
+        self._ban_details = _BannedDetails(end, reason)
 
     def is_banned_at(self, datetime):
         return self._ban_details.is_banned_at(datetime)
