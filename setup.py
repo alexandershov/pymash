@@ -8,7 +8,7 @@ setuptools.setup(
     install_requires=[
         'aioboto3==2.0.1',
         'aiodns==1.1.1',
-        'aiohttp==2.2.5',
+        'aiohttp==2.3.10',
         'aiohttp-jinja2==0.14.0',
         'aiopg==0.13.1',
         'cchardet==2.1.1',  # faster replacement for chardet, used by aiohttp
