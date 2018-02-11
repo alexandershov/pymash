@@ -1,5 +1,6 @@
 import asyncio
 import collections
+import json
 import random
 from unittest import mock
 
@@ -108,15 +109,18 @@ def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black
 async def test_post_game(data, is_success, test_client, monkeypatch):
     app = main.create_app()
     games_queue_mock = await _monkeypatch_sqs(app, monkeypatch)
-
+    x_forwarded_for_header = '192.168.1.1, 127.0.0.1'
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
                            data=data,
-                           headers={'X-Forwarded-For': '192.68.1.1'})
+                           headers={'X-Forwarded-For': x_forwarded_for_header})
     if is_success:
         assert response.status == 302
         assert response.headers['Location'] == '/game'
-        games_queue_mock.send_message.assert_called_once()
+        calls = games_queue_mock.send_message.mock_calls
+        assert len(calls) == 1
+        _, _, call_kwargs = calls[0]
+        assert json.loads(call_kwargs['MessageBody'])['ip'] == '192.168.1.1'
     else:
         assert response.status == 400
         games_queue_mock.send_message.assert_not_called()
