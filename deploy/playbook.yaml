@@ -1,0 +1,33 @@
+- hosts: all
+  become: true
+  tasks:
+    - name: Ensure python3.6 is installed
+      command: amazon-linux-extras install python3 creates=/usr/bin/python3.6
+
+    - name: Install git
+      yum: name=git state=present
+
+    - name: Install pymash & dependencies
+      pip:
+        executable: pip3.6
+        name: git+https://github.com/alexandershov/pymash@master
+
+    - name: Ensure /etc/pymash.d directory is present
+      file: path=/etc/pymash.d state=directory
+
+    - name: Copy environment file
+      copy: src=/usr/local/etc/pymash/environment dest=/etc/pymash.d/environment
+
+#    TODO copy & start it only if role matches
+    - name: Copy pymash_web.service file
+      copy: src=pymash_web.service dest=/etc/systemd/system
+
+    - name: Restart pymash_web
+      systemd: name=pymash_web state=restarted enabled=true daemon-reload=true
+
+#    TODO copy & start it only if role matches
+    - name: Copy pymash_background.service file
+      copy: src=pymash_background.service dest=/etc/systemd/system
+
+    - name: Restart pymash_background
+      systemd: name=pymash_background state=restarted enabled=true daemon-reload=true
