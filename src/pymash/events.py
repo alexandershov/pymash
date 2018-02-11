@@ -23,6 +23,7 @@ async def post_game_finished_event(request: web.Request, game: models.Game) -> N
     app = request.app
     event = make_game_finished_event(_get_user_ip(request), game)
     await _ensure_games_queue_is_ready(app)
+    loggers.web.info('sending game_finished event %r', event)
     await app['games_queue'].send_message(MessageBody=json.dumps(event))
 
 
@@ -84,5 +85,4 @@ def process_game_finished_event(engine: ta.Engine, game: models.Game) -> None:
 
 
 def _get_user_ip(request: web.Request) -> str:
-    # TODO: is this correct?
-    return request.headers.get('X-Real-Ip', '')
+    return request.headers['X-Forwarded-For'].split(', ')[0]

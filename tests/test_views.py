@@ -111,7 +111,8 @@ async def test_post_game(data, is_success, test_client, monkeypatch):
 
     response = await _post(app, test_client, '/game/some_game_id',
                            allow_redirects=False,
-                           data=data)
+                           data=data,
+                           headers={'X-Forwarded-For': '192.68.1.1'})
     if is_success:
         assert response.status == 302
         assert response.headers['Location'] == '/game'
@@ -176,12 +177,13 @@ async def _post_text(app, test_client, path, data=None) -> str:
 
 
 async def _post(app, test_client, path, allow_redirects=True,
-                data=None) -> aiohttp.client.ClientResponse:
+                data=None, headers=None) -> aiohttp.client.ClientResponse:
     client = await test_client(app)
     return await client.post(
         path,
         allow_redirects=allow_redirects,
-        data=data)
+        data=data,
+        headers=headers)
 
 
 async def _get_checked_response_text(resp):
