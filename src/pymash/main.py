@@ -10,11 +10,17 @@ from pymash import loggers
 from pymash import routes
 from pymash import utils
 
+ACCESS_LOG_FORMAT = '%t %a %{X-Forwarded-For}i "%r" %s %b %Tf "%{Referer}i" "%{User-Agent}i'
+
 
 def main():
     args = _parse_args()
     app = create_app()
-    web.run_app(app, host=args.host, port=args.port)
+    web.run_app(
+        app,
+        host=args.host,
+        port=args.port,
+        access_log_format=ACCESS_LOG_FORMAT)
 
 
 def create_app() -> web.Application:
