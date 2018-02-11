@@ -18,16 +18,18 @@
     - name: Copy environment file
       copy: src=/usr/local/etc/pymash/environment dest=/etc/pymash.d/environment
 
-#    TODO copy & start it only if role matches
     - name: Copy pymash_web.service file
       copy: src=pymash_web.service dest=/etc/systemd/system
+      when: "'web' in group_names"
 
     - name: Restart pymash_web
       systemd: name=pymash_web state=restarted enabled=true daemon-reload=true
+      when: "'web' in group_names"
 
-#    TODO copy & start it only if role matches
     - name: Copy pymash_background.service file
       copy: src=pymash_background.service dest=/etc/systemd/system
+      when: "'background' in group_names"
 
     - name: Restart pymash_background
       systemd: name=pymash_background state=restarted enabled=true daemon-reload=true
+      when: "'background' in group_names"
