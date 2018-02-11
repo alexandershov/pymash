@@ -1,0 +1,17 @@
+- name: Launch ec2 instance
+  connection: local
+  hosts: local
+  gather_facts: false
+
+  tasks:
+    - name: Launch ec2 instance
+      ec2:
+        key_name: amazon
+        group: launch-wizard-2
+        instance_type: t2.micro
+        image: ami-1b2bb774
+        wait: true
+        assign_public_ip: true
+        vpc_subnet_id: subnet-f303f38e
+        region: eu-central-1
+      register: ec2
