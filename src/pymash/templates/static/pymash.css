@@ -6730,6 +6730,12 @@ label.panel-block {
 .table td:first-child {
   width: 100%; }
 
+.table td:last-child {
+  text-align: right; }
+
+.leaders-wrapper {
+  padding: 0 1em; }
+
 body {
   display: flex;
   min-height: 100vh;

@@ -14,16 +14,14 @@
     <header>
         {% set is_leaders_view = request.match_info.route.name == 'show_leaders' %}
         <div class="navbar is-primary" role="navigation" aria-label="main navigation">
-            <div class="container">
-                <div class="navbar-brand">
-                    <!-- TODO(aershov182): add some icon here -->
-                    <a href="{{ url('new_game') }}"
-                       class="navbar-item{% if not is_leaders_view %} is-active{% endif %}">Pymash</a>
-                    <a href="{{ url('show_leaders') }}"
-                       class="navbar-item{% if is_leaders_view %} is-active{% endif %}">
-                        Leaders
-                    </a>
-                </div>
+            <div class="navbar-brand">
+                <!-- TODO(aershov182): add some icon here -->
+                <a href="{{ url('new_game') }}"
+                   class="navbar-item{% if not is_leaders_view %} is-active{% endif %}">Pymash</a>
+                <a href="{{ url('show_leaders') }}"
+                   class="navbar-item{% if is_leaders_view %} is-active{% endif %}">
+                    Leaders
+                </a>
             </div>
         </div>
     </header>
@@ -36,19 +34,17 @@
 {% block footer %}
     <footer>
         <div class="navbar" role="navigation" aria-label="main navigation">
-            <div class="container">
-                <div class="navbar-brand">
-                    <a href="https://github.com/alexandershov/pymash" class="navbar-item">
-                        Source
-                    </a>
-                    <a href="https://github.com/alexandershov/pymash/issues/new"
-                       class="navbar-item">
-                        Report a bug
-                    </a>
-                    <a href="" class="navbar-item">
-                        Making of
-                    </a>
-                </div>
+            <div class="navbar-brand">
+                <a href="https://github.com/alexandershov/pymash" class="navbar-item">
+                    Source
+                </a>
+                <a href="https://github.com/alexandershov/pymash/issues/new"
+                   class="navbar-item">
+                    Report a bug
+                </a>
+                <a href="" class="navbar-item">
+                    Making of
+                </a>
             </div>
         </div>
     </footer>
