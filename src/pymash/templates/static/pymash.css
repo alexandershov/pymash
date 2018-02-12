@@ -6746,8 +6746,18 @@ footer .navbar-brand {
   .leaders-wrapper .rating-column {
     text-align: right; }
 
+.game {
+  display: table; }
+
+.player-row {
+  display: table-row; }
+
 .player {
-  display: inline-block; }
+  display: table-cell;
+  padding-left: 1em; }
+
+pre {
+  tab-size: 4; }
 
 .pymash-highlight {
   background-color: transparent; }
@@ -6755,28 +6765,11 @@ footer .navbar-brand {
 .pymash-highlight pre {
   background-color: transparent; }
 
-.game {
-  display: table; }
+.white {
+  background-color: #feffe5; }
 
-@media screen and (min-width: 1024px) {
-  .game {
-    margin-left: 15em; } }
-.player {
-  display: table-cell;
-  padding-left: 1em; }
-
-.player-row {
-  display: table-row; }
-
-@media screen and (min-width: 1024px) {
-  pre {
-    padding-left: 1em; }
-
-  .choose {
-    margin-bottom: 1em;
-    margin-left: 1em; } }
-pre {
-  tab-size: 4; }
+.black {
+  background-color: #d3fcff; }
 
 @media screen and (max-width: 1023px) {
   pre {
@@ -6785,10 +6778,15 @@ pre {
   .choose {
     margin-bottom: 1em;
     margin-left: 0; } }
-.white {
-  background-color: #feffe5; }
+@media screen and (min-width: 1024px) {
+  .game {
+    margin-left: 15em; }
 
-.black {
-  background-color: #d3fcff; }
+  pre {
+    padding-left: 1em; }
+
+  .choose {
+    margin-bottom: 1em;
+    margin-left: 1em; } }
 
 /*# sourceMappingURL=pymash.css.map */
