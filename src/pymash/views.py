@@ -23,9 +23,12 @@ def _cache_view(seconds):
         async def cached_view(*args, **kwargs):
             now = _floor_to_full_nearest_multiply(int(time.time()), seconds)
             if now not in cache:
+                loggers.web.info('%s cache miss', view.__name__)
                 cache.clear()
                 result = await view(*args, **kwargs)
                 cache[now] = result
+            else:
+                loggers.web.info('%s cache hit', view.__name__)
             return cache[now]
 
         return functools.update_wrapper(cached_view, view)
@@ -34,7 +37,8 @@ def _cache_view(seconds):
 
 
 @utils.log_time(loggers.web)
-@_cache_view(_CACHE_LEADERS_IN_SECONDS)
+# TODO: why it sometimes hangs?
+# @_cache_view(_CACHE_LEADERS_IN_SECONDS)
 @aiohttp_jinja2.template('leaders.html')
 async def show_leaders(request: web.Request) -> ta.DictOrResponse:
     repos = await db.find_active_repos_order_by_rating(request.app['db_engine'])

@@ -3200,7 +3200,7 @@ a.box:active {
   .table th {
     border: 1px solid #dbdbdb;
     border-width: 0 0 1px;
-    padding: 0.5em 0.75em;
+    padding: 0.5em 0.75em 0.5em 0;
     vertical-align: top; }
     .table td.is-white,
     .table th.is-white {
