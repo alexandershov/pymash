@@ -6779,8 +6779,7 @@ pre {
 
 @media screen and (max-width: 1023px) {
   pre {
-    padding-left: 0;
-    font-size: 0.5em; }
+    padding-left: 0; }
 
   .choose {
     margin-bottom: 1em;

@@ -84,8 +84,6 @@ pre {
 @include until($desktop) {
   pre {
     padding-left: 0;
-    // TODO: why do we need font-size?
-    font-size: 0.5em;
   }
 
   .choose {
