@@ -7,14 +7,18 @@
         <table class="table is-striped is-fullwidth">
             <thead>
             <tr>
-                <th>Repo</th>
-                <th>Rating</th>
+                <th class="repo-column">Repo</th>
+                <th class="rating-column">Rating</th>
             </tr>
             </thead>
             {% for a_repo in repos %}
                 <tr>
-                    <td><a href="{{ a_repo.url }}">{{ a_repo.name }}</a></td>
-                    <td>{{ a_repo.rating|int }}</td>
+                    <td class="repo-column">
+                        <a href="{{ a_repo.url }}">{{ a_repo.name }}</a>
+                    </td>
+                    <td class="rating-column">
+                        {{ a_repo.rating|int }}
+                    </td>
                 </tr>
             {% endfor %}
         </table>

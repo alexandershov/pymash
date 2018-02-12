@@ -6724,18 +6724,6 @@ label.panel-block {
   background-color: whitesmoke;
   padding: 3rem 1.5rem 6rem; }
 
-.table {
-  width: 100%; }
-
-.table td:first-child {
-  width: 100%; }
-
-.table td:last-child {
-  text-align: right; }
-
-.leaders-wrapper {
-  padding: 0 1em; }
-
 body {
   display: flex;
   min-height: 100vh;
@@ -6744,6 +6732,21 @@ body {
 .main {
   flex: 1;
   overflow: scroll; }
+
+footer .navbar-brand {
+  flex-flow: wrap; }
+  footer .navbar-brand .navbar-item {
+    padding-left: 0.8em;
+    padding-right: 0.8em; }
+
+.leaders-wrapper {
+  padding: 0 1em; }
+  .leaders-wrapper .table {
+    width: 100%; }
+  .leaders-wrapper .repo-column {
+    width: 100%; }
+  .leaders-wrapper .rating-column {
+    text-align: right; }
 
 .player {
   display: inline-block; }
@@ -6789,12 +6792,5 @@ pre {
 
 .black {
   background-color: #d3fcff; }
-
-footer .navbar-brand {
-  flex-flow: wrap; }
-
-footer .navbar-brand .navbar-item {
-  padding-left: 0.8em;
-  padding-right: 0.8em; }
 
 /*# sourceMappingURL=pymash.css.map */

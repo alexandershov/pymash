@@ -5,24 +5,9 @@ $table-cell-padding: 0.5em 0.75em 0.5em 0;
 
 // TODO: is it possible to override padding/margin in bulma?
 
-.table {
-  width: 100%;
-}
-
-.table td:first-child {
-  width: 100%;
-}
-
-.table td:last-child {
-  text-align: right;
-}
-
-.leaders-wrapper {
-  padding: 0 1em;
-}
-
 //todo: fix css according to note in
 //https://philipwalton.github.io/solved-by-flexbox/demos/sticky-footer/ #}
+// sticky footer
 body {
   display: flex;
   min-height: 100vh;
@@ -32,6 +17,33 @@ body {
 .main {
   flex: 1;
   overflow: scroll;
+}
+
+footer .navbar-brand {
+  flex-flow: wrap;
+
+  .navbar-item {
+    padding-left: 0.8em;
+    padding-right: 0.8em;
+  }
+}
+
+// leaders view
+
+.leaders-wrapper {
+  padding: 0 1em;
+
+  .table {
+    width: 100%;
+  }
+
+  .repo-column {
+    width: 100%;
+  }
+
+  .rating-column {
+    text-align: right;
+  }
 }
 
 //todo: how to make it take only needed width?
@@ -100,11 +112,4 @@ pre {
   background-color: #d3fcff;
 }
 
-footer .navbar-brand {
-  flex-flow: wrap;
-}
 
-footer .navbar-brand .navbar-item {
-  padding-left: 0.8em;
-  padding-right: 0.8em;
-}
