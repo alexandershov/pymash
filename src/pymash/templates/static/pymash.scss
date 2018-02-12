@@ -26,20 +26,16 @@ footer .navbar-brand {
     padding-left: 0.8em;
     padding-right: 0.8em;
   }
+
+  .navbar-item:first-child {
+    padding-left: 1em;
+  }
 }
 
 // leaders view
 
 .leaders-wrapper {
   padding: 0 1em;
-
-  .table {
-    width: 100%;
-  }
-
-  .repo-column {
-    width: 100%;
-  }
 
   .rating-column {
     text-align: right;

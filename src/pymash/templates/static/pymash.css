@@ -6738,13 +6738,11 @@ footer .navbar-brand {
   footer .navbar-brand .navbar-item {
     padding-left: 0.8em;
     padding-right: 0.8em; }
+  footer .navbar-brand .navbar-item:first-child {
+    padding-left: 1em; }
 
 .leaders-wrapper {
   padding: 0 1em; }
-  .leaders-wrapper .table {
-    width: 100%; }
-  .leaders-wrapper .repo-column {
-    width: 100%; }
   .leaders-wrapper .rating-column {
     text-align: right; }
 
