@@ -6741,11 +6741,6 @@ footer .navbar-brand {
   footer .navbar-brand .navbar-item:first-child {
     padding-left: 1em; }
 
-.leaders-wrapper {
-  padding: 0 1em; }
-  .leaders-wrapper .rating-column {
-    text-align: right; }
-
 .game {
   display: table; }
 
@@ -6788,5 +6783,9 @@ pre {
   .choose {
     margin-bottom: 1em;
     margin-left: 1em; } }
+.leaders-wrapper {
+  padding: 0 1em; }
+  .leaders-wrapper .rating-column {
+    text-align: right; }
 
 /*# sourceMappingURL=pymash.css.map */

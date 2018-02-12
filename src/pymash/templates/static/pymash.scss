@@ -32,16 +32,6 @@ footer .navbar-brand {
   }
 }
 
-// leaders view
-
-.leaders-wrapper {
-  padding: 0 1em;
-
-  .rating-column {
-    text-align: right;
-  }
-}
-
 // game
 
 .game {
@@ -100,5 +90,15 @@ pre {
   .choose {
     margin-bottom: 1em;
     margin-left: 1em;
+  }
+}
+
+// leaders view
+
+.leaders-wrapper {
+  padding: 0 1em;
+
+  .rating-column {
+    text-align: right;
   }
 }
