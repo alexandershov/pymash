@@ -16,7 +16,7 @@ from pymash import utils
 _CACHE_LEADERS_IN_SECONDS = 5
 
 
-def _cache_view(seconds):
+def _cache_coroutine_by_time(seconds):
     def decorator(view):
         cache = {}
 
@@ -37,14 +37,18 @@ def _cache_view(seconds):
 
 
 @utils.log_time(loggers.web)
-# TODO: why it sometimes hangs?
-# @_cache_view(_CACHE_LEADERS_IN_SECONDS)
 @aiohttp_jinja2.template('leaders.html')
 async def show_leaders(request: web.Request) -> ta.DictOrResponse:
-    repos = await db.find_active_repos_order_by_rating(request.app['db_engine'])
+    repos = await _cached_find_active_repos(request)
     return {
         'repos': repos,
     }
+
+
+@_cache_coroutine_by_time(_CACHE_LEADERS_IN_SECONDS)
+async def _cached_find_active_repos(request):
+    repos = await db.find_active_repos_order_by_rating(request.app['db_engine'])
+    return repos
 
 
 class _PostGameInput:
