@@ -17,6 +17,7 @@ class log_time:
         self._fn = None
 
     def __call__(self, fn):
+        # TODO: remove copy-paste
         if asyncio.iscoroutinefunction(fn):
             async def wrapper(*args, **kwargs):
                 self._before_fn(fn)
