@@ -5,6 +5,15 @@ $table-cell-padding: 0.5em 0.75em 0.5em 0;
 
 // TODO: is it possible to override padding/margin in bulma?
 
+// basic stuff
+
+html {
+  -webkit-text-size-adjust: 100%;
+  -moz-text-size-adjust: 100%;
+  -ms-text-size-adjust: 100%;
+}
+
+
 //todo: fix css according to note in
 //https://philipwalton.github.io/solved-by-flexbox/demos/sticky-footer/ #}
 // sticky footer
