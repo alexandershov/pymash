@@ -1,6 +1,7 @@
 import asyncio
 import functools
 import time
+import typing as tp
 
 
 # noinspection PyUnusedLocal
@@ -9,7 +10,7 @@ def _get_args_str(*args, **kwargs):
 
 
 class log_time:
-    def __init__(self, logger, get_args_str_or_str=_get_args_str):
+    def __init__(self, logger, get_args_str_or_str: tp.Union[tp.Callable, str] = _get_args_str):
         self._logger = logger
         self._get_args_str_or_str = get_args_str_or_str
         self._started_at = None
@@ -17,19 +18,14 @@ class log_time:
         self._fn = None
 
     def __call__(self, fn):
-        # TODO: remove copy-paste
         if asyncio.iscoroutinefunction(fn):
             async def wrapper(*args, **kwargs):
-                self._before_fn(fn)
-                result = await fn(*args, **kwargs)
-                self._after_fn(*args, **kwargs)
-                return result
+                with log_time(self._logger, self._get_fn_call_str(fn, *args, **kwargs)):
+                    return await fn(*args, **kwargs)
         else:
             def wrapper(*args, **kwargs):
-                self._before_fn(fn)
-                result = fn(*args, **kwargs)
-                self._after_fn(*args, **kwargs)
-                return result
+                with log_time(self._logger, self._get_fn_call_str(fn, *args, **kwargs)):
+                    return fn(*args, **kwargs)
 
         return functools.update_wrapper(wrapper, fn)
 
@@ -43,13 +39,6 @@ class log_time:
         duration = time.time() - self._started_at
         self._logger.info('%s took %.3fs', self._get_args_str_or_str, duration)
 
-    def _before_fn(self, fn):
-        self._fn = fn
-        self._started_at = time.time()
-
-    def _after_fn(self, *args, **kwargs):
-        self._finished_at = time.time()
+    def _get_fn_call_str(self, fn, *args, **kwargs) -> str:
         args_str = self._get_args_str_or_str(*args, **kwargs)
-        self._logger.info(
-            '%s.%s(%s) took %.3fs', self._fn.__module__, self._fn.__qualname__, args_str,
-            self._finished_at - self._started_at)
+        return f'{fn.__module__}.{fn.__qualname__}({args_str})'
