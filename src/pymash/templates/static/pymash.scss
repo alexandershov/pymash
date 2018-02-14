@@ -43,16 +43,7 @@ footer .navbar-brand {
 
 // game
 
-.game {
-  display: table;
-}
-
-.player-row {
-  display: table-row;
-}
-
 .player {
-  display: table-cell;
   padding-left: 1em;
 }
 
@@ -88,8 +79,8 @@ pre {
 }
 
 @include from($desktop) {
-  .game {
-    margin-left: 15em;
+  .player {
+    padding-left: 15em;
   }
 
   pre {

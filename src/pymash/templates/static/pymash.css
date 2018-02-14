@@ -6746,14 +6746,7 @@ footer .navbar-brand {
   footer .navbar-brand .navbar-item:first-child {
     padding-left: 1em; }
 
-.game {
-  display: table; }
-
-.player-row {
-  display: table-row; }
-
 .player {
-  display: table-cell;
   padding-left: 1em; }
 
 pre {
@@ -6779,8 +6772,8 @@ pre {
     margin-bottom: 1em;
     margin-left: 0; } }
 @media screen and (min-width: 1024px) {
-  .game {
-    margin-left: 15em; }
+  .player {
+    padding-left: 15em; }
 
   pre {
     padding-left: 1em; }
