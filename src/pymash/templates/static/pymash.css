@@ -6765,6 +6765,9 @@ pre {
 .black-player {
   background-color: #d3fcff; }
 
+.choose {
+  font-size: 1.3em; }
+
 @media screen and (max-width: 1023px) {
   pre {
     padding-left: 0; }
@@ -6773,7 +6776,6 @@ pre {
     margin-left: 0; } }
 @media screen and (max-width: 768px) {
   .choose {
-    font-size: 1.3rem;
     margin-left: auto;
     margin-right: auto;
     display: block; } }

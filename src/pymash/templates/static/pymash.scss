@@ -67,6 +67,10 @@ pre {
   background-color: #d3fcff;
 }
 
+.choose {
+  font-size: 1.3em;
+}
+
 @include until($desktop) {
   pre {
     padding-left: 0;
@@ -79,7 +83,6 @@ pre {
 
 @include mobile() {
   .choose {
-    font-size: 1.3rem;
     margin-left: auto;
     margin-right: auto;
     display: block;
