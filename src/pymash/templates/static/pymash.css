@@ -6741,13 +6741,14 @@ body {
 footer .navbar-brand {
   flex-flow: wrap; }
   footer .navbar-brand .navbar-item {
-    padding-left: 0.8em;
-    padding-right: 0.8em; }
+    padding-left: 0.8rem;
+    padding-right: 0.8rem; }
   footer .navbar-brand .navbar-item:first-child {
-    padding-left: 1em; }
+    padding-left: 1rem; }
 
 .player {
-  padding-left: 1em; }
+  padding-left: 1rem;
+  padding-bottom: 1rem; }
 
 pre {
   tab-size: 4; }
@@ -6764,28 +6765,30 @@ pre {
 .black-player {
   background-color: #d3fcff; }
 
-@media screen and (max-width: 768px) {
-  .choose {
-    font-size: 1.3rem; } }
 @media screen and (max-width: 1023px) {
   pre {
     padding-left: 0; }
 
   .choose {
-    margin-bottom: 1em;
     margin-left: 0; } }
+@media screen and (max-width: 768px) {
+  .choose {
+    font-size: 1.3rem;
+    margin-left: auto;
+    margin-right: auto;
+    display: block; } }
 @media screen and (min-width: 1024px) {
   .player {
-    padding-left: 15em; }
+    padding-left: 15rem; }
 
   pre {
-    padding-left: 1em; }
+    padding-left: 1rem; }
 
   .choose {
-    margin-bottom: 1em;
-    margin-left: 1em; } }
+    margin-bottom: 1rem;
+    margin-left: 1rem; } }
 .leaders-wrapper {
-  padding: 0 1em; }
+  padding: 0 1rem; }
   .leaders-wrapper .repo-column {
     max-width: 70vw; }
   .leaders-wrapper .rating-column {
