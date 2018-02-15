@@ -67,6 +67,12 @@ pre {
   background-color: #d3fcff;
 }
 
+@include mobile() {
+  .choose {
+    font-size: 1.3rem;
+  }
+}
+
 @include until($desktop) {
   pre {
     padding-left: 0;
@@ -97,6 +103,10 @@ pre {
 
 .leaders-wrapper {
   padding: 0 1em;
+
+  .repo-column {
+    max-width: 70vw;
+  }
 
   .rating-column {
     text-align: right;

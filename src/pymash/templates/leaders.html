@@ -7,14 +7,14 @@
         <table class="table is-striped is-fullwidth">
             <thead>
             <tr>
-                <th>Repo</th>
+                <th class="repo-column">Repo</th>
                 <th class="rating-column">Rating</th>
             </tr>
             </thead>
             <tbody>
             {% for a_repo in repos %}
                 <tr>
-                    <td>
+                    <td class="repo-column">
                         <a href="{{ a_repo.url }}">{{ a_repo.name }}</a>
                     </td>
                     <td class="rating-column">

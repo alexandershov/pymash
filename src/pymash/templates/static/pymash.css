@@ -6764,6 +6764,9 @@ pre {
 .black-player {
   background-color: #d3fcff; }
 
+@media screen and (max-width: 768px) {
+  .choose {
+    font-size: 1.3rem; } }
 @media screen and (max-width: 1023px) {
   pre {
     padding-left: 0; }
@@ -6783,6 +6786,8 @@ pre {
     margin-left: 1em; } }
 .leaders-wrapper {
   padding: 0 1em; }
+  .leaders-wrapper .repo-column {
+    max-width: 70vw; }
   .leaders-wrapper .rating-column {
     text-align: right; }
 
