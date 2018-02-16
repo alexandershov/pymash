@@ -1,4 +1,5 @@
 $table-cell-padding: 0.5em 0.75em 0.5em 0;
+$global-left-padding: 1rem;
 
 @import "pygments.scss";
 @import "../../../../external/bulma/bulma";
@@ -36,14 +37,14 @@ footer .navbar-brand {
   }
 
   .navbar-item:first-child {
-    padding-left: 1rem;
+    padding-left: $global-left-padding;
   }
 }
 
 // game
 
 .player {
-  padding-left: 1rem;
+  padding-left: $global-left-padding;
   padding-bottom: 1rem;
 }
 
@@ -95,19 +96,19 @@ pre {
   }
 
   pre {
-    padding-left: 1rem;
+    padding-left: $global-left-padding;
   }
 
   .choose {
     margin-bottom: 1rem;
-    margin-left: 1rem;
+    margin-left: $global-left-padding;
   }
 }
 
 // leaders view
 
 .leaders-wrapper {
-  padding: 0 1rem;
+  padding: 0 $global-left-padding;
 
   .repo-column {
     max-width: 70vw;

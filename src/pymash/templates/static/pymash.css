@@ -6790,7 +6790,7 @@ pre {
     margin-bottom: 1rem;
     margin-left: 1rem; } }
 .leaders-wrapper {
-  padding: 0 1rem; }
+  padding: 0; }
   .leaders-wrapper .repo-column {
     max-width: 70vw; }
   .leaders-wrapper .rating-column {
