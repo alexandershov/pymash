@@ -15,7 +15,6 @@
         {% set is_leaders_view = request.match_info.route.name == 'show_leaders' %}
         <div class="navbar is-primary" role="navigation" aria-label="main navigation">
             <div class="navbar-brand">
-                <!-- TODO(aershov182): add some icon here -->
                 <a href="{{ url('new_game') }}"
                    class="navbar-item{% if not is_leaders_view %} is-active{% endif %}">Pymash</a>
                 <a href="{{ url('show_leaders') }}"
