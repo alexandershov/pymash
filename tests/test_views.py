@@ -41,10 +41,7 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
     response = await _get(app, test_client, '/game')
     if is_success:
         text = await _get_checked_response_text(response)
-        # TODO(aershov182): change assertions when we'll have a real markup
-        django_index = text.index('666')
-        flask_index = text.index('777')
-        assert django_index < flask_index
+        _check_game_markup(text)
     else:
         assert response.status == 503
 
@@ -63,6 +60,44 @@ def _parse_leaders_ratings(html_text):
         int(cell.text)
         for cell in rating_cells
     ]
+
+
+def _check_game_markup(html_text):
+    parsed_html = bs4.BeautifulSoup(html_text)
+    django_data = _get_game_form_data(parsed_html.find('div', attrs={'class': 'white-player'}))
+    flask_data = _get_game_form_data(parsed_html.find('div', attrs={'class': 'black-player'}))
+    assert django_data == _GameFormData(
+        white_id='666',
+        black_id='777',
+        white_score=1,
+        black_score=0)
+    assert flask_data == _GameFormData(
+        white_id='666',
+        black_id='777',
+        white_score=0,
+        black_score=1)
+
+
+_GameFormData = collections.namedtuple(
+    '_GameFormData', [
+        'white_id',
+        'black_id',
+        'white_score',
+        'black_score',
+    ]
+)
+
+
+def _get_game_form_data(player_html_element):
+    return _GameFormData(
+        white_id=_get_input_value(player_html_element, 'white_id'),
+        black_id=_get_input_value(player_html_element, 'black_id'),
+        white_score=int(_get_input_value(player_html_element, 'white_score')),
+        black_score=int(_get_input_value(player_html_element, 'black_score')))
+
+
+def _get_input_value(ancestor_html_element, name):
+    return ancestor_html_element.find('input', attrs={'name': name})['value']
 
 
 def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black_score='0',
