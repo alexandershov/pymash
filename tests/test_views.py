@@ -1,5 +1,6 @@
 import asyncio
 import collections
+import html.parser
 import json
 import random
 from unittest import mock
@@ -51,13 +52,40 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
 async def test_show_leaders(pymash_engine, test_client):
     app = main.create_app()
     _add_repos_for_test_show_leaders(pymash_engine)
-    # TODO(aershov182): change assertions when we'll have a real markup
     text = await _get_text(app, test_client, '/leaders')
-    flask_index = text.index('1901')
-    django_index = text.index('1801')
-    assert flask_index < django_index
-    # we don't show deactivated repos
-    assert text.find('2001') == -1
+    assert _parse_leaders_ratings(text) == [1901, 1801]
+
+
+class _LeadersParser(html.parser.HTMLParser):
+    def __init__(self, *args, **kwargs):
+        self.__ratings = []
+        self.__cur_tag = None
+        self.__cur_attrs = None
+        super().__init__(*args, **kwargs)
+
+    def handle_starttag(self, tag, attrs):
+        self.__cur_tag = tag
+        self.__cur_attrs = attrs
+
+    def handle_endtag(self, tag):
+        self.__cur_tag = None
+        self.__cur_attrs = None
+
+    def handle_data(self, data):
+        attrs = dict(self.__cur_attrs or [])
+        if self.__cur_tag == 'td' and attrs.get('class') == 'rating-column':
+            self.__ratings.append(int(data))
+        super().handle_data(data)
+
+    @property
+    def ratings(self):
+        return self.__ratings
+
+
+def _parse_leaders_ratings(html_text):
+    leaders_parser = _LeadersParser()
+    leaders_parser.feed(html_text)
+    return leaders_parser.ratings
 
 
 def _make_post_game_data(white_id='905', black_id='1005', white_score='1', black_score='0',
