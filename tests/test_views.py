@@ -14,23 +14,25 @@ from pymash import models
 from pymash.tables import *
 
 
-@pytest.mark.parametrize('random_values, is_success', [
-    # normal case
-    ([0.3, 0.6], True),
+@pytest.mark.parametrize('random_values, cookies, is_success', [
+    # normal case, first visit
+    ([0.3, 0.6], {}, True),
+    # normal case, second visit
+    ([0.3, 0.6], {'visited': '1'}, True),
     # we don't select deactivated functions (function_id=888)
-    ([0.3, 0.5], True),
+    ([0.3, 0.5], {}, True),
     # if random value is too large, then we cut it to the largest possible value in the database
-    ([0.3, 0.9999], True),
+    ([0.3, 0.9999], {}, True),
     # first game is with the same repo, second is ok
-    ([0.3, 0.3, 0.3, 0.6], True),
+    ([0.3, 0.3, 0.3, 0.6], {}, True),
     # first two games are with the same repo, third is ok
-    ([0.3, 0.3, 0.3, 0.3, 0.3, 0.6], True),
+    ([0.3, 0.3, 0.3, 0.3, 0.3, 0.6], {}, True),
     # three games are with the same repo - we return 500 in this case
     # (this has a change of happening ~ 1e-9 on production data)
-    ([0.3, 0.3, 0.3, 0.3, 0.3, 0.3], False),
+    ([0.3, 0.3, 0.3, 0.3, 0.3, 0.3], {}, False),
 ])
 @pytest.mark.usefixtures('add_functions_and_repos')
-async def test_show_game(random_values, is_success, test_client, monkeypatch):
+async def test_show_game(random_values, cookies, is_success, test_client, monkeypatch):
     values = collections.deque(random_values)
 
     def stateful_random():
@@ -38,10 +40,11 @@ async def test_show_game(random_values, is_success, test_client, monkeypatch):
 
     monkeypatch.setattr(random, 'random', stateful_random)
     app = main.create_app()
-    response = await _get(app, test_client, '/game')
+    response = await _get(app, test_client, '/game', cookies=cookies)
     if is_success:
         text = await _get_checked_response_text(response)
-        _check_game_markup(text)
+        _check_game_markup(text, cookies)
+        assert 'visited' in response.cookies
     else:
         assert response.status == 503
 
@@ -62,7 +65,7 @@ def _parse_leaders_ratings(html_text):
     ]
 
 
-def _check_game_markup(html_text):
+def _check_game_markup(html_text, cookies):
     parsed_html = bs4.BeautifulSoup(html_text)
     django_data = _get_game_form_data(parsed_html.find('div', attrs={'class': 'white-player'}))
     flask_data = _get_game_form_data(parsed_html.find('div', attrs={'class': 'black-player'}))
@@ -76,6 +79,13 @@ def _check_game_markup(html_text):
         black_id='777',
         white_score=0,
         black_score=1)
+    choose_buttons = parsed_html.find_all('button', attrs={'class': 'choose'})
+    if 'visited' in cookies:
+        expected_button_text = 'Choose'
+    else:
+        expected_button_text = 'This code is better!'
+    for button in choose_buttons:
+        assert button.text.strip() == expected_button_text
 
 
 _GameFormData = collections.namedtuple(
@@ -210,8 +220,8 @@ async def _get_text(app, test_client, path) -> str:
     return await _get_checked_response_text(resp)
 
 
-async def _get(app, test_client, path) -> aiohttp.client.ClientResponse:
-    client = await test_client(app)
+async def _get(app, test_client, path, cookies=None) -> aiohttp.client.ClientResponse:
+    client = await test_client(app, cookies=cookies)
     return await client.get(path)
 
 

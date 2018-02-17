@@ -13,6 +13,8 @@ from pymash import models
 from pymash import type_aliases as ta
 from pymash import utils
 
+_COOKIE_VISITED = 'visited'
+
 _CACHE_LEADERS_IN_SECONDS = 5
 
 
@@ -110,7 +112,17 @@ def _validate_hash(request: web.Request, game: models.Game, actual_hash: str):
         raise web.HTTPBadRequest
 
 
+def _set_visited_cookie(view):
+    async def wrapper(request):
+        response = await view(request)
+        response.set_cookie(_COOKIE_VISITED, '1')
+        return response
+
+    return functools.update_wrapper(wrapper, view)
+
+
 @utils.log_time(loggers.web)
+@_set_visited_cookie
 @aiohttp_jinja2.template('game.html')
 async def show_game(request: web.Request) -> ta.DictOrResponse:
     white, black = await _find_two_random_function_or_error(request.app['db_engine'])
@@ -123,6 +135,7 @@ async def show_game(request: web.Request) -> ta.DictOrResponse:
         'game': game,
         'white': white,
         'black': black,
+        'has_already_visited': (_COOKIE_VISITED in request.cookies),
     }
 
 
