@@ -124,7 +124,7 @@ def get_functions_from_fileobj(
 
 def _get_functions_from_str(
         source_code: str, file_name: str, options: Options) -> tp.List[Function]:
-    source_lines = source_code.splitlines(keepends=True)
+    source_lines = _get_lines(source_code)
     nodes = _get_ast_nodes(source_code, source_lines, options)
     functions = []
     for fn_node, next_node in _iter_function_nodes_with_next(nodes):
@@ -146,6 +146,19 @@ def _get_functions_from_str(
                 file_name=file_name)
             functions.append(fn)
     return functions
+
+
+def _get_lines(source_code: str) -> tp.List[str]:
+    lines = []
+    cur_line_chars = []
+    for char in source_code:
+        cur_line_chars.append(char)
+        if char == '\n':
+            lines.append(''.join(cur_line_chars))
+            cur_line_chars = []
+    if cur_line_chars:
+        lines.append(''.join(cur_line_chars))
+    return lines
 
 
 def _get_ast_nodes(source_code: str, source_lines: tp.List[str], options: Options):

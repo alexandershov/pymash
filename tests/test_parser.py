@@ -36,6 +36,16 @@ _EXPECTED_RESULT = [
             ''',
             _EXPECTED_RESULT
     ),
+    # we correctly handle \x0c character
+    (
+            '''
+            \x0c
+            # some comment
+            def add(x, y):
+                return x + y
+            ''',
+            _EXPECTED_RESULT
+    ),
     # ignore comments after a function
     (
             '''
