@@ -11,6 +11,7 @@ class _EnvKey:
     AWS_SECRET_ACCESS_KEY = 'PYMASH_AWS_SECRET_ACCESS_KEY'
     SQS_GAMES_QUEUE_NAME = 'PYMASH_SQS_GAMES_QUEUE_NAME'
     GITHUB_TOKEN = 'PYMASH_GITHUB_TOKEN'
+    CSS_URL = 'PYMASH_CSS_URL'
 
 
 class BaseError(Exception):
@@ -30,6 +31,7 @@ _ENV_CONFIG_SCHEMA = vol.Schema(
         _EnvKey.AWS_SECRET_ACCESS_KEY: str,
         _EnvKey.SQS_GAMES_QUEUE_NAME: str,
         _EnvKey.GITHUB_TOKEN: str,
+        _EnvKey.CSS_URL: str,
     },
     required=True, extra=vol.ALLOW_EXTRA)
 
@@ -37,7 +39,7 @@ _ENV_CONFIG_SCHEMA = vol.Schema(
 class Config:
     def __init__(
             self, dsn: str, game_hash_salt: str, aws_region_name: str, aws_access_key_id: str,
-            aws_secret_access_key: str, sqs_games_queue_name: str, github_token: str) -> None:
+            aws_secret_access_key: str, sqs_games_queue_name: str, github_token: str, css_url: str) -> None:
         self.dsn = dsn
         self.game_hash_salt = game_hash_salt
         self.aws_region_name = aws_region_name
@@ -45,6 +47,7 @@ class Config:
         self.aws_secret_access_key = aws_secret_access_key
         self.sqs_games_queue_name = sqs_games_queue_name
         self.github_token = github_token
+        self.css_url = css_url
 
 
 def get_config() -> Config:
@@ -59,4 +62,5 @@ def get_config() -> Config:
         aws_access_key_id=parsed_config[_EnvKey.AWS_ACCESS_KEY_ID],
         aws_secret_access_key=parsed_config[_EnvKey.AWS_SECRET_ACCESS_KEY],
         sqs_games_queue_name=parsed_config[_EnvKey.SQS_GAMES_QUEUE_NAME],
-        github_token=parsed_config[_EnvKey.GITHUB_TOKEN])
+        github_token=parsed_config[_EnvKey.GITHUB_TOKEN],
+        css_url=parsed_config[_EnvKey.CSS_URL])
