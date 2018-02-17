@@ -15,8 +15,8 @@
     - name: Ensure /etc/pymash.d directory is present
       file: path=/etc/pymash.d state=directory
 
-    - name: Copy environment file
-      copy: src=/usr/local/etc/pymash/environment dest=/etc/pymash.d/environment
+    - name: Copy environment template
+      template: src=/usr/local/etc/pymash/environment dest=/etc/pymash.d/environment
 
     - name: Copy pymash_web.service file
       copy: src=pymash_web.service dest=/etc/systemd/system
