@@ -247,11 +247,11 @@ def _make_query_to_update_rating(repo: models.Repo):
 
 
 def _make_query_to_find_random_function():
+    is_active = Functions.c.is_active.is_(True)
     x = random.random()
-    select_max_random = Functions.select().with_only_columns(
+    select_max_random = Functions.select().where(is_active).with_only_columns(
         [sa.func.max(Functions.c.random)]).as_scalar()
     gte_than_random = Functions.c.random >= sa.func.least(x, select_max_random)
-    is_active = Functions.c.is_active.is_(True)
     result = Functions.select().where(
         sa.and_(gte_than_random, is_active)).order_by(Functions.c.random).limit(1)
     return result

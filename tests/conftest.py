@@ -98,7 +98,7 @@ def add_functions_and_repos(pymash_engine):
             Functions.c.repo_id: 2,
             Functions.c.text: 'def not_active_flask(): return 2',
             Functions.c.is_active: False,
-            Functions.c.random: 0.5,
+            Functions.c.random: 0.9,
             Functions.c.file_name: '/tmp/flask/flask.py',
             Functions.c.line_number: 100333,
         }))
