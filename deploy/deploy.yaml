@@ -34,18 +34,39 @@
       become: false
       when: "'web' in group_names"
 
-    - name: Copy pymash_web.service file
-      copy: src=pymash_web.service dest=/etc/systemd/system
+    - name: Copy pymash_web@.service file
+      copy: src=pymash_web@.service dest=/etc/systemd/system
+      when: "'web' in group_names"
+
+    - name: Reloading systemd
+      command: systemctl daemon-reload
+      when: "'web' in group_names"
+
+    - name: Stopping pymash_web
+      command: systemctl stop pymash_web@*
       when: "'web' in group_names"
 
     - name: Restart pymash_web
-      systemd: name=pymash_web state=restarted enabled=true daemon-reload=true
+      systemd:
+        name: "pymash_web@{{ port }}"
+        state: restarted
+        enabled: true
+        daemon-reload: true
       when: "'web' in group_names"
+      with_items:
+        - 8000
+        - 9000
+      loop_control:
+        loop_var: port
 
     - name: Copy pymash_background.service file
       copy: src=pymash_background.service dest=/etc/systemd/system
       when: "'background' in group_names"
 
     - name: Restart pymash_background
-      systemd: name=pymash_background state=restarted enabled=true daemon-reload=true
+      systemd:
+        name: pymash_background
+        state: restarted
+        enabled: true
+        daemon-reload: true
       when: "'background' in group_names"

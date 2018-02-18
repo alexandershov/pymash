@@ -15,3 +15,6 @@
         vpc_subnet_id: subnet-f303f38e
         region: eu-central-1
       register: ec2
+
+    - debug:
+      msg: ip "{{ ec2.instances[0].public_ip }}"
