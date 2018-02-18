@@ -8,7 +8,7 @@
       ec2:
         key_name: amazon
         group: launch-wizard-2
-        instance_type: t2.micro
+        instance_type: {{ instance_type }}
         image: ami-1b2bb774
         wait: true
         assign_public_ip: true
