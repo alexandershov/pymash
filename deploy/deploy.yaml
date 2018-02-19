@@ -70,3 +70,19 @@
         enabled: true
         daemon-reload: true
       when: "'background' in group_names"
+
+    - name: Copy pymash_monitoring.service file
+      copy: src=pymash_monitoring.service dest=/etc/systemd/system
+      when: "'background' in group_names"
+
+    - name: Copy pymash_monitoring.timer file
+      copy: src=pymash_monitoring.timer dest=/etc/systemd/system
+      when: "'background' in group_names"
+
+    - name: Restart pymash_monitoring.timer
+      systemd:
+        name: pymash_monitoring.timer
+        state: restarted
+        enabled: true
+        daemon-reload: true
+      when: "'background' in group_names"

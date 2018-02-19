@@ -1,0 +1,9 @@
+[Unit]
+Description=Runs monitoring every minute
+
+[Timer]
+OnUnitActiveSec=1m
+Unit=pymash_monitoring.service
+
+[Install]
+WantedBy=multi-user.target
