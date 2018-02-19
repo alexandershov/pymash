@@ -99,7 +99,7 @@ class Watchman:
         reason = f'cur_rate is {rate}, rate_limit is {self._rate_limit}'
         end = now + self._ban_duration
         info.ban(end, reason)
-        loggers.games_queue.info('banned ip %s till %s because %s', attempt.ip, end, reason)
+        loggers.games_queue.info('pymash_event:banned_ip %s till %s because %s', attempt.ip, end, reason)
 
     def _needs_gc(self) -> bool:
         return self._num_attempts_without_gc >= self._max_num_attempts_without_gc

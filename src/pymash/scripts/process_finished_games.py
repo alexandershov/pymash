@@ -39,12 +39,14 @@ def _process_message(watchman, context, message):
     now = dt.datetime.utcnow()
     watchman.add(now, attempt)
     if watchman.is_banned_at(attempt.ip, now):
-        loggers.games_queue.info('skipping handling of game %s, because %s is banned', game.game_id, attempt.ip)
+        loggers.games_queue.info('pymash_event:is_banned skipping handling of game %s, because %s is banned',
+                                 game.game_id, attempt.ip)
         return
     try:
         events.process_game_finished_event(context.engine, game)
     except events.DeletedFromDb:
-        loggers.games_queue.error('skipping handling of game %s', game.game_id, exc_info=True)
+        loggers.games_queue.error('pymash_event:deleted_from_db skipping handling of game %s', game.game_id,
+                                  exc_info=True)
 
 
 def _get_watchman():
