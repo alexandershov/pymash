@@ -49,7 +49,7 @@ def _send_stats(stats: _Stats, timestamp: dt.datetime) -> None:
 def _get_cloudwatch_client():
     with base.ScriptContext() as context:
         config = context.config
-        return boto3.resource(
+        return boto3.client(
             'cloudwatch',
             region_name=config.aws_region_name,
             aws_access_key_id=config.aws_access_key_id,
