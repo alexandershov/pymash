@@ -41,7 +41,7 @@ def _setup_startup_cleanup(app: web.Application) -> None:
 
 
 # noinspection PyUnusedLocal
-def _setup_logging(app: web.Application) -> None:
+async def _setup_logging(app: web.Application) -> None:
     loggers.setup_logging()
 
 

@@ -2,13 +2,13 @@ import setuptools
 
 setuptools.setup(
     name='pymash',
-    version='0.2.3',
+    version='0.2.4',
     packages=setuptools.find_packages('src'),
     package_dir={'': 'src'},
     install_requires=[
         'aioboto3==2.0.1',
         'aiodns==1.1.1',
-        'aiohttp==2.3.10',
+        'aiohttp==3.0.1',
         'aiohttp-jinja2==0.14.0',
         'aiopg==0.13.1',
         'cchardet==2.1.1',  # faster replacement for chardet, used by aiohttp
