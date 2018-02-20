@@ -3,7 +3,7 @@
   vars:
     css_sha1: "{{ lookup('pipe', 'shasum ../src/pymash/templates/static/pymash.css').split()[0] }}"
     css_s3_key: "pymash-{{ css_sha1 }}.css"
-    css_url: "http://s3.us-west-2.amazonaws.com/pymash/{{ css_s3_key }}"
+    css_url: "http://s3.us-west-2.amazonaws.com/pymash-static/{{ css_s3_key }}"
   tasks:
     - name: Ensure python3.6 is installed
       command: amazon-linux-extras install python3 creates=/usr/bin/python3.6
@@ -25,7 +25,7 @@
     - name: Uploading css to S3
       aws_s3:
         region: us-west-2
-        bucket: pymash
+        bucket: pymash-static
         object: "{{ css_s3_key }}"
         src: ../src/pymash/templates/static/pymash.css
         mode: put
