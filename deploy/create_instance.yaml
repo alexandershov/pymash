@@ -6,15 +6,15 @@
   tasks:
     - name: Launch ec2 instance
       ec2:
-        key_name: amazon
-        group: launch-wizard-2
+        key_name: amazon-us-west-2
+        group: pymash
         instance_type: "{{ instance_type }}"
-        image: ami-1b2bb774
+        image: ami-7f43f307
         wait: true
         assign_public_ip: true
-        vpc_subnet_id: subnet-f303f38e
+        vpc_subnet_id: subnet-8c0e2aea
         region: us-west-2
       register: ec2
 
     - debug:
-      msg: "ip {{ ec2.instances[0].public_ip }}"
+        msg: "ip {{ ec2.instances[0].public_ip }}"
