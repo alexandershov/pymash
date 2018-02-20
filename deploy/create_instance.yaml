@@ -13,7 +13,7 @@
         wait: true
         assign_public_ip: true
         vpc_subnet_id: subnet-f303f38e
-        region: eu-central-1
+        region: us-west-2
       register: ec2
 
     - debug:
