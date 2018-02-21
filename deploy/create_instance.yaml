@@ -17,7 +17,7 @@
         volumes:
           - device_name: /dev/xvda
             volume_type: gp2
-            volume_size: {{ volume_size }}
+            volume_size: "{{ volume_size }}"
             delete_on_termination: true
       register: ec2
 
