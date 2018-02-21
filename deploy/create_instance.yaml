@@ -14,7 +14,12 @@
         assign_public_ip: true
         vpc_subnet_id: subnet-8c0e2aea
         region: us-west-2
+        volumes:
+          - device_name: /dev/xvda
+            volume_type: gp2
+            volume_size: 15
+            delete_on_termination: true
       register: ec2
 
     - debug:
-        msg: "ip {{ ec2.instances[0].public_ip }}"
+        msg: "created instance with ip {{ ec2.instances[0].public_ip }}"
