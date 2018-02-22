@@ -61,4 +61,4 @@ def _get_watchman(config: cfg.Config) -> fraud.BaseWatchman:
 
 
 if __name__ == '__main__':
-    main(iterations=itertools.count())
+    main(iterations=itertools.repeat(1))

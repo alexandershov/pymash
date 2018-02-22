@@ -58,6 +58,14 @@ def test_process_game_finished_event_unknown_white_id(pymash_engine, monkeypatch
 
 
 @pytest.mark.usefixtures('add_functions_and_repos')
+def test_process_game_finished_event_same_repo_id(pymash_engine, monkeypatch):
+    game = _get_game(white_id=777, black_id=888)
+    _monkeypatch_boto3(monkeypatch, [game])
+    _call_process_finished_games()
+    _assert_nothing_saved(pymash_engine, game)
+
+
+@pytest.mark.usefixtures('add_functions_and_repos')
 def test_process_game_finished_is_banned(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
