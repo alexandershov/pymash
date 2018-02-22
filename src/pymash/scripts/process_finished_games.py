@@ -3,6 +3,7 @@ import json
 
 import itertools
 
+from pymash import cfg
 from pymash import events
 from pymash import fraud
 from pymash import loggers
@@ -10,9 +11,9 @@ from pymash.scripts import base
 
 
 def main(iterations, wait_time_seconds=10, watchman=None):
-    if watchman is None:
-        watchman = _get_watchman()
     with base.ScriptContext() as context:
+        if watchman is None:
+            watchman = _get_watchman(context.config)
         for _ in iterations:
             _process_new_messages(
                 watchman=watchman,
@@ -49,12 +50,14 @@ def _process_message(watchman, context, message):
                                   exc_info=True)
 
 
-def _get_watchman():
-    return fraud.Watchman(
-        rate_limit=1,
-        window=dt.timedelta(seconds=10),
-        ban_duration=dt.timedelta(minutes=30),
-        max_num_attempts_without_gc=10_000)
+def _get_watchman(config: cfg.Config) -> fraud.BaseWatchman:
+    if config.enable_antifraud:
+        return fraud.Watchman(
+            rate_limit=1,
+            window=dt.timedelta(seconds=10),
+            ban_duration=dt.timedelta(minutes=30),
+            max_num_attempts_without_gc=10_000)
+    return fraud.KindWatchman()
 
 
 if __name__ == '__main__':
