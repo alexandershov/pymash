@@ -11,22 +11,22 @@ class _Stats:
     def __init__(self):
         self.num_bans = 0
         self.num_skipped_games = 0
-        self.num_deleted_from_db = 0
+        self.num_errors = 0
         self.num_restarts = 0
 
     def __str__(self):
         cls_name = self.__class__.__name__
         return (
             f'{cls_name}(num_bans={self.num_bans}, num_skipped_games={self.num_skipped_games}, '
-            f'num_deleted_from_db={self.num_deleted_from_db}, num_restarts={self.num_restarts})')
+            f'num_errors={self.num_errors}, num_restarts={self.num_restarts})')
 
     def handle_line(self, line: bytes) -> None:
         if b'pymash_event:banned_ip' in line:
             self.num_bans += 1
         if b'pymash_event:is_banned' in line:
             self.num_skipped_games += 1
-        if b'pymash_event:deleted_from_db' in line:
-            self.num_deleted_from_db += 1
+        if b'pymash_event:error' in line:
+            self.num_errors += 1
         if b'scheduling restart' in line:
             self.num_restarts += 1
 
@@ -56,11 +56,11 @@ def _get_cloudwatch_client():
             aws_secret_access_key=config.aws_secret_access_key)
 
 
-def _get_metric_data(stats, timestamp):
+def _get_metric_data(stats: _Stats, timestamp: dt.datetime):
     names_and_values = [
         ('Bans_Count', stats.num_bans),
         ('Skipped_Games_Count', stats.num_skipped_games),
-        ('Deleted_From_Db_Count', stats.num_deleted_from_db),
+        ('Errors_Count', stats.num_errors),
         ('Restarts_Count', stats.num_restarts),
     ]
     return [
