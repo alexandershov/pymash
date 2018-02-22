@@ -42,7 +42,7 @@ class _IpInfo:
     def ban(self, end, reason) -> None:
         self._ban_details = _BannedDetails(end, reason)
 
-    def is_banned_at(self, datetime):
+    def is_banned_at(self, datetime) -> bool:
         return self._ban_details.is_banned_at(datetime)
 
     def get_count_in_interval(self, start: dt.datetime, end: dt.datetime) -> int:
@@ -55,7 +55,23 @@ class _IpInfo:
         return result
 
 
-class Watchman:
+class BaseWatchman:
+    def add(self, now: dt.datetime, attempt: models.GameAttempt) -> None:
+        raise NotImplementedError
+
+    def is_banned_at(self, ip: str, datetime: dt.datetime) -> bool:
+        raise NotImplementedError
+
+
+class KindWatchman(BaseWatchman):
+    def add(self, now: dt.datetime, attempt: models.GameAttempt) -> None:
+        pass
+
+    def is_banned_at(self, ip: str, datetime: dt.datetime) -> bool:
+        return False
+
+
+class Watchman(BaseWatchman):
     def __init__(self, rate_limit: float, window: dt.timedelta, ban_duration: dt.timedelta,
                  max_num_attempts_without_gc: int) -> None:
         assert window.total_seconds() >= 1

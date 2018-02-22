@@ -38,6 +38,15 @@ def test_watchman_gc():
     assert watchman.num_ips == 1
 
 
+def test_kind_watchman():
+    watchman = fraud.KindWatchman()
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 28)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 29)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
+    watchman.add(_NOW, models.GameAttempt(_IP, dt.datetime(2018, 1, 31, 19, 30, 30)))
+    assert not watchman.is_banned_at(_IP, _NOW)
+
+
 def _get_watchman(max_num_attempts_without_gc=100):
     return fraud.Watchman(
         rate_limit=1,
