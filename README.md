@@ -31,7 +31,10 @@ like they do on ... nowhere.
 The first thing we’re going to need is a lot of repos.
 
 Fortunately, Github have everything I need, so I’ll just have to get all the repos from it.
+
 Let the software engineering begin.
+
+#### 11:15 PM
 
 First up is calling Github API. They keep
 everything open (with severe rate-limiting) so a little ```requests``` magic is all that’s necessary 
@@ -62,3 +65,5 @@ Done.
 
 Perfect timing. Eduardo’s here and he’s
 going to have the key ingredient: AWS_SECRET_ACCESS_KEY.
+
+Also he has some kind of formula for the ratings, but I've already googled it 6 weeks ago.
