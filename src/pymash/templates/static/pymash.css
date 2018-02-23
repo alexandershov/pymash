@@ -6735,9 +6735,13 @@ body {
   flex-direction: column; }
 
 .main {
-  flex: 1;
+  flex: 1 0 0;
   overflow: scroll; }
 
+@-moz-document url-prefix() {
+  .main {
+    flex: 1;
+    overflow: scroll; } }
 footer .navbar-brand {
   flex-flow: wrap; }
   footer .navbar-brand .navbar-item {
