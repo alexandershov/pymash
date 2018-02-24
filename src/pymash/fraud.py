@@ -33,26 +33,26 @@ class _BannedDetails(_BanDetails):
 
 class _IpInfo:
     def __init__(self):
-        self._count_by_second = collections.Counter()
+        self._num_attempts_by_unix_ts = collections.Counter()
         self._ban_details = _NotBannedDetails()
 
     def add(self, datetime: dt.datetime) -> None:
-        self._count_by_second[_convert_to_unix_ts(datetime)] += 1
+        self._num_attempts_by_unix_ts[_convert_to_unix_ts(datetime)] += 1
 
     def ban(self, end, reason) -> None:
         self._ban_details = _BannedDetails(end, reason)
 
-    def is_banned_at(self, datetime) -> bool:
+    def is_banned_at(self, datetime: dt.datetime) -> bool:
         return self._ban_details.is_banned_at(datetime)
 
-    def get_count_in_interval(self, start: dt.datetime, end: dt.datetime) -> int:
-        result = 0
+    def get_num_attempts_in_interval(self, start: dt.datetime, end: dt.datetime) -> int:
+        num_attempts = 0
         start_ts = _convert_to_unix_ts(start)
         end_ts = _convert_to_unix_ts(end)
-        for ts, count in self._count_by_second.items():
+        for ts, count in self._num_attempts_by_unix_ts.items():
             if start_ts <= ts < end_ts:
-                result += count
-        return result
+                num_attempts += count
+        return num_attempts
 
 
 class BaseWatchman:
@@ -108,7 +108,7 @@ class Watchman(BaseWatchman):
         yield from _datetimes_between(start, at_exact_sec, step=dt.timedelta(seconds=1))
 
     def _get_rate(self, info: _IpInfo, start: dt.datetime) -> float:
-        count = info.get_count_in_interval(start, start + self._window)
+        count = info.get_num_attempts_in_interval(start, start + self._window)
         return count / self._window.total_seconds()
 
     def _ban(self, attempt: models.GameAttempt, info: _IpInfo, rate: float, now: dt.datetime) -> None:
