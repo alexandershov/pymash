@@ -14,9 +14,9 @@ def setup_jinja2(app: web.Application) -> None:
         filters={'highlight': _highlight})
 
 
-def _highlight(s, language='python3'):
+def _highlight(fn_text, language='python3'):
     return _highlight_with_css_class(
-        s,
+        fn_text,
         language=language,
         css_class='pymash-highlight')
 
