@@ -70,9 +70,9 @@ def make_function_from_db_row(row: dict) -> models.Function:
 async def try_to_find_two_random_functions(engine: ta.AsyncEngine) -> ta.Functions:
     select_first = _make_query_to_find_random_function()
     select_second = _make_query_to_find_random_function()
-    select_two_functions = select_first.union_all(select_second)
+    select_both = select_first.union_all(select_second)
     async with engine.acquire() as conn:
-        rows = await conn.execute(select_two_functions)
+        rows = await conn.execute(select_both)
         return list(map(make_function_from_db_row, rows))
 
 
@@ -111,8 +111,6 @@ def find_game_by_id(engine: ta.Engine, game_id: str) -> models.Game:
             conn=conn,
             table=Games,
             ids=[game_id])
-    if len(rows) != 1:
-        raise NotFound(f'game {game_id} not found in the database')
     return _make_game_from_db_row(rows[0])
 
 
