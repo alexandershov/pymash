@@ -5,12 +5,12 @@
 {% block main %}
     <div class="game">
         <div class="player white-player">
-            {% with text=white.text, white_score=1, black_score=0 %}
+            {% with function_text=white.text, white_score=1, black_score=0 %}
                 {% include 'player.html' %}
             {% endwith %}
         </div>
         <div class="player black-player">
-            {% with text=black.text, white_score=0, black_score=1 %}
+            {% with function_text=black.text, white_score=0, black_score=1 %}
                 {% include 'player.html' %}
             {% endwith %}
         </div>
