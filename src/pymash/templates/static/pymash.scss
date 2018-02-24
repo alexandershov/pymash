@@ -21,13 +21,13 @@ body {
 
 .main {
   flex: 1;
-  overflow: scroll;
+  overflow: auto;
 }
 
 @-moz-document url-prefix() {
   .main {
     flex: 1;
-    overflow: scroll;
+    overflow: auto;
   }
 }
 

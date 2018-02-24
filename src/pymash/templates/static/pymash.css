@@ -6736,12 +6736,12 @@ body {
 
 .main {
   flex: 1;
-  overflow: scroll; }
+  overflow: auto; }
 
 @-moz-document url-prefix() {
   .main {
     flex: 1;
-    overflow: scroll; } }
+    overflow: auto; } }
 footer .navbar-brand {
   flex-flow: wrap; }
   footer .navbar-brand .navbar-item {
