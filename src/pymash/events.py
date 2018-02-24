@@ -21,13 +21,13 @@ class DeletedFromDb(BaseError):
 @utils.log_time(loggers.web)
 async def post_game_finished_event(request: web.Request, game: models.Game) -> None:
     app = request.app
-    event = make_game_finished_event(_get_user_ip(request), game)
+    event = make_game_finished_event(game, _get_user_ip(request))
     await _ensure_games_queue_is_ready(app)
     loggers.web.info('sending game_finished event %r', event)
     await app['games_queue'].send_message(MessageBody=json.dumps(event))
 
 
-def make_game_finished_event(ip: str, game: models.Game) -> dict:
+def make_game_finished_event(game: models.Game, ip: str) -> dict:
     return {
         'game_id': game.game_id,
         'white_id': game.white_id,
