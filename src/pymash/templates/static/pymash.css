@@ -6735,12 +6735,12 @@ body {
   flex-direction: column; }
 
 .main {
-  flex: 1;
+  flex: 1 0 auto;
   overflow: auto; }
 
 @-moz-document url-prefix() {
   .main {
-    flex: 1;
+    flex: 1 0 auto;
     overflow: auto; } }
 footer .navbar-brand {
   flex-flow: wrap; }
