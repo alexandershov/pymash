@@ -6735,13 +6735,11 @@ body {
   flex-direction: column; }
 
 .main {
-  flex: 1 0 auto;
-  overflow: auto; }
+  flex: 1 0 auto; }
 
 @-moz-document url-prefix() {
   .main {
-    flex: 1 0 auto;
-    overflow: auto; } }
+    flex: 1 0 auto; } }
 footer .navbar-brand {
   flex-flow: wrap; }
   footer .navbar-brand .navbar-item {
@@ -6796,7 +6794,7 @@ pre {
 .leaders-wrapper {
   padding: 0 1rem; }
   .leaders-wrapper .repo-column {
-    max-width: 70vw; }
+    word-break: break-all; }
   .leaders-wrapper .rating-column {
     text-align: right; }
 

@@ -21,13 +21,11 @@ body {
 
 .main {
   flex: 1 0 auto;
-  overflow: auto;
 }
 
 @-moz-document url-prefix() {
   .main {
     flex: 1 0 auto;
-    overflow: auto;
   }
 }
 
@@ -114,7 +112,7 @@ pre {
   padding: 0 $global-left-padding;
 
   .repo-column {
-    max-width: 70vw;
+    word-break: break-all;
   }
 
   .rating-column {
