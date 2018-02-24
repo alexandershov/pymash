@@ -46,8 +46,9 @@ def _process_message(watchman, context, message):
     try:
         events.process_game_finished_event(context.engine, game)
     except events.DeletedFromDb:
-        loggers.games_queue.error('pymash_event:error:deleted_from_db skipping handling of game %s', game.game_id,
-                                  exc_info=True)
+        loggers.games_queue.error(
+            'pymash_event:error:deleted_from_db skipping handling of game %s', game.game_id,
+            exc_info=True)
 
 
 def _get_watchman(config: cfg.Config) -> fraud.BaseWatchman:
