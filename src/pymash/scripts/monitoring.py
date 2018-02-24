@@ -33,7 +33,7 @@ class _Stats:
 
 def main():
     now = dt.datetime.utcnow()
-    end = _round_dtime(now)
+    end = _round_datetime(now)
     start = end - dt.timedelta(minutes=1)
     log_lines = _read_systemd_logs_in_range(start, end)
     stats = _get_stats(log_lines)
@@ -76,8 +76,8 @@ def _get_metric_data(stats: _Stats, timestamp: dt.datetime):
     ]
 
 
-def _round_dtime(dtime: dt.datetime) -> dt.datetime:
-    return dtime.replace(second=0, microsecond=0)
+def _round_datetime(datetime: dt.datetime) -> dt.datetime:
+    return datetime.replace(second=0, microsecond=0)
 
 
 def _read_systemd_logs_in_range(start: dt.datetime, end: dt.datetime) -> tp.List[bytes]:
@@ -97,15 +97,15 @@ def _make_cmd(start, end):
     return [
         'journalctl',
         '--unit', 'pymash_background.service',
-        '--since', _format_dtime(start),
-        '--until', _format_dtime(end),
+        '--since', _format_datetime(start),
+        '--until', _format_datetime(end),
         '--no-pager',
         '--utc',
     ]
 
 
-def _format_dtime(dtime: dt.datetime) -> str:
-    return format(dtime, '%Y-%m-%d %H:%M:%S')
+def _format_datetime(datetime: dt.datetime) -> str:
+    return format(datetime, '%Y-%m-%d %H:%M:%S')
 
 
 if __name__ == '__main__':

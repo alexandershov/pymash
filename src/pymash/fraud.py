@@ -16,7 +16,7 @@ class _NotBannedDetails(_BanDetails):
         return False
 
     def __repr__(self):
-        return f'_NotBannedDetails()'
+        return '_NotBannedDetails()'
 
 
 class _BannedDetails(_BanDetails):
