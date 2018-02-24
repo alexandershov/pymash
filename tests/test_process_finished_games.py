@@ -21,6 +21,16 @@ def test_process_game_finished_event(pymash_engine, monkeypatch):
 
 
 @pytest.mark.usefixtures('add_functions_and_repos')
+def test_process_mirrored_game_finished_event(pymash_engine, monkeypatch):
+    game = _get_game(white_id=777, black_id=666)
+    _monkeypatch_boto3(monkeypatch, [game])
+
+    _process_and_check_finished_games(pymash_engine, game,
+                                      expected_first_rating=1815.36,
+                                      expected_second_rating=1884.64)
+
+
+@pytest.mark.usefixtures('add_functions_and_repos')
 def test_process_game_finished_event_twice(pymash_engine, monkeypatch):
     game = _get_game()
     _monkeypatch_boto3(monkeypatch, [game])
@@ -40,9 +50,11 @@ def test_process_different_game_finished_event_twice(pymash_engine, monkeypatch)
     _process_and_check_finished_games(pymash_engine, game)
 
 
-def _process_and_check_finished_games(pymash_engine, game):
+def _process_and_check_finished_games(pymash_engine, game,
+                                      expected_first_rating=1791.37,
+                                      expected_second_rating=1908.63):
     _call_process_finished_games()
-    _check_game_and_repos(pymash_engine, game)
+    _check_game_and_repos(pymash_engine, game, expected_first_rating, expected_second_rating)
 
 
 def _call_process_finished_games(watchman=None):
@@ -81,10 +93,10 @@ def _assert_nothing_saved(pymash_engine, game):
     _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1900)
 
 
-def _check_game_and_repos(pymash_engine, expected_game):
+def _check_game_and_repos(pymash_engine, expected_game, expected_first_rating, expected_second_rating):
     _assert_game_saved(pymash_engine, expected_game)
-    _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=1791.37)
-    _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=1908.63)
+    _assert_repo_has_rating(pymash_engine, repo_id=1, expected_rating=expected_first_rating)
+    _assert_repo_has_rating(pymash_engine, repo_id=2, expected_rating=expected_second_rating)
 
 
 def _get_game(white_id=666, black_id=777, result=models.BLACK_WINS_RESULT):

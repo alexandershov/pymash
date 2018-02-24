@@ -232,7 +232,7 @@ def _find_many_by_ids(conn, table, ids):
         found_ids = [a_row[id_column] for a_row in rows]
         not_found_ids = set(ids) - set(found_ids)
         raise NotFound(f'ids {not_found_ids} do not exist in {table.name}')
-    return rows
+    return sorted(rows, key=lambda a_row: ids.index(a_row[id_column]))
 
 
 def _get_id_column(table):
