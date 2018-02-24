@@ -20,10 +20,10 @@ class _Stats:
             f'{cls_name}(num_bans={self.num_bans}, num_skipped_games={self.num_skipped_games}, '
             f'num_errors={self.num_errors}, num_restarts={self.num_restarts})')
 
-    def handle_line(self, line: bytes) -> None:
+    def add_line(self, line: bytes) -> None:
         if b'pymash_event:banned_ip' in line:
             self.num_bans += 1
-        if b'pymash_event:is_banned' in line:
+        if b'pymash_event:skipped_game' in line:
             self.num_skipped_games += 1
         if b'pymash_event:error' in line:
             self.num_errors += 1
@@ -33,8 +33,9 @@ class _Stats:
 
 def main():
     now = dt.datetime.utcnow()
-    start = _round_dtime(now - dt.timedelta(minutes=1))
-    log_lines = _read_logs_in_range(start, start + dt.timedelta(minutes=1))
+    end = _round_dtime(now)
+    start = end - dt.timedelta(minutes=1)
+    log_lines = _read_systemd_logs_in_range(start, end)
     stats = _get_stats(log_lines)
     _send_stats(stats, start)
 
@@ -79,7 +80,7 @@ def _round_dtime(dtime: dt.datetime) -> dt.datetime:
     return dtime.replace(second=0, microsecond=0)
 
 
-def _read_logs_in_range(start: dt.datetime, end: dt.datetime) -> tp.List[bytes]:
+def _read_systemd_logs_in_range(start: dt.datetime, end: dt.datetime) -> tp.List[bytes]:
     cmd = _make_cmd(start, end)
     output = subprocess.check_output(cmd)
     return output.splitlines()
@@ -88,7 +89,7 @@ def _read_logs_in_range(start: dt.datetime, end: dt.datetime) -> tp.List[bytes]:
 def _get_stats(log_lines):
     stats = _Stats()
     for line in log_lines:
-        stats.handle_line(line)
+        stats.add_line(line)
     return stats
 
 
@@ -98,7 +99,8 @@ def _make_cmd(start, end):
         '--unit', 'pymash_background.service',
         '--since', _format_dtime(start),
         '--until', _format_dtime(end),
-        '--no-pager', '--utc',
+        '--no-pager',
+        '--utc',
     ]
 
 

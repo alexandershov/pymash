@@ -40,7 +40,7 @@ def _process_message(watchman, context, message):
     now = dt.datetime.utcnow()
     watchman.add(now, attempt)
     if watchman.is_banned_at(attempt.ip, now):
-        loggers.games_queue.info('pymash_event:is_banned skipping handling of game %s, because %s is banned',
+        loggers.games_queue.info('pymash_event:skipped_game %s, because ip %s is banned',
                                  game.game_id, attempt.ip)
         return
     try:
