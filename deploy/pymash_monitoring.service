@@ -2,6 +2,5 @@
 Description='pymash monitoring'
 
 [Service]
-User=ec2-user
 EnvironmentFile=/etc/pymash.d/environment
 ExecStart=/usr/bin/python3.6 -m pymash.scripts.monitoring
