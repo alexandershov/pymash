@@ -5,6 +5,7 @@ import typing as tp
 import boto3
 
 from pymash.scripts import base
+from pymash import loggers
 
 
 class _Stats:
@@ -41,6 +42,7 @@ def main():
 
 
 def _send_stats(stats: _Stats, timestamp: dt.datetime) -> None:
+    loggers.games_queue.info('sending stats %s', stats)
     cloudwatch = _get_cloudwatch_client()
     cloudwatch.put_metric_data(
         Namespace='pymash_background',
