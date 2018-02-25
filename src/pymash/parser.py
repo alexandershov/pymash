@@ -112,14 +112,14 @@ def get_functions(path: str, options: Options) -> tp.List[Function]:
 
 
 def get_functions_from_fileobj(
-        fileobj, file_name: str, options: Options) -> tp.List[Function]:
+        fileobj, path: str, options: Options) -> tp.List[Function]:
     try:
         source_code = fileobj.read()
     except UnicodeDecodeError:
         if not options.catch_exceptions:
             raise
         return []
-    return _get_functions_from_str(source_code, file_name, options)
+    return _get_functions_from_str(source_code, path, options)
 
 
 def _get_functions_from_str(
@@ -140,10 +140,7 @@ def _get_functions_from_str(
             if not options.catch_exceptions:
                 raise
         else:
-            fn = Function(
-                node=fn_node,
-                text=text,
-                file_name=file_name)
+            fn = Function(node=fn_node, text=text, file_name=file_name)
             functions.append(fn)
     return functions
 
@@ -264,8 +261,8 @@ def _get_docstring_info(fn_node) -> _BaseDocstringInfo:
     if len(fn_node.body) == 1:
         raise EmptyFunctionError
     begin = _Position.from_ast_node(node)
-    after_node = fn_node.body[1]
-    end = _Position.from_ast_node(after_node)
+    next_node = fn_node.body[1]
+    end = _Position.from_ast_node(next_node)
     return _DocstringInfo(begin, end)
 
 
@@ -284,11 +281,11 @@ def _get_docstring_node_or_none(fn_node):
 
 
 def _exclude_meaningless_lines(lines):
-    result = list(itertools.dropwhile(_is_empty_line, lines))
-    result = _reverse_iterable(itertools.dropwhile(_is_empty_or_comment_line, reversed(result)))
-    if result:
-        result[-1] = result[-1].rstrip('\r\n')
-    return result
+    lines = list(itertools.dropwhile(_is_empty_line, lines))
+    lines = _reverse_iterable(itertools.dropwhile(_is_empty_or_comment_line, reversed(lines)))
+    if lines:
+        lines[-1] = lines[-1].rstrip('\r\n')
+    return lines
 
 
 def _reverse_iterable(iterable: tp.Iterable) -> tp.List:
