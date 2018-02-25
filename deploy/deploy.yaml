@@ -86,3 +86,14 @@
         enabled: true
         daemon-reload: true
       when: "'background' in group_names"
+
+    - name: Ensure /usr/lib/systemd/journald.conf.d directory is present
+      file: path=/usr/lib/systemd/journald.conf.d state=directory
+
+    - name: Copy journald config
+      copy: src=pymash-journald.conf dest=/usr/lib/systemd/journald.conf.d
+
+    - name: Restart journald
+      systemd:
+        name: systemd-journald
+        state: restarted
