@@ -36,7 +36,7 @@ class _User:
         self._num_attempts_by_unix_ts = collections.Counter()
         self._ban_details = _NotBannedDetails()
 
-    def on_attempt_at(self, datetime: dt.datetime) -> None:
+    def record_attempt_at(self, datetime: dt.datetime) -> None:
         self._num_attempts_by_unix_ts[_convert_to_unix_ts(datetime)] += 1
 
     def ban(self, end, reason) -> None:
@@ -86,7 +86,7 @@ class Watchman(BaseWatchman):
     def add(self, now: dt.datetime, attempt: models.GameAttempt) -> None:
         self._num_attempts_without_gc += 1
         user = self._user_by_ip[attempt.ip]
-        user.on_attempt_at(attempt.at)
+        user.record_attempt_at(attempt.at)
         for datetime in self._rate_affecting_datetimes(attempt):
             rate = self._get_rate(user, start=datetime)
             if rate > self._rate_limit:
