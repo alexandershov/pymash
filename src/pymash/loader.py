@@ -29,15 +29,15 @@ class Selector:
     MIN_NUM_STATEMENTS = 4
     NUM_FUNCTIONS_PER_REPO = 1000
     MIN_NUM_FUNCTIONS_PER_REPO = 20
-
-
-_NOT_IMPLEMENTED_RE = re.compile(r'raise\s+NotImplementedError')
-_TEST_FILE_PATH_RE = re.compile(r'test', re.IGNORECASE)
+    NOT_IMPLEMENTED_RE = re.compile(r'raise\s+NotImplementedError')
+    TEST_FILE_PATH_RE = re.compile(r'test', re.IGNORECASE)
 
 
 @utils.log_time(loggers.loader)
 def load_most_popular(
-        engine: ta.Engine, language: str, limit: int,
+        engine: ta.Engine,
+        language: str,
+        limit: int,
         whitelisted_full_names: ta.SetOfStrings = (),
         blacklisted_full_names: ta.SetOfStrings = (),
         concurrency: int = 1) -> None:
@@ -121,12 +121,13 @@ def load_github_repo(github_repo: models.GithubRepo) -> tp.Optional[models.Repo]
     loggers.loader.info('loading repo %s', github_repo.full_name)
     with base.ScriptContext() as context:
         functions = _get_functions_from_github_repo(github_repo)
-        functions_to_update = _select_functions_to_update(functions)
-        if len(functions_to_update) >= Selector.MIN_NUM_FUNCTIONS_PER_REPO:
-            return db.upsert_repo(context.engine, github_repo, functions_to_update)
+        functions_to_add = _select_functions_to_add(functions)
+        if len(functions_to_add) >= Selector.MIN_NUM_FUNCTIONS_PER_REPO:
+            return db.upsert_repo(context.engine, github_repo, functions_to_add)
         else:
-            loggers.loader.info('skipped upsert_repo(%s), because repo has too few functions (%d)',
-                                github_repo.url, len(functions_to_update))
+            loggers.loader.info(
+                'skipped upsert_repo(%s), because repo has too few functions (%d)',
+                github_repo.url, len(functions_to_add))
             return None
 
 
@@ -149,28 +150,28 @@ def _get_functions_from_zip_archive(
     with tempfile.TemporaryDirectory() as temp_dir:
         with utils.log_time(loggers.loader, f'unzipping {archive_path}'):
             _unzip_file(archive_path, temp_dir)
-        return _get_functions_from_directory(github_repo, temp_dir)
+        return _get_functions_from_directory(temp_dir, github_repo)
 
 
 def _get_functions_from_directory(
-        github_repo: models.GithubRepo, dir_path: str) -> tp.Set[parser.Function]:
+        dir_path: str, github_repo: models.GithubRepo) -> tp.Set[parser.Function]:
     functions = set()
     parser_options = parser.Options(catch_exceptions=True, verbose=False)
     with utils.log_time(loggers.loader, f'parsing {github_repo.url}'):
-        py_files = _find_files(dir_path, 'py')
+        py_files = _find_files(dir_path, extension='py')
         for a_file in py_files:
             functions.update(parser.get_functions(a_file, parser_options))
     loggers.loader.info('found %d distinct functions in %d files', len(functions), len(py_files))
     return functions
 
 
-def _select_functions_to_update(functions: tp.Set[parser.Function]) -> ta.ParserFunctions:
-    with utils.log_time(loggers.loader, f'select functions from {len(functions)}'):
+def _select_functions_to_add(functions: tp.Set[parser.Function]) -> ta.ParserFunctions:
+    with utils.log_time(loggers.loader, f'select good functions from {len(functions)} functions'):
         good_functions = select_good_functions(functions)
         loggers.loader.info('selected %d/%d good functions', len(good_functions), len(functions))
-        result = _select_random_functions(good_functions)
-        loggers.loader.info('selected %d/%d random functions', len(result), len(good_functions))
-    return result
+        functions_to_add = _select_random_functions(good_functions)
+        loggers.loader.info('selected %d/%d random functions', len(functions_to_add), len(good_functions))
+    return functions_to_add
 
 
 def _select_random_functions(functions: tp.List[parser.Function]) -> tp.List[parser.Function]:
@@ -199,7 +200,7 @@ def select_good_functions(functions: tp.Iterable[parser.Function]) -> ta.ParserF
 
 
 def _is_test_file(path):
-    return _TEST_FILE_PATH_RE.search(path) is not None
+    return Selector.TEST_FILE_PATH_RE.search(path) is not None
 
 
 def _is_bad_function(fn: parser.Function) -> bool:
@@ -244,7 +245,7 @@ def _has_too_many_comment_lines(fn: parser.Function) -> bool:
 
 
 def _raises_not_implemented_error(fn: parser.Function) -> bool:
-    return _NOT_IMPLEMENTED_RE.search(fn.text) is not None
+    return Selector.NOT_IMPLEMENTED_RE.search(fn.text) is not None
 
 
 def _is_init_method(fn: parser.Function) -> bool:
