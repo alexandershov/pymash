@@ -78,16 +78,16 @@ class GameResult(BaseResult):
         return self._black_score
 
     @classmethod
-    def _check_one_score(cls, score):
-        if score not in cls.ALLOWED_SCORES:
-            raise InvalidScore(f'{score} should be in {cls.ALLOWED_SCORES}')
-
-    @classmethod
     def _check_scores(cls, white_score, black_score):
         cls._check_one_score(white_score)
         cls._check_one_score(black_score)
         if white_score + black_score != 1:
             raise InvalidScore(f'sum of scores should be 1, got {white_score} + {black_score}')
+
+    @classmethod
+    def _check_one_score(cls, score):
+        if score not in cls.ALLOWED_SCORES:
+            raise InvalidScore(f'{score} should be in {cls.ALLOWED_SCORES}')
 
 
 WHITE_WINS_RESULT = GameResult(1, 0)
@@ -175,12 +175,10 @@ class GameAttempt:
         self.at = at
 
     def __repr__(self):
-        return f'GameAttempt(ip={self.ip!a}, at={self.at!a})'
+        return f'GameAttempt(ip={self.ip!a}, at={self.at})'
 
 
 class Game:
-    ALLOWED_SCORES = [0, 1]
-
     def __init__(self, game_id: str, white_id: int, black_id: int, result: BaseResult) -> None:
         self.game_id = game_id
         self.white_id = white_id
@@ -194,5 +192,5 @@ class Game:
     def __repr__(self) -> str:
         cls_name = self.__class__.__name__
         return (
-            f'{cls_name}(game_id={self.game_id!r}, white_id={self.white_id!r}, '
-            f'black_id={self.black_id!r}, result={self.result!r})')
+            f'{cls_name}(game_id={self.game_id!a}, white_id={self.white_id}, '
+            f'black_id={self.black_id}, result={self.result})')
