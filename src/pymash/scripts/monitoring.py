@@ -33,6 +33,7 @@ class _Stats:
 
 
 def main():
+    loggers.setup_logging()
     now = dt.datetime.utcnow()
     end = _round_datetime(now)
     start = end - dt.timedelta(minutes=1)
