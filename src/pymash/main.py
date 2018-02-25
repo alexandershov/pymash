@@ -36,6 +36,7 @@ def _setup_startup_cleanup(app: web.Application) -> None:
     app.on_startup.append(_setup_logging)
     app.on_startup.append(_create_engine)
     app.on_startup.append(_create_sqs_resource)
+
     app.on_cleanup.append(_close_engine)
     app.on_cleanup.append(_close_sqs_resource)
 
