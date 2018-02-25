@@ -42,7 +42,7 @@ to download the top 1000 Python repos from Github.
 
 Kids’ stuff.
 
-#### 01:03 PM
+#### 01:03 AM
 No, actually first up is writing tests.
 
 TDD. Moving right along.
