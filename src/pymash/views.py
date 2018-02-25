@@ -109,6 +109,7 @@ async def _get_game_or_error(request, data) -> models.Game:
 def _validate_hash(request: web.Request, game: models.Game, actual_hash: str):
     expected_hash = game.get_hash(request.app['config'].game_hash_salt)
     if expected_hash != actual_hash:
+        loggers.web.info('game hash mismatch: %r != %r', actual_hash, expected_hash)
         raise web.HTTPBadRequest
 
 
@@ -125,7 +126,7 @@ def _set_visited_cookie(view):
 @_set_visited_cookie
 @aiohttp_jinja2.template('game.html')
 async def show_game(request: web.Request) -> ta.DictOrResponse:
-    white, black = await _find_two_random_function_or_error(request.app['db_engine'])
+    white, black = await _find_two_random_functions_or_error(request.app['db_engine'])
     game = models.Game(
         game_id=uuid.uuid4().hex,
         white_id=white.function_id,
@@ -139,17 +140,18 @@ async def show_game(request: web.Request) -> ta.DictOrResponse:
     }
 
 
-async def _find_two_random_function_or_error(engine: ta.AsyncEngine):
+async def _find_two_random_functions_or_error(engine: ta.AsyncEngine):
     num_tries = 3
     for _ in range(num_tries):
         functions = await db.try_to_find_two_random_functions(engine)
         if _are_valid_functions(functions):
             return functions
     else:
+        loggers.web.info('could not find two random functions with %d tries', num_tries)
         raise web.HTTPServiceUnavailable
 
 
-def _are_valid_functions(functions: ta.Functions):
+def _are_valid_functions(functions: ta.Functions) -> bool:
     if len(functions) != 2:
         return False
     white, black = functions
